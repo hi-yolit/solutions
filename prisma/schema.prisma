@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  STUDENT
+  EXPERT
+  ADMIN
+}
+
+enum CurriculumType {
+  CAPS
+  IEB
+}
+
+enum SolutionType {
+  STRUCTURED
+  ESSAY
+  MCQ
+  DRAWING
+  PROOF
+}
+
+enum ResourceType {
+  TEXTBOOK
+  PAST_PAPER
+  STUDY_GUIDE
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  fullName      String
+  role          UserRole
+  grade         Int?           // For students
+  school        String?        // For students
+  subjects      String[]       // Subjects they're interested in/expert in
+  isVerified    Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  solutions     Solution[]
+  expertProfile ExpertProfile?
+}
+
+model ExpertProfile {
+  id              String    @id @default(cuid())
+  user            User      @relation(fields: [userId], references: [id])
+  userId          String    @unique
+  qualifications  Json[]    // Array of degrees, certifications
+  specializations String[]  // Specific subjects/topics
+  rating          Float     @default(0)
+  solutionsCount  Int       @default(0)
+}
+
+model Resource {
+  id            String       @id @default(cuid())
+  type          ResourceType
+  title         String      // e.g., "Campbell Biology 12th Edition" or "IEB Math P1 2022"
+  subject       String
+  grade         Int
+  year          Int?        // For past papers
+  term          Int?        // For past papers
+  publisher     String?     // For textbooks
+  edition       String?     // For textbooks
+  curriculum    CurriculumType
+  chapters      Chapter[]
+  questions     Question[]
+}
+
+model Chapter {
+  id          String    @id @default(cuid())
+  resource    Resource  @relation(fields: [resourceId], references: [id])
+  resourceId  String
+  number      Int
+  title       String?
+  topics      Topic[]
+  questions   Question[]
+}
+
+model Topic {
+  id          String    @id @default(cuid())
+  chapter     Chapter   @relation(fields: [chapterId], references: [id])
+  chapterId   String
+  title       String?
+  questions   Question[]
+}
+
+model Question {
+  id              String       @id @default(cuid())
+  resource        Resource     @relation(fields: [resourceId], references: [id])
+  resourceId      String
+  chapter         Chapter?     @relation(fields: [chapterId], references: [id])
+  chapterId       String?
+  topic           Topic?       @relation(fields: [topicId], references: [id])
+  topicId         String?
+  pageNumber      Int?        // For textbook questions
+  questionNumber  String      // e.g., "1.1" or "2.b"
+  type            SolutionType
+  content         Json        // Question text, images, marks allocation
+  solutions       Solution[]
+}
+
+model Solution {
+  id                 String            @id @default(cuid())
+  question          Question          @relation(fields: [questionId], references: [id])
+  questionId        String
+  expert            User              @relation(fields: [expertId], references: [id])
+  expertId          String
+  content           Json              // Detailed solution content
+  steps             Json[]            // Step-by-step explanation
+  verificationStatus VerificationStatus @default(PENDING)
+  metrics           Json              // Views, ratings, helpful votes
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
