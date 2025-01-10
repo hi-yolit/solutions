@@ -18,23 +18,30 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { addChapter } from "@/actions/chapters"
+import { addChapter, updateChapter } from "@/actions/chapters"
 import { chapterFormSchema, type ChapterFormValues } from "@/lib/validations/chapter"
 import { useToast } from "@/hooks/use-toast"
+import { Chapter, ResourceType } from "@prisma/client"
 
 interface AddChapterDialogProps {
   resourceId: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  resourceType: ResourceType
+  chapter?: Chapter
 }
 
 export function AddChapterDialog({
   resourceId,
   open,
   onOpenChange,
+  resourceType,
+  chapter
 }: AddChapterDialogProps) {
   const { toast } = useToast()
-  
+  const isPastPaper = resourceType === 'PAST_PAPER'
+  const isEdit = !!chapter
+
   const form = useForm<ChapterFormValues>({
     resolver: zodResolver(chapterFormSchema),
     defaultValues: {
@@ -45,8 +52,14 @@ export function AddChapterDialog({
 
   async function onSubmit(data: ChapterFormValues) {
     try {
-      const result = await addChapter(resourceId, data)
-      
+      let result;
+
+      if (isEdit && chapter) {
+        result = await updateChapter(chapter.id, data)
+      } else {
+        result = await addChapter(resourceId, data)
+      }
+
       if (result.error) {
         toast({
           title: "Error",
@@ -58,7 +71,9 @@ export function AddChapterDialog({
 
       toast({
         title: "Success",
-        description: "Chapter added successfully",
+        description: isEdit
+          ? (isPastPaper ? "Question updated successfully" : "Chapter updated successfully")
+          : (isPastPaper ? "Question added successfully" : "Chapter added successfully")
       })
       onOpenChange(false)
       form.reset()
@@ -71,11 +86,17 @@ export function AddChapterDialog({
     }
   }
 
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Chapter</DialogTitle>
+          <DialogTitle>
+            {isEdit
+              ? (isPastPaper ? 'Edit Question' : 'Edit Chapter')
+              : (isPastPaper ? 'Add Question' : 'Add Chapter')
+            }
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -84,7 +105,7 @@ export function AddChapterDialog({
               name="number"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chapter Number</FormLabel>
+                  {isPastPaper ? 'Question Number' : 'Chapter Number'}
                   <FormControl>
                     <Input
                       type="number"
@@ -96,19 +117,22 @@ export function AddChapterDialog({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title (Optional)</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
+            {!isPastPaper && (
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title (Optional)</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
@@ -118,7 +142,10 @@ export function AddChapterDialog({
                 Cancel
               </Button>
               <Button type="submit">
-                Add Chapter
+                {isEdit
+                  ? (isPastPaper ? 'Update Question' : 'Update Chapter')
+                  : (isPastPaper ? 'Add Question' : 'Add Chapter')
+                }
               </Button>
             </div>
           </form>

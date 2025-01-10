@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "../globals.css";
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
+import 'katex/dist/katex.min.css'
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -32,7 +33,7 @@ export default function RootLayout({
       >
         <div className="min-h-screen flex flex-col">
           <Navbar />
-          <main className="flex-grow">
+          <main className=" max-w-[64rem] mx-auto flex-grow">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               {children}
             </div>

@@ -22,8 +22,7 @@ const proofStepSchema = z.object({
   title: z.string().min(1, "Step title is required"),
   statement: z.string().min(1, "Statement is required"),
   justification: z.string().min(1, "Justification is required"),
-  latex: z.string().optional(),
-  tip: z.string().optional(),
+  hint: z.string().optional(),
 });
 
 const proofSolutionSchema = z.array(proofStepSchema);
@@ -44,7 +43,7 @@ export function ProofSolutionEditor({
         title: "",
         statement: "",
         justification: "",
-        latex: ""
+        hint: ""
       }]
     }
   });
@@ -126,10 +125,10 @@ export function ProofSolutionEditor({
 
               <FormField
                 control={form.control}
-                name={`steps.${index}.tip`}
+                name={`steps.${index}.hint`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tip (Optional)</FormLabel>
+                    <FormLabel>Hint (Optional)</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -148,7 +147,7 @@ export function ProofSolutionEditor({
             title: "",
             statement: "",
             justification: "",
-            latex: ""
+            hint: ""
           })}
         >
           <Plus className="h-4 w-4 mr-2" />

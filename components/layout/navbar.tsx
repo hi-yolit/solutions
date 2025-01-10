@@ -16,12 +16,6 @@ export function Navbar() {
           </div>
           
           <div className="flex gap-4">
-            <Link href="/subjects">
-              <Button variant="ghost">Subjects</Button>
-            </Link>
-            <Link href="/resources">
-              <Button variant="ghost">Resources</Button>
-            </Link>
             <Link href="/auth/login">
               <Button>Login</Button>
             </Link>

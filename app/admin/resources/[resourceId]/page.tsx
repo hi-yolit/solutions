@@ -18,9 +18,23 @@ export default async function ResourceDetailsPage({
   params: { resourceId: string }
 }) {
   const { resource, error } = await getResourceWithChapters(params.resourceId)
+  console.log(resource)
 
   if (error || !resource) {
     return <div>Failed to load resource</div>
+  }
+
+  const getPageTitle = () => {
+    switch (resource.type) {
+      case 'PAST_PAPER':
+        return 'Past Paper Details'
+      case 'TEXTBOOK':
+        return 'Textbook Details'
+      case 'STUDY_GUIDE':
+        return 'Study Guide Details'
+      default:
+        return 'Resource Details'
+    }
   }
 
   return (
@@ -31,7 +45,7 @@ export default async function ResourceDetailsPage({
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h2 className="text-3xl font-bold">Resource Details</h2>
+        <h2 className="text-3xl font-bold">{getPageTitle()}</h2>
       </div>
 
       <Card>
@@ -66,6 +80,7 @@ export default async function ResourceDetailsPage({
       <ChaptersSection 
         chapters={resource.chapters}
         resourceId={params.resourceId}
+        resourceType={resource.type}
       />
     </div>
   )

@@ -1,8 +1,9 @@
+// components/admin/resources/resources-table.tsx
 "use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Resource } from "@prisma/client"
+import { Resource, ResourceType, ResourceStatus } from "@prisma/client"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,7 +12,6 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import {
@@ -30,17 +30,26 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import { AddResourceForm } from "./add-resource-form"
+import { EditResourceForm } from "./edit-resource-form"
+import { deleteResource, updateResourceStatus } from "@/actions/resources"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
 interface ResourcesTableProps {
-  initialResources: Resource[]
+    initialResources: Resource[]
 }
 
 export function ResourcesTable({ initialResources }: ResourcesTableProps) {
     const router = useRouter()
     const { toast } = useToast()
-    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+    const [editingResource, setEditingResource] = useState<Resource | null>(null)
+    const [resourceToDelete, setResourceToDelete] = useState<Resource | null>(null)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [search, setSearch] = useState("")
     const [typeFilter, setTypeFilter] = useState<string | null>(null)
     const [curriculumFilter, setCurriculumFilter] = useState<string | null>(null)
@@ -55,39 +64,73 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
         return matchesSearch && matchesType && matchesCurriculum
     })
 
-    const handleResourceAdded = () => {
-        setIsDialogOpen(false)
-        router.refresh() // This will trigger a refresh of the server component
+    const handleStatusToggle = async (resourceId: string, currentStatus: ResourceStatus) => {
+        const newStatus = currentStatus === ResourceStatus.LIVE
+            ? ResourceStatus.DRAFT
+            : ResourceStatus.LIVE
+
+        const result = await updateResourceStatus(resourceId, newStatus)
+
+        if (result.error) {
+            toast({
+                title: "Error",
+                description: "Failed to update resource status",
+                variant: "destructive"
+            })
+            return
+        }
+
+        setResources(resources.map(resource =>
+            resource.id === resourceId
+                ? { ...resource, status: newStatus }
+                : resource
+        ))
+
         toast({
             title: "Success",
-            description: "Resource added successfully",
+            description: "Resource status updated successfully"
         })
+    }
+
+    const handleDelete = async () => {
+        if (!resourceToDelete) return
+
+        try {
+            const result = await deleteResource(resourceToDelete.id)
+            if (result.error) {
+                toast({
+                    title: "Error",
+                    description: result.error,
+                    variant: "destructive"
+                })
+                return
+            }
+
+            toast({
+                title: "Success",
+                description: "Resource deleted successfully"
+            })
+            router.refresh()
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Something went wrong",
+                variant: "destructive"
+            })
+        } finally {
+            setDeleteDialogOpen(false)
+            setResourceToDelete(null)
+        }
     }
 
     return (
         <div>
             <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold">Resources</h2>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Resource
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px]">
-                        <DialogHeader>
-                            <DialogTitle>Add New Resource</DialogTitle>
-                            <DialogDescription>
-                                Add a new textbook, past paper, or study guide to the platform.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <AddResourceForm
-                            onClose={() => setIsDialogOpen(false)}
-                            onSuccess={handleResourceAdded}
-                        />
-                    </DialogContent>
-                </Dialog>
+                <Button onClick={() => setIsAddDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Resource
+                </Button>
             </div>
 
             {/* Filters */}
@@ -138,7 +181,7 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
                             <TableHead>Subject</TableHead>
                             <TableHead>Grade</TableHead>
                             <TableHead>Curriculum</TableHead>
-                            <TableHead>Year</TableHead>
+                            <TableHead>Details</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
@@ -155,13 +198,36 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
                                 <TableCell>{resource.subject}</TableCell>
                                 <TableCell>{resource.grade}</TableCell>
                                 <TableCell>{resource.curriculum}</TableCell>
-                                <TableCell>{resource.year}</TableCell>
+                                <TableCell className="text-sm text-muted-foreground">
+                                    {resource.type === 'TEXTBOOK' ? (
+                                        <>
+                                            {resource.publisher && `${resource.publisher}`}
+                                            {resource.edition && ` • ${resource.edition} Edition`}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {resource.year}
+                                            {resource.term && ` • Term ${resource.term}`}
+                                        </>
+                                    )}
+                                </TableCell>
                                 <TableCell>
-                                    <Badge
-                                        variant="default"
-                                    >
-                                        active
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <Switch
+                                            checked={resource.status === 'LIVE'}
+                                            onCheckedChange={() =>
+                                                handleStatusToggle(resource.id, resource.status)
+                                            }
+                                        />
+                                        <span className={cn(
+                                            "text-sm",
+                                            resource.status === 'LIVE'
+                                                ? "text-green-600"
+                                                : "text-muted-foreground"
+                                        )}>
+                                            {resource.status}
+                                        </span>
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-2">
@@ -175,7 +241,20 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="text-red-600 hover:text-red-700"
+                                            onClick={() => {
+                                                setEditingResource(resource)
+                                                setIsEditDialogOpen(true)
+                                            }}
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => {
+                                                setResourceToDelete(resource)
+                                                setDeleteDialogOpen(true)
+                                            }}
                                         >
                                             Delete
                                         </Button>
@@ -186,6 +265,59 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Add Resource Dialog */}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>Add New Resource</DialogTitle>
+                        <DialogDescription>
+                            Add a new textbook, past paper, or study guide to the platform.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <AddResourceForm
+                        onClose={() => setIsAddDialogOpen(false)}
+                        onSuccess={() => {
+                            setIsAddDialogOpen(false)
+                            router.refresh()
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Resource Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>Edit Resource</DialogTitle>
+                    </DialogHeader>
+                    {editingResource && (
+                        <EditResourceForm
+                            resource={editingResource}
+                            onClose={() => setIsEditDialogOpen(false)}
+                            onSuccess={() => {
+                                setIsEditDialogOpen(false)
+                                router.refresh()
+                            }}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete this resource
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

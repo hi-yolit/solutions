@@ -2,7 +2,7 @@ import { getResources } from "@/actions/resources"
 import { ResourcesTable } from "@/components/admin/resources/resources-table"
 
 export default async function ResourcesPage() {
-  const { resources, error } = await getResources()
+  const { resources, error } = await getResources({})
 
   if (error) {
     return (

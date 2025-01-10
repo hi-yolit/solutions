@@ -23,8 +23,8 @@ const structuredStepSchema = z.object({
   content: z.string().min(1, "Step content is required"),
   explanation: z.string().optional(),
   marks: z.number().optional(),
-  tip: z.string().optional()
-});
+  hint: z.string().optional()
+})
 
 const structuredSolutionSchema = z.array(structuredStepSchema);
 
@@ -43,7 +43,9 @@ export function StructuredSolutionEditor({
       steps: initialData || [{
         title: "",
         content: "",
-        contentBlocks: []
+        explanation: "",
+        hint: "",
+        marks: undefined
       }]
     }
   });
@@ -80,7 +82,7 @@ export function StructuredSolutionEditor({
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} placeholder="Enter step title" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -105,39 +107,80 @@ export function StructuredSolutionEditor({
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name={`steps.${index}.marks`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Marks (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number"
-                          {...field}
-                          onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name={`steps.${index}.explanation`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Explanation (Optional)</FormLabel>
+                    <FormControl>
+                      <ContentEditor
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onImageAdd={() => {}}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name={`steps.${index}.hint`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hint (Optional)</FormLabel>
+                    <FormControl>
+                      <ContentEditor
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onImageAdd={() => {}}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name={`steps.${index}.marks`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Marks (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number"
+                        value={field.value || ''}
+                        onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                        placeholder="Enter marks"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </Card>
         ))}
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => append({ title: "", content: "", contentBlocks: [] })}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Step
-        </Button>
+        <div className="flex justify-between items-center">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => append({ 
+              title: "", 
+              content: "",
+              explanation: "",
+              hint: "",
+              marks: undefined
+            })}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Step
+          </Button>
 
-        <div className="flex justify-end">
           <Button type="submit">Save Solution</Button>
         </div>
       </form>

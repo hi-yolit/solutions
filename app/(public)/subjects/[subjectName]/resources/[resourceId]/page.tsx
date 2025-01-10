@@ -1,136 +1,105 @@
-// src/app/subjects/[subjectName]/resources/[resourceId]/page.tsx
+// app/resources/[resourceId]/page.tsx
+import { getResourceWithContent } from '@/actions/resources'
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BookOpen, FileText } from "lucide-react"
+import { ChapterAccordion } from '@/components/resources/chapter-accordion'
+import { ResourceType } from '@prisma/client'
+import { ResourceWithContent } from '@/types/resource'
+import Link from 'next/link'
+import { Book, BookOpen, ChevronLeft, FileText, Info } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
-const resourceData = {
-  id: '1',
-  title: 'Mind Action Series',
-  type: 'TEXTBOOK',
-  subject: 'Mathematics',
-  grade: 12,
-  curriculum: 'CAPS',
-  year: 2023,
-  publisher: 'Mind Action Series',
-  chapters: [
-    {
-      id: '1',
-      number: 1,
-      title: 'Sequences and Series',
-      exercises: [
-        {
-          id: '1',
-          title: 'Exercise 1.1',
-          questionCount: 8,
-          completedSolutions: 8
-        },
-        {
-          id: '2',
-          title: 'Exercise 1.2',
-          questionCount: 10,
-          completedSolutions: 6
-        }
-      ]
-    },
-    {
-      id: '2',
-      number: 2,
-      title: 'Functions',
-      exercises: [
-        {
-          id: '3',
-          title: 'Exercise 2.1',
-          questionCount: 12,
-          completedSolutions: 12
-        }
-      ]
-    }
-  ],
-  stats: {
-    totalQuestions: 180,
-    completedSolutions: 156,
-    expertContributors: 12
+interface PageProps {
+  params: {
+    resourceId: string
   }
 }
 
-export default function ResourcePage() {
-  return (
-    <div>
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h1 className="text-3xl font-bold">{resourceData.title}</h1>
-            <p className="text-gray-500 mt-2">
-              Grade {resourceData.grade} | {resourceData.year} | {resourceData.publisher}
-            </p>
-          </div>
-          <Badge>{resourceData.curriculum}</Badge>
-        </div>
+export default async function ResourcePage({ params }: PageProps) {
+  const { resource, error } = await getResourceWithContent(params.resourceId)
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold">{resourceData.stats.totalQuestions}</p>
-                <p className="text-sm text-gray-500">Total Questions</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold">{resourceData.stats.completedSolutions}</p>
-                <p className="text-sm text-gray-500">Available Solutions</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold">{resourceData.stats.expertContributors}</p>
-                <p className="text-sm text-gray-500">Expert Contributors</p>
-              </div>
-            </CardContent>
-          </Card>
+  if (error || !resource) {
+    return <div>Failed to load resource</div>
+  }
+
+  return (
+    <div className="py-8 px-4 max-w-[64rem] mx-auto">
+      {/* Top Section */}
+      <div className="flex items-start gap-6 mb-8">
+        <div className="w-[200px] h-[250px] bg-muted rounded-lg relative">
+          {resource.coverImage ? (
+            <Image
+              src={resource.coverImage}
+              alt={resource.title}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              {resource.type === ResourceType.TEXTBOOK ? (
+                <Book className="h-12 w-12 text-muted-foreground" />
+              ) : resource.type === ResourceType.PAST_PAPER ? (
+                <FileText className="h-12 w-12 text-muted-foreground" />
+              ) : (
+                <BookOpen className="h-12 w-12 text-muted-foreground" />
+              )}
+            </div>
+          )}
+        </div>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold mb-2">{resource.title}</h1>
+          <div className="text-muted-foreground space-y-1 mb-4">
+            {resource.type === ResourceType.TEXTBOOK ? (
+              <>
+                {resource.edition && <p>Edition: {resource.edition}</p>}
+                {resource.publisher && <p>ISBN: {resource.publisher}</p>}
+              </>
+            ) : (
+              <>
+                {resource.term && <p>Term {resource.term}</p>}
+                {resource.year && <p>Year: {resource.year}</p>}
+              </>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge>{resource.curriculum}</Badge>
+            <Badge variant="outline">Grade {resource.grade}</Badge>
+          </div>
+          <div className="flex items-center gap-4">
+            {resource.type === ResourceType.TEXTBOOK ? (
+              <>
+                <BookOpen className="h-5 w-5 text-primary" />
+                <span className="text-primary">View Textbook</span>
+              </>
+            ) : (
+              <>
+                <BookOpen className="h-5 w-5 text-primary" />
+                <span className="text-primary">View Questions</span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Chapters */}
-      <div className="grid gap-6">
-        {resourceData.chapters.map((chapter) => (
-          <Card key={chapter.id}>
-            <CardHeader>
-              <CardTitle>Chapter {chapter.number}: {chapter.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                {chapter.exercises.map((exercise) => (
-                  <div 
-                    key={exercise.id}
-                    className="border rounded-lg p-4 hover:bg-slate-50"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold">{exercise.title}</h3>
-                        <p className="text-sm text-gray-500">
-                          {exercise.completedSolutions} of {exercise.questionCount} solutions available
-                        </p>
-                      </div>
-                      <Button>
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        View Solutions
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Content Section */}
+      <div className="mb-8">
+        <div className="space-y-4">
+          {resource.chapters.map((chapter) => (
+            <ChapterAccordion
+              key={chapter.id}
+              chapter={chapter}
+              resourceType={resource.type}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        <Link href="/" className="text-primary flex items-center gap-2">
+          <ChevronLeft className="h-5 w-5" />
+          Back to Subjects
+        </Link>
       </div>
     </div>
   )

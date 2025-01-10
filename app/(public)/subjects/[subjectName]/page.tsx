@@ -1,127 +1,81 @@
-// src/app/subjects/[subjectName]/page.tsx
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CurriculumType } from "@/types"
+// app/subjects/[subjectName]/page.tsx
+import { getResources } from '@/actions/resources'
+import { ResourceType, CurriculumType } from "@prisma/client"
+import { ResourceList } from '@/components/subjects/resource-list'
+import { ResourceFilters } from '@/components/subjects/resource-filters'
+import { Pagination } from '@/components/pagination'
+import Link from 'next/link'
 
-interface SubjectPageProps {
+interface PageProps {
   params: {
     subjectName: string
   }
+  searchParams: {
+    page?: string
+    grade?: string
+    curriculum?: string
+    type?: string
+  }
 }
 
-// This would come from your database
-const subjectData = {
-  name: 'Mathematics',
-  curriculumType: 'CAPS' as CurriculumType,
-  grades: [12],
-  chapters: [
-    {
-      id: '1',
-      number: 1,
-      title: 'Sequences and Series',
-      topics: [
-        { id: '1', title: 'Arithmetic Sequences' },
-        { id: '2', title: 'Geometric Sequences' },
-      ]
-    },
-    {
-      id: '2',
-      number: 2,
-      title: 'Functions',
-      topics: [
-        { id: '3', title: 'Quadratic Functions' },
-        { id: '4', title: 'Exponential Functions' },
-      ]
-    }
-  ],
-  resources: [
-    {
-      id: '1',
-      type: 'TEXTBOOK',
-      title: 'Mind Action Series',
-      year: 2023
-    },
-    {
-      id: '2',
-      type: 'PAST_PAPER',
-      title: 'IEB Paper 1',
-      term: 2,
-      year: 2023
-    }
-  ]
-}
+export default async function SubjectPage({ params, searchParams }: PageProps) {
+  const page = Number(searchParams.page) || 1
+  const grade = searchParams.grade
+  const curriculum = searchParams.curriculum
+  const type = searchParams.type
 
-export default function SubjectPage({ params }: SubjectPageProps) {
+  const { resources, total, pages } = await getResources({
+    status: 'LIVE',
+    subject: decodeURIComponent(params.subjectName),
+    grade: grade ? Number(grade) : undefined,
+    curriculum: curriculum as CurriculumType,
+    type: type as ResourceType,
+    page: page,
+    limit: 15
+  }) || { resources: [], total: 0, pages: 0 }
+
+  // Available grades for this subject
+  const grades = [8, 9, 10, 11, 12]
+
+  function capitalizeSubject(subject: string): string {
+    return subject
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">{subjectData.name}</h1>
-        <Badge>{subjectData.curriculumType}</Badge>
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">
+        {capitalizeSubject(decodeURIComponent(params.subjectName))}
+        </h1>
       </div>
 
-      <Tabs defaultValue="chapters">
-        <TabsList>
-          <TabsTrigger value="chapters">Chapters</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
-        </TabsList>
+      <div className="space-y-6">
+        <ResourceFilters 
+          type={type}
+          grade={grade}
+          curriculum={curriculum}
+          grades={grades}
+          totalResults={total}
+          currentPage={page}
+        />
 
-        <TabsContent value="chapters">
-          <div className="grid gap-6">
-            {subjectData.chapters.map((chapter) => (
-              <Card key={chapter.id}>
-                <CardHeader>
-                  <CardTitle>
-                    Chapter {chapter.number}: {chapter.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-2">
-                    {chapter.topics.map((topic) => (
-                      <a 
-                        key={topic.id}
-                        href={`/subjects/${params.subjectName}/chapters/${chapter.id}/topics/${topic.id}`}
-                        className="p-2 hover:bg-slate-100 rounded-md"
-                      >
-                        {topic.title}
-                      </a>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+        <ResourceList 
+          resources={resources}
+          currentPage={page}
+        />
 
-        <TabsContent value="resources">
-          <div className="grid gap-6">
-            {subjectData.resources.map((resource) => (
-              <Card key={resource.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    {resource.title}
-                    <Badge>{resource.type}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  
-                  <a 
-                        key={resource.id}
-                        href={`/resources/${resource.id}`}
-                      >
-                      <p className="text-sm text-gray-500">
-                        {resource.type === 'PAST_PAPER' 
-                          ? `Term ${resource.term} - ${resource.year}`
-                          : resource.year
-                        }
-                      </p>
-                      </a>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+        {pages > 1 && (
+          <Pagination 
+            currentPage={page}
+            totalPages={pages}
+            baseUrl={`/subjects/${params.subjectName}`}
+            searchParams={searchParams}
+          />
+        )}
+      </div>
     </div>
   )
 }

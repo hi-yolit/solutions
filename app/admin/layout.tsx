@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { LayoutDashboard, Users, BookOpen, Shield } from "lucide-react"
-
+import 'katex/dist/katex.min.css'
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",

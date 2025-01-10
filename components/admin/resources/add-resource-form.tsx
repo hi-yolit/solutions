@@ -23,6 +23,7 @@ import {
 import { resourceFormSchema, type ResourceFormValues } from "@/lib/validations/resource"
 import { addResource } from "@/actions/resources"
 import { SubjectSelect } from './subject-autocomplete'
+import { ImageUpload } from "@/components/ui/image-upload"
 
 interface AddResourceFormProps {
     onClose: () => void
@@ -63,6 +64,23 @@ export function AddResourceForm({ onClose, onSuccess }: AddResourceFormProps) {
                             <FormLabel>Title</FormLabel>
                             <FormControl>
                                 <Input placeholder="Enter resource title" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="coverImage"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Cover Image</FormLabel>
+                            <FormControl>
+                                <ImageUpload
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

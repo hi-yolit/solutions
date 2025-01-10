@@ -14,13 +14,19 @@ interface TopicsSectionProps {
 }
 
 export function TopicsSection({ topics, resourceId, chapterId }: TopicsSectionProps) {
-  const [isAddTopicOpen, setIsAddTopicOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedTopic, setTopicChapter] = useState<Topic | undefined>()
+
+  const handleEdit = (topic: Topic) => {
+    setTopicChapter(topic)
+    setDialogOpen(true)
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold">Topics</h3>
-        <Button onClick={() => setIsAddTopicOpen(true)}>
+        <Button onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Topic
         </Button>
@@ -30,13 +36,15 @@ export function TopicsSection({ topics, resourceId, chapterId }: TopicsSectionPr
         topics={topics}
         resourceId={resourceId}
         chapterId={chapterId}
+        onEdit={handleEdit}
       />
 
       <AddTopicDialog
         resourceId={resourceId}
         chapterId={chapterId}
-        open={isAddTopicOpen}
-        onOpenChange={setIsAddTopicOpen}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        topic={selectedTopic}
       />
     </div>
   )

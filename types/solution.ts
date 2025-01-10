@@ -1,43 +1,50 @@
-export type QuestionType = 'MCQ' | 'STRUCTURED' | 'ESSAY' | 'PROOF';
+// types/solution.ts
+import { Prisma, SolutionType } from "@prisma/client"
+
+export type QuestionType = SolutionType
+
+export interface SolutionContent extends Prisma.JsonObject {
+  type: QuestionType;
+  content: MCQSolution | StructuredStep[] | EssayOutlinePoint[] | ProofStep[];
+  [key: string]: any; // Add index signature for Prisma JsonObject compatibility
+}
+
+export interface QuestionContent extends Prisma.JsonObject {
+  mainQuestion: string;
+  marks?: number | null;
+  subQuestions?: {
+    type: QuestionType;
+    part: string;
+    text: string;
+    marks: number | null;
+  }[];
+  [key: string]: any; // Add index signature for Prisma JsonObject compatibility
+}
 
 export interface ContentBlock {
   type: 'text' | 'image';
   content: string;
-  imageData?: ImageData;
-}
-
-export interface ImageData {
-  url: string;
-  caption?: string;
-  position: 'above' | 'below' | 'inline';
+  imageData?: {
+    url: string;
+    caption?: string;
+    position: 'above' | 'below' | 'inline';
+  };
 }
 
 // MCQ Solution Types
-export interface MCQOption {
-  id: string;
-  label: string;
-  content: string;
-  explanation?: string;
-}
-
-export interface DistractorExplanation {
-  option: string;
-  explanation: string;
-}
-
 export interface MCQSolution {
   correctOption: string;
   explanation: string;
-  distractorExplanations?: DistractorExplanation[];
-  options?: MCQOption[];
-  tip?: string;
-}
-
-// Form specific type
-export interface MCQFormValues {
-  options: MCQOption[];
-  correctOptionId: string;
-  explanation: string;
+  options: {
+    id: string;
+    label: string;
+    content: string;
+    explanation?: string;
+  }[];
+  distractorExplanations: {
+    option: string;
+    explanation: string;
+  }[];
   tip?: string;
 }
 
@@ -45,10 +52,9 @@ export interface MCQFormValues {
 export interface StructuredStep {
   title: string;
   content: string;
-  contentBlocks: ContentBlock[];
   explanation?: string;
   marks?: number;
-  tip?: string;
+  hint?: string;
 }
 
 // Essay Solution Types
@@ -66,8 +72,7 @@ export interface ProofStep {
   title: string;
   statement: string;
   justification: string;
-  latex?: string;
-  tip?: string;
+  hint?: string;
 }
 
 export interface SolutionContent {
@@ -75,10 +80,36 @@ export interface SolutionContent {
   content: MCQSolution | StructuredStep[] | EssayOutlinePoint[] | ProofStep[];
 }
 
+export interface DBSolution {
+  id: string;
+  questionId: string
+  content: Prisma.JsonValue;
+}
+
+export interface SubQuestionSolution {
+  part: string;
+  solution: SolutionContent;
+}
+
 export interface SolutionData {
   id?: string;
   questionId: string;
-  expertId: string;
-  solution: SolutionContent;
-  verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  mainSolution?: SolutionContent;
+  subSolutions?: SubQuestionSolution[];
+}
+
+export interface QuestionWithSolution {
+  id: string;
+  type: QuestionType;
+  content: {
+    mainQuestion: string;
+    marks?: number;
+    subQuestions?: {
+      part: string;
+      type: QuestionType;
+      text: string;
+      marks: number | null;
+    }[];
+  };
+  solutions: SolutionData[];
 }

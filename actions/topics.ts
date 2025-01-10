@@ -1,6 +1,7 @@
 'use server'
 
 import prisma from '@/lib/prisma'
+import { TopicFormValues } from '@/lib/validations/topic'
 import { revalidatePath } from 'next/cache'
 
 export async function getChapterWithTopics(chapterId: string) {
@@ -15,6 +16,9 @@ export async function getChapterWithTopics(chapterId: string) {
                                 questions: true
                             }
                         }
+                    },
+                    orderBy: {
+                      number: 'asc'
                     }
                 }
             }
@@ -43,3 +47,30 @@ export async function addTopic(chapterId: string, data: { number: string; title?
         return { error: 'Failed to create topic' }
     }
 }
+
+export async function deleteTopic(topicId: string) {
+    try {
+        await prisma.topic.delete({
+            where: { id: topicId }
+        })
+        return { success: true }
+    } catch (error) {
+        return { error: "Failed to delete chapter" }
+    }
+}
+
+
+export async function updateTopic(topicId: string, data: TopicFormValues) {
+    try {
+      const chapter = await prisma.topic.update({
+        where: { id: topicId },
+        data: {
+          number: data.number,
+          title: data.title
+        }
+      })
+      return { chapter }
+    } catch (error) {
+      return { error: "Failed to update chapter" }
+    }
+  }

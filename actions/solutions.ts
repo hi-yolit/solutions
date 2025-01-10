@@ -1,0 +1,121 @@
+"use server"
+
+import prisma from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
+import { SolutionData, QuestionContent } from '@/types/solution'
+import { Prisma } from '@prisma/client'
+
+export async function getQuestionWithSolutions(questionId: string) {
+  try {
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+      include: {
+        solutions: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
+      }
+    })
+
+    return { 
+      question: question ? {
+        ...question,
+        content: question.content as QuestionContent
+      } : null
+    }
+  } catch (error) {
+    console.error('Failed to fetch question:', error)
+    return { error: 'Failed to fetch question' }
+  }
+}
+
+export async function createSolution(data: SolutionData) {
+  console.log('Creating solution with data:', JSON.stringify(data, null, 2));
+  try {
+    // Get or create admin user for testing
+    const admin = await prisma.user.upsert({
+      where: {
+        email: 'admin@solutions.com'
+      },
+      update: {},
+      create: {
+        email: 'admin@solutions.com',
+        password: 'admin',  // In production, use proper hashing
+        fullName: 'Admin',
+        role: 'ADMIN',
+        isVerified: true
+      }
+    })
+
+    const solutionContent = {
+      mainSolution: data.mainSolution,
+      subSolutions: data.subSolutions
+    }
+
+    const solution = await prisma.solution.create({
+      data: {
+        question: { connect: { id: data.questionId } },
+        admin: { connect: { id: admin.id } },
+        content: solutionContent as Prisma.InputJsonValue,
+        metrics: { views: 0, helpfulVotes: 0 } as Prisma.InputJsonValue,
+        steps: []
+      }
+    })
+
+    revalidatePath(`/admin/resources/*/chapters/*/questions/${data.questionId}`)
+    return { solution }
+  } catch (error) {
+    console.error('Failed to create solution:', error)
+    return { error: 'Failed to create solution' }
+  }
+}
+
+export async function updateSolution(solutionId: string, data: Partial<SolutionData>) {
+  console.log('Updating solution with data:', JSON.stringify(data, null, 2));
+  try {
+    const solutionContent = {
+      mainSolution: data.mainSolution,
+      subSolutions: data.subSolutions
+    }
+
+    const solution = await prisma.solution.update({
+      where: { id: solutionId },
+      data: {
+        admin: { connect: { id: "cm5phsqbc00045fedj59to2vl" } },
+        content: solutionContent as Prisma.InputJsonValue,
+      }
+    })
+
+    revalidatePath(`/admin/resources/*/chapters/*/questions/${data.questionId}`)
+    return { solution }
+  } catch (error) {
+    console.error('Failed to update solution:', error)
+    return { error: 'Failed to update solution' }
+  }
+}
+
+export async function recordSolutionView(solutionId: string) {
+  try {
+    
+
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to record view:', error)
+    return { error: 'Failed to record view' }
+  }
+}
+
+export async function voteSolutionHelpful(solutionId: string) {
+  try {
+
+
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to record vote:', error)
+    return { error: 'Failed to record vote' }
+  }
+}

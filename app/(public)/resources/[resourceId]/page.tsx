@@ -1,74 +1,72 @@
-// src/app/resources/[resourceId]/page.tsx
+// app/resources/[resourceId]/page.tsx
+import { getResourceWithContent } from '@/actions/resources'
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ChapterAccordion } from '@/components/resources/chapter-accordion'
+import { ResourceType } from '@prisma/client'
+import { ResourceWithContent } from '@/types/resource'
+import Link from 'next/link'
+import { ChevronLeft } from 'lucide-react'
 
-// This would come from your database
-const resourceData = {
-  id: '1',
-  type: 'TEXTBOOK',
-  title: 'Mind Action Series Mathematics',
-  subject: 'Mathematics',
-  grade: 12,
-  year: 2023,
-  curriculum: 'CAPS',
-  chapters: [
-    {
-      id: '1',
-      number: 1,
-      title: 'Sequences and Series',
-      questions: [
-        { id: '1', number: '1.1', type: 'STRUCTURED', hasAnswer: true },
-        { id: '2', number: '1.2', type: 'MCQ', hasAnswer: true },
-      ]
-    }
-  ]
+interface PageProps {
+  params: {
+    resourceId: string
+  }
 }
 
-export default function ResourcePage() {
+export default async function ResourcePage({ params }: PageProps) {
+  const { resource, error } = await getResourceWithContent(params.resourceId)
+
+  if (error || !resource) {
+    return <div>Failed to load resource</div>
+  }
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">{resourceData.title}</h1>
-          <p className="text-gray-500 mt-2">
-            Grade {resourceData.grade} | {resourceData.year}
-          </p>
-        </div>
-        <Badge>{resourceData.curriculum}</Badge>
+    <div className="max-w-4xl mx-auto py-8 px-4">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+        <Link href={`/subjects/${resource.subject.toLowerCase()}`} 
+          className="hover:text-foreground"
+        >
+          {resource.subject}
+        </Link>
+        <span>/</span>
+        <span>
+          {resource.type === ResourceType.TEXTBOOK ? 'Textbook solutions' : 'Past Paper'}
+        </span>
       </div>
 
-      <div className="grid gap-6">
-        {resourceData.chapters.map((chapter) => (
-          <Card key={chapter.id}>
-            <CardHeader>
-              <CardTitle>
-                Chapter {chapter.number}: {chapter.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-2">
-                {chapter.questions.map((question) => (
-                  <div 
-                    key={question.id}
-                    className="flex items-center justify-between p-2 hover:bg-slate-100 rounded-md"
-                  >
-                    <span>Question {question.number}</span>
-                    <div className="flex gap-2">
-                      <Badge variant="outline">{question.type}</Badge>
-                      {question.hasAnswer && (
-                        <a 
-                          href={`/solutions/${question.id}`}
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          View Solution
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+      {/* Title Section */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold mb-2">{resource.title}</h1>
+        {resource.type === ResourceType.TEXTBOOK ? (
+          <div className="text-muted-foreground space-y-1">
+            {resource.edition && <p>{resource.edition} Edition</p>}
+            {resource.publisher && <p>ISBN: {resource.publisher}</p>}
+          </div>
+        ) : (
+          <div className="text-muted-foreground">
+            {resource.term && <p>Term {resource.term}</p>}
+            {resource.year && <p>{resource.year}</p>}
+          </div>
+        )}
+      </div>
+
+      {/* Content Tabs */}
+      <div className="mb-6 flex items-center gap-2 border-b">
+        <div className="px-4 py-2 border-b-2 border-primary">
+          {resource.type === ResourceType.TEXTBOOK ? 'Textbook solutions' : 'Questions'} 
+          <Badge variant="secondary" className="ml-2">Verified</Badge>
+        </div>
+      </div>
+
+      {/* Chapters List */}
+      <div className="space-y-1">
+        {resource.chapters.map((chapter) => (
+          <ChapterAccordion 
+            key={chapter.id}
+            chapter={chapter}
+            resourceType={resource.type}
+          />
         ))}
       </div>
     </div>

@@ -19,21 +19,17 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { addTopic } from "@/actions/topics"
+import { addTopic, updateTopic } from "@/actions/topics"
 import { useToast } from "@/hooks/use-toast"
-
-const topicFormSchema = z.object({
-  number: z.string().min(1, "Topic number is required"),
-  title: z.string().optional(),
-})
-
-type TopicFormValues = z.infer<typeof topicFormSchema>
+import { Topic } from "@prisma/client"
+import { topicFormSchema, TopicFormValues } from "@/lib/validations/topic"
 
 interface AddTopicDialogProps {
   resourceId: string
   chapterId: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  topic?: Topic
 }
 
 export function AddTopicDialog({
@@ -41,8 +37,10 @@ export function AddTopicDialog({
   chapterId,
   open,
   onOpenChange,
+  topic
 }: AddTopicDialogProps) {
   const { toast } = useToast()
+  const isEdit = !!topic
   
   const form = useForm<TopicFormValues>({
     resolver: zodResolver(topicFormSchema),
@@ -54,8 +52,15 @@ export function AddTopicDialog({
 
   async function onSubmit(data: TopicFormValues) {
     try {
-      const result = await addTopic(chapterId, data)
-      
+      let result;
+      console.log(data)
+
+      if (isEdit && topic) {
+        result = await updateTopic(topic.id, data)
+      } else {
+        result = await addTopic(chapterId, data)
+      }
+
       if (result.error) {
         toast({
           title: "Error",
@@ -67,7 +72,7 @@ export function AddTopicDialog({
 
       toast({
         title: "Success",
-        description: "Topic added successfully",
+        description: isEdit ? "Topic updated successfully" : "Topic added successfully"
       })
       onOpenChange(false)
       form.reset()

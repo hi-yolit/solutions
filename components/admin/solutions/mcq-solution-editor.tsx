@@ -1,6 +1,6 @@
 "use client"
 
-import { useFieldArray, useForm, FieldValues } from "react-hook-form"
+import { useFieldArray, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ import { Plus, Trash2, Check } from "lucide-react"
 import { MCQSolution } from '@/types/solution'
 import { ContentEditor } from './content-editor'
 import Latex from 'react-latex-next'
+import { useEffect } from "react"
 
 // Define the shape of an option
 interface MCQOption {
@@ -32,7 +33,7 @@ interface MCQOption {
 // Define the form values type
 interface MCQFormValues {
   options: MCQOption[];
-  correctOptionId: string;
+  correctOptionLabel: string;
   explanation: string;
   tip?: string;
 }
@@ -44,7 +45,7 @@ const mcqSchema = z.object({
     content: z.string().min(1, "Option content is required"),
     explanation: z.string().optional(),
   })).min(2, "At least two options are required"),
-  correctOptionId: z.string().min(1, "Correct option is required"),
+  correctOptionLabel: z.string().min(1, "Correct option is required"),
   explanation: z.string().min(1, "Main explanation is required"),
   tip: z.string().optional(),
 });
@@ -59,10 +60,20 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
     resolver: zodResolver(mcqSchema),
     defaultValues: {
       options: initialData?.options || [
-        { id: '1', label: 'A', content: '', explanation: '' },
-        { id: '2', label: 'B', content: '', explanation: '' }
+        {
+          id: crypto.randomUUID(),
+          label: 'A',
+          content: '',
+          explanation: ''
+        },
+        {
+          id: crypto.randomUUID(),
+          label: 'B',
+          content: '',
+          explanation: ''
+        }
       ],
-      correctOptionId: '',
+      correctOptionLabel: initialData?.correctOption || 'A',
       explanation: initialData?.explanation || '',
       tip: initialData?.tip || ''
     }
@@ -73,32 +84,45 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
     name: "options",
   });
 
-  const correctOptionId = form.watch('correctOptionId');
+  const handleAddOption = () => {
+    const newOptionLabel = String.fromCharCode(65 + fields.length);
+    append({
+      id: crypto.randomUUID(),
+      label: newOptionLabel,
+      content: '',
+      explanation: ''
+    });
+  };
 
   const handleSubmit = async (data: MCQFormValues) => {
-    const correctOption = data.options.find(opt => opt.id === data.correctOptionId);
-    
-    if (!correctOption) {
-      form.setError('correctOptionId', {
-        message: "Please select the correct option"
-      });
-      return;
+    try {
+      // Find the correct option
+      const correctOption = data.options.find(opt => opt.label === data.correctOptionLabel);
+      
+      if (!correctOption) {
+        form.setError('correctOptionLabel', {
+          message: "Please select a valid correct option"
+        });
+        return;
+      }
+
+      const solution: MCQSolution = {
+        options: data.options,
+        correctOption: data.correctOptionLabel,
+        explanation: data.explanation,
+        distractorExplanations: data.options
+          .filter(opt => opt.label !== data.correctOptionLabel)
+          .map(opt => ({
+            option: opt.label,
+            explanation: opt.explanation || ''
+          })),
+        tip: data.tip
+      };
+
+      await onSave(solution);
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
     }
-
-    const solution: MCQSolution = {
-      correctOption: correctOption.label,
-      explanation: data.explanation,
-      options: data.options,
-      distractorExplanations: data.options
-        .filter(opt => opt.id !== data.correctOptionId)
-        .map(opt => ({
-          option: opt.label,
-          explanation: opt.explanation || ''
-        })),
-      tip: data.tip
-    };
-
-    await onSave(solution);
   };
 
   return (
@@ -112,12 +136,8 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => append({
-                  id: String(fields.length + 1),
-                  label: String.fromCharCode(65 + fields.length),
-                  content: '',
-                  explanation: ''
-                })}
+                onClick={handleAddOption}
+                disabled={fields.length >= 6}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Option
@@ -126,10 +146,14 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
 
             <div className="space-y-4">
               {fields.map((field, index) => (
-                <div key={field.id} 
-                  className={`border rounded-lg p-4 space-y-4 ${
-                    field.id === correctOptionId ? 'border-green-500 bg-green-50' : ''
-                  }`}
+                <div 
+                  key={field.id}
+                  className={`
+                    border rounded-lg p-4 space-y-4 
+                    ${form.watch('correctOptionLabel') === field.label 
+                      ? 'border-green-500 bg-green-50' 
+                      : 'border-gray-200'}
+                  `}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -140,13 +164,13 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                           render={({ field: labelField }) => (
                             <FormItem className="flex-shrink-0">
                               <FormControl>
-                                <Input {...labelField} placeholder="e.g., A" className="w-20" />
+                                <Input {...labelField} placeholder="e.g., A" className="w-20" readOnly />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        {field.id === correctOptionId && (
+                        {form.watch('correctOptionLabel') === field.label && (
                           <Badge className="bg-green-500">
                             <Check className="h-3 w-3 mr-1" />
                             Correct Answer
@@ -154,11 +178,17 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                         )}
                         <Button
                           type="button"
-                          variant={field.id === correctOptionId ? "secondary" : "outline"}
+                          variant={
+                            form.watch('correctOptionLabel') === field.label 
+                              ? "secondary" 
+                              : "outline"
+                          }
                           size="sm"
-                          onClick={() => form.setValue('correctOptionId', field.id)}
+                          onClick={() => form.setValue('correctOptionLabel', field.label)}
                         >
-                          {field.id === correctOptionId ? 'Correct Answer' : 'Set as Correct'}
+                          {form.watch('correctOptionLabel') === field.label 
+                            ? 'Correct Answer' 
+                            : 'Set as Correct'}
                         </Button>
                       </div>
 
@@ -172,7 +202,7 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                               <ContentEditor
                                 value={contentField.value}
                                 onChange={contentField.onChange}
-                                onImageAdd={() => {}}
+                                onImageAdd={() => { }}
                               />
                             </FormControl>
                             <FormMessage />
@@ -190,7 +220,7 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                               <ContentEditor
                                 value={explanationField.value || ''}
                                 onChange={explanationField.onChange}
-                                onImageAdd={() => {}}
+                                onImageAdd={() => { }}
                               />
                             </FormControl>
                             <FormMessage />
@@ -226,7 +256,7 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                   <ContentEditor
                     value={field.value}
                     onChange={field.onChange}
-                    onImageAdd={() => {}}
+                    onImageAdd={() => { }}
                   />
                 </FormControl>
                 <FormMessage />
