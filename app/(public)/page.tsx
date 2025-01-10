@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { BookOpen, CheckCircle2, BookCheck } from 'lucide-react'
 import { SubjectResources } from '@/components/subject-resources'
 import { Resource } from '@prisma/client'
+import { SearchBox } from '@/components/search-box'
 
 export default async function Home() {
   const { subjects } = await getSuggestedSubjects()
@@ -23,8 +24,7 @@ export default async function Home() {
   }, {} as Record<string, Resource[]>);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      {/* Hero Section */}
+    <div className="max-w-[64rem] mx-auto px-4 py-12">
       <div className="text-center mb-12">
         <h1 className="text-5xl font-bold mb-4">
           Find textbook solutions you can trust
@@ -35,28 +35,7 @@ export default async function Home() {
         
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-8">
-          <div className="relative">
-            <Input 
-              placeholder="Search textbooks, ISBNs, questions..." 
-              className="h-12 pl-12"
-            />
-            <span className="absolute left-4 top-3.5 text-gray-400">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-            </span>
-          </div>
+          <SearchBox />
         </div>
       </div>
 
