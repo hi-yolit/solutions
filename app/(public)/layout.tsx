@@ -3,6 +3,7 @@ import "../globals.css";
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
 import 'katex/dist/katex.min.css'
+import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,6 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <NextTopLoader />
       <body
       >
         <div className="min-h-screen flex flex-col">
