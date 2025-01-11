@@ -36,17 +36,27 @@ export function QuestionViewer({
 
       {subQuestions && subQuestions.length > 0 && (
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6 bg-red-600">
             {subQuestions.map((sq) => (
-              <div key={sq.part} className="pl-4 border-l-2 border-muted">
+              <div key={sq.part} className="pl-2 border-l-2 border-muted">
                 <div className="flex items-start gap-4">
-                  <Badge variant="outline">{sq.part}</Badge>
+                  {/* <Badge variant="outline">{sq.part}</Badge> */}
+
+                  {/* Question number: 1.1.1 */}
+                  <div className="text-sm">{sq.part}</div>
+
+                  {/* Question Content */}
                   <div className="flex-1 space-y-2">
                     <div className="prose max-w-none">
                       <Latex>{sq.text}</Latex>
                     </div>
+                  </div>
+
+                  {/* Question Marks */}
+
+                  <div>
                     {sq.marks && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {sq.marks} marks
                       </p>
                     )}
@@ -58,5 +68,5 @@ export function QuestionViewer({
         </CardContent>
       )}
     </Card>
-  )
+  );
 }

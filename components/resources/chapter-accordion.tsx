@@ -46,7 +46,7 @@ export function ChapterAccordion({ chapter, resourceType }: ChapterAccordionProp
   )
 
   const renderPastPaperContent = () => (
-    <div className="border-t p-4">
+    <div className="border-t p-2 bg-green-600">
       <div className="grid grid-cols-2 gap-x-8 gap-y-2">
         {chapter.questions
           .map((question) => (
@@ -66,7 +66,7 @@ export function ChapterAccordion({ chapter, resourceType }: ChapterAccordionProp
   return (
     <div className="border rounded-lg">
       <button 
-        className="w-full px-1 py-4 text-left flex items-center justify-between hover:bg-accent transition-colors"
+        className="w-full px-2 py-4 text-left flex items-center justify-between hover:bg-accent transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-baseline gap-1">

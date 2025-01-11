@@ -39,7 +39,7 @@ export default async function ResourcePage({ params }: PageProps) {
       />
 
       {/* Main Content */}
-      <div className="container max-w-[64rem] mx-auto py-4 md:py-8">
+      <div className="container max-w-[64rem] mx-auto py-4 md:py-8 space-y-4">
         {/* Resource Header */}
         <div>
           <div className="vertical-padding">
@@ -102,10 +102,10 @@ export default async function ResourcePage({ params }: PageProps) {
             {/* Details */}
             <div className="flex-1 w-full">
               <div className="py-4 md:py-8">
-                <p className="text-muted-foreground text-sm md:text-md">
+                <p className="text-muted-foreground text-xs md:text-sm">
                   {resource.type === ResourceType.TEXTBOOK
                     ? `Complete solutions for ${resource.title}. Access step-by-step solutions to exercises, examples, and practice problems.`
-                    : `Detailed solutions for ${resource.title}. Access comprehensive solutions with detailed explanations and working.`}
+                    : `Detailed solutions. Access comprehensive solutions with detailed explanations and working.`}
                 </p>
               </div>
 
@@ -141,14 +141,14 @@ export default async function ResourcePage({ params }: PageProps) {
         </div>
 
         {/* Resource Content */}
-        <div className="mt-12 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">
+        <div className="space-y-4 vertical-padding">
+          {/* <div className="flex items-center justify-between">
+            <h2 className="text-md font-semibold">
               {resource.type === ResourceType.TEXTBOOK
                 ? "Table of Contents"
-                : "Questions"}
+                : "Memo Explanations"}
             </h2>
-          </div>
+          </div> */}
 
           {resource.chapters.length > 0 ? (
             <div className="space-y-4">

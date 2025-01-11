@@ -19,6 +19,11 @@ export function SolutionPageContent({
 
   return (
     <div className="space-y-8">
+      {/* TODO */}
+      {/* An expladable bread crum */}
+      {/* 2024 / Q1 / 1.1 / 1.1.1 => Q1 and 1.1. you can navigate tp nat oter uwatrions*/}
+      {/* Each and every question its an accordin with a solution, opening one clappases and opsn others */}
+      <p>Bread Crum</p>
       <QuestionViewer 
         mainQuestion={questionContent.mainQuestion}
         marks={questionContent.marks}
