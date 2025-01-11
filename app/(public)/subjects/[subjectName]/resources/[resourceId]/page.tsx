@@ -48,20 +48,27 @@ export default async function ResourcePage({ params }: PageProps) {
                 {/* Title & Basic Info */}
                 <div className="gap-4 space-y-1">
                   <div className="flex flex-wrap items-center gap-x-2 text-xs font-bold text-blue-500 md:text-base">
-                    <span>{resource.year ? ` ${resource.year}` : ""}</span>
-                    <span>•</span>
+                    {resource.type === ResourceType.PAST_PAPER && (
+                      <div>
+                        <span>
+                          {resource.term ? `Term ${resource.term}` : ""}
+                          {resource.year ? ` ${resource.year}•` : ""}
+                        </span>
+                      </div>
+                    )}
+
                     <span>{resource.subject.toLocaleUpperCase()}</span>
                     <span>•</span>
                     <span>GR {resource.grade}</span>
-                    {resource.type === "TEXTBOOK" && resource.publisher && (
+                    {resource.type === "TEXTBOOK" ? (
                       <>
                         <span>•</span>
-                        <span>{resource.publisher}</span>
+                        <span>TEXTBOOK</span>
                       </>
-                    )}
+                    ) : null} 
                   </div>
 
-                  <h1 className="text-2xl text-pretty font-semibold tracking-tight md:text-3xl lg:text-4xl">
+                  <h1 className="text-2xl text-pretty font-semibold md:text-3xl lg:text-4xl">
                     {resource.title}
                   </h1>
                 </div>
