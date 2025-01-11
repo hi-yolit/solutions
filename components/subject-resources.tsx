@@ -32,7 +32,11 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
             key={subject}
             onClick={() => setActiveSubject(subject)}
             className={`text-sm hover:text-primary transition-colors whitespace-nowrap
-              ${subject === activeSubject ? 'text-primary border-b-2 border-primary pb-4 -mb-4' : 'text-muted-foreground'}`}
+              ${
+                subject === activeSubject
+                  ? "text-primary border-b-2 border-primary pb-4 -mb-4"
+                  : "text-muted-foreground"
+              }`}
           >
             {subject}
           </button>
@@ -42,7 +46,9 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
         {resourcesBySubject[activeSubject]?.map((resource) => (
           <Link
-            href={`/subjects/${resource.subject?.toLowerCase()}/resources/${resource.id}`}
+            href={`/subjects/${resource.subject?.toLowerCase()}/resources/${
+              resource.id
+            }`}
             key={resource.id}
             className="block"
           >
@@ -68,25 +74,38 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
                     )}
                   </div>
                 )}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{resource.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {resourceTypeLabels[resource.type]}
-                    {resource.type === ResourceType.TEXTBOOK && resource.edition && (
-                      <> • Edition: {resource.edition}</>
-                    )}
-                    {resource.type === ResourceType.TEXTBOOK && resource.publisher && (
-                      <> • Publisher: {resource.publisher}</>
-                    )}
-                    {(resource.type === ResourceType.PAST_PAPER || resource.type === ResourceType.STUDY_GUIDE) && resource.year && (
-                      <> • Year: {resource.year} {resource.term && ` • Term ${resource.term}`}</>
-                    )}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-1 h-full w-full flex-col items-between space-y-2">
+                  <div className='space-y-2'>
+                    <h3 className="font-semibold text-sm lg:text-lg mb-1">
+                      {resource.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {resourceTypeLabels[resource.type]}
+                      {resource.type === ResourceType.TEXTBOOK &&
+                        resource.edition && <> • Edition: {resource.edition}</>}
+                      {resource.type === ResourceType.TEXTBOOK &&
+                        resource.publisher && (
+                          <> • Publisher: {resource.publisher}</>
+                        )}
+                      {(resource.type === ResourceType.PAST_PAPER ||
+                        resource.type === ResourceType.STUDY_GUIDE) &&
+                        resource.year && (
+                          <>
+                            {" "}
+                            • Year: {resource.year}{" "}
+                            {resource.term && ` • Term ${resource.term}`}
+                          </>
+                        )}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
                     <Badge>{resource.curriculum}</Badge>
                     <Badge variant="outline">Grade {resource.grade}</Badge>
                   </div>
-                  <div className="flex items-center text-primary">
+
+               {/* TODO Replace with a count for number of solutions provided with a verification badge */}
+                  {/* <div className="flex items-center text-primary">
                     {resource.type === ResourceType.TEXTBOOK ? (
                       <>
                         <BookOpen className="h-4 w4 mr-2" />
@@ -98,7 +117,7 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
                         <span className="text-sm">View Questions</span>
                       </>
                     )}
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </Card>
@@ -106,7 +125,7 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
         ))}
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 bg-green-400">
         <Link href={`/subjects/${activeSubject?.toLowerCase()}`}>
           <Button variant="outline" className="w-full">
             View all in {activeSubject}
@@ -129,5 +148,5 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
         </Link>
       </div>
     </div>
-  )
+  );
 }
