@@ -9,6 +9,7 @@ import { LayoutDashboard, Users, BookOpen, Layout } from "lucide-react";
 import 'katex/dist/katex.min.css'
 import { Suspense } from "react";
 import Loading from "./loading";
+import NextTopLoader from "nextjs-toploader";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -54,39 +55,43 @@ export default function AdminLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NextTopLoader />
         <Layout>
-          <Suspense fallback={<Loading />}> 
-          <div className="h-full relative">
-            <div className="hidden h-full md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 border-r bg-background">
-              <div className="space-y-4 py-4 flex flex-col h-full">
-                <div className="px-3 py-2 flex-1">
-                  <Link href="/admin" className="flex items-center pl-3 mb-14">
-                    <h1 className="text-xl font-bold">Admin Panel</h1>
-                  </Link>
-                  <div className="space-y-1">
-                    {routes.map((route) => (
-                      <Link
-                        key={route.href}
-                        href={route.href}
-                        className={cn(
-                          "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-lg transition",
-                          pathname === route.href
-                            ? "bg-accent text-accent-foreground"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        <div className="flex items-center flex-1">
-                          <route.icon className="h-5 w-5 mr-3" />
-                          {route.label}
-                        </div>
-                      </Link>
-                    ))}
+          <Suspense fallback={<Loading />}>
+            <div className="h-full relative">
+              <div className="hidden h-full md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 border-r bg-background">
+                <div className="space-y-4 py-4 flex flex-col h-full">
+                  <div className="px-3 py-2 flex-1">
+                    <Link
+                      href="/admin"
+                      className="flex items-center pl-3 mb-14"
+                    >
+                      <h1 className="text-xl font-bold">Admin Panel</h1>
+                    </Link>
+                    <div className="space-y-1">
+                      {routes.map((route) => (
+                        <Link
+                          key={route.href}
+                          href={route.href}
+                          className={cn(
+                            "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-lg transition",
+                            pathname === route.href
+                              ? "bg-accent text-accent-foreground"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          <div className="flex items-center flex-1">
+                            <route.icon className="h-5 w-5 mr-3" />
+                            {route.label}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
+              <main className="md:pl-72 h-full">{children}</main>
             </div>
-            <main className="md:pl-72 h-full">{children}</main>
-          </div>
           </Suspense>
         </Layout>
       </body>
