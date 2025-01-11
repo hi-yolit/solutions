@@ -8,7 +8,7 @@ import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@
 import { Loader2, Search, Book, FileText, HelpCircle, X } from 'lucide-react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { searchResources } from '@/actions/search'
-import type { Resource, Question, Chapter, ResourceType } from '@prisma/client'
+import type { Resource, Question, Chapter } from '@prisma/client'
 
 interface SearchResults {
   resources: Array<Resource & {
@@ -29,10 +29,10 @@ interface SearchResults {
   currentPage: number
 }
 
-interface SearchError {
-  error: string
-  details?: string
-}
+// interface SearchError {
+//   error: string
+//   details?: string
+// }
 
 const initialSearchState: SearchResults = {
   resources: [],

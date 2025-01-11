@@ -61,7 +61,7 @@ const ResponsiveBreadcrumb = ({ resource }: ResourceBreadcrumbProps) => {
   ];
 
   return (
-    <div className="border-b bg-blue-400">
+    <div className="border-b text-slate-500">
       <div className="container mx-auto px-3 sm:px-4 max-w-4xl">
         <div className="py-3 sm:py-4">
           <Breadcrumb>
@@ -69,7 +69,7 @@ const ResponsiveBreadcrumb = ({ resource }: ResourceBreadcrumbProps) => {
               <BreadcrumbItem>
                 <BreadcrumbLink
                   asChild
-                  className="text-white/70 hover:text-white transition-colors"
+                  className="text-slate-500 hover:text-slate-500 transition-colors"
                 >
                   <Link href={items[0].href}>{items[0].label}</Link>
                 </BreadcrumbLink>
@@ -82,7 +82,7 @@ const ResponsiveBreadcrumb = ({ resource }: ResourceBreadcrumbProps) => {
                     {isDesktop ? (
                       <DropdownMenu open={open} onOpenChange={setOpen}>
                         <DropdownMenuTrigger
-                          className="flex items-center gap-1 text-white/70"
+                          className="flex items-center gap-1 text-slate-500"
                           aria-label="Toggle menu"
                         >
                           <BreadcrumbEllipsis className="h-4 w-4" />
@@ -101,7 +101,7 @@ const ResponsiveBreadcrumb = ({ resource }: ResourceBreadcrumbProps) => {
                       <Drawer open={open} onOpenChange={setOpen}>
                         <DrawerTrigger
                           aria-label="Toggle Menu"
-                          className="text-white/70"
+                          className="text-slate-500"
                         >
                           <BreadcrumbEllipsis className="h-4 w-4" />
                         </DrawerTrigger>
@@ -142,14 +142,14 @@ const ResponsiveBreadcrumb = ({ resource }: ResourceBreadcrumbProps) => {
                     <>
                       <BreadcrumbLink
                         asChild
-                        className="text-white/70 hover:text-white transition-colors max-w-20 truncate md:max-w-none"
+                        className="text-slate-500/70 hover:text-slate-500 transition-colors max-w-20 truncate md:max-w-none"
                       >
                         <Link href={item.href}>{item.label}</Link>
                       </BreadcrumbLink>
                       <BreadcrumbSeparator />
                     </>
                   ) : (
-                    <BreadcrumbPage className="text-white max-w-20 truncate md:max-w-none">
+                    <BreadcrumbPage className="text-slate-500 max-w-20 truncate md:max-w-none">
                       {item.label}
                     </BreadcrumbPage>
                   )}

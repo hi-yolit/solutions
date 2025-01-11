@@ -31,7 +31,7 @@ export default async function ResourcePage({ params }: PageProps) {
   const questionCount = getQuestionCount(resource);
 
   return (
-    <main className="min-h-screen bg-background bg-green-400">
+    <main className="min-h-screen bg-background">
       {/* Breadcrumb */}
       {/* <div className="border-b bg-blue-400">
         <div className="container max-w-[64rem] mx-auto px-4">
@@ -63,88 +63,90 @@ export default async function ResourcePage({ params }: PageProps) {
       />
 
       {/* Main Content */}
-      <div className="container max-w-[64rem] mx-auto px-4 py-8">
+      <div className="container max-w-[64rem] mx-auto py-8">
         {/* Resource Header */}
-        <div className="flex flex-col md:flex-row items-start gap-8">
-          {/* Cover Image */}
-          <div className="bg-muted rounded-lg">
-            {resource.coverImage ? (
-              <div className="flex-shrink-0 w-32 h-40 bg-muted relative">
-                <Image
-                  src={resource.coverImage}
-                  alt={resource.title}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                {resource.type === ResourceType.TEXTBOOK ? (
-                  <Book className="h-12 w-12 text-muted-foreground" />
-                ) : resource.type === ResourceType.PAST_PAPER ? (
-                  <FileText className="h-12 w-12 text-muted-foreground" />
-                ) : (
-                  <BookOpen className="h-12 w-12 text-muted-foreground" />
-                )}
-              </div>
-            )}
-          </div>
+        <div className="flex flex-row w-full gap-4">
+          <div className="flex gap-4">
+            {/* Cover Image */}
+            <div className="bg-muted rounded-lg">
+              {resource.coverImage ? (
+                <div className="flex-shrink-0 w-32 h-40 bg-muted relative">
+                  <Image
+                    src={resource.coverImage}
+                    alt={resource.title}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  {resource.type === ResourceType.TEXTBOOK ? (
+                    <Book className="h-12 w-12 text-muted-foreground" />
+                  ) : resource.type === ResourceType.PAST_PAPER ? (
+                    <FileText className="h-12 w-12 text-muted-foreground" />
+                  ) : (
+                    <BookOpen className="h-12 w-12 text-muted-foreground" />
+                  )}
+                </div>
+              )}
+            </div>
 
-          {/* Details */}
-          <div className="flex-1 w-full">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <h1 className="text-2xl md:text-3xl font-bold">
+            {/* Title & Basic Info */}
+            <div className="gap-4">
+              <div className="space-y-2">
+                <h1 className="text-2xl font-semibold tracking-tight md:text-3xl lg:text-4xl">
                   {resource.title}
                 </h1>
-                <div className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-gray-500 md:text-base">
                   <span>{resource.subject}</span>
                   <span>•</span>
                   <span>Grade {resource.grade}</span>
-                  {resource.type === ResourceType.TEXTBOOK &&
-                    resource.publisher && (
-                      <>
-                        <span>•</span>
-                        <span>{resource.publisher}</span>
-                      </>
-                    )}
+                  {resource.type === "TEXTBOOK" && resource.publisher && (
+                    <>
+                      <span>•</span>
+                      <span>{resource.publisher}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Badge>{resource.curriculum}</Badge>
-              <Badge variant="secondary">
-                {resource.type === ResourceType.TEXTBOOK
-                  ? "Textbook"
-                  : "Past Paper"}
+        {/* Details */}
+        <div className="flex-1 w-full">
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Badge>{resource.curriculum}</Badge>
+            <Badge variant="secondary">
+              {resource.type === ResourceType.TEXTBOOK
+                ? "Textbook"
+                : "Past Paper"}
+            </Badge>
+            {resource.type === ResourceType.TEXTBOOK && resource.edition && (
+              <Badge variant="outline">{resource.edition} Edition</Badge>
+            )}
+            {resource.type === ResourceType.PAST_PAPER && (
+              <Badge variant="outline">
+                {resource.term ? `Term ${resource.term}` : ""}
+                {resource.year ? ` ${resource.year}` : ""}
               </Badge>
-              {resource.type === ResourceType.TEXTBOOK && resource.edition && (
-                <Badge variant="outline">{resource.edition} Edition</Badge>
-              )}
-              {resource.type === ResourceType.PAST_PAPER && (
-                <Badge variant="outline">
-                  {resource.term ? `Term ${resource.term}` : ""}
-                  {resource.year ? ` ${resource.year}` : ""}
-                </Badge>
-              )}
-            </div>
+            )}
+          </div>
 
-            <div className="mt-6">
-              <p className="text-muted-foreground">
-                {resource.type === ResourceType.TEXTBOOK
-                  ? `Complete solutions for ${resource.title}. Access step-by-step solutions to exercises, examples, and practice problems.`
-                  : `Detailed solutions for ${resource.title}. Access comprehensive solutions with detailed explanations and working.`}
-              </p>
-            </div>
+          <div className="mt-6">
+            <p className="text-muted-foreground text-sm">
+              {resource.type === ResourceType.TEXTBOOK
+                ? `Complete solutions for ${resource.title}. Access step-by-step solutions to exercises, examples, and practice problems.`
+                : `Detailed solutions for ${resource.title}. Access comprehensive solutions with detailed explanations and working.`}
+            </p>
+          </div>
 
-            <div className="mt-6 flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm">
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  {questionCount || 0} questions
-                </span>
-              </div>
+          <div className="mt-6 flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm">
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                {questionCount || 0} questions
+              </span>
             </div>
           </div>
         </div>

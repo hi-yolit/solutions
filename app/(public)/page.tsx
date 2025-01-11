@@ -1,16 +1,12 @@
 // src/app/page.tsx
 import { getResources, getSuggestedSubjects } from '@/actions/resources'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import Link from 'next/link'
-import { BookOpen, CheckCircle2, BookCheck } from 'lucide-react'
 import { SubjectResources } from '@/components/subject-resources'
 import { Resource } from '@prisma/client'
 import { SearchBox } from '@/components/search-box'
 
 export default async function Home() {
   const { subjects } = await getSuggestedSubjects()
-  const { resources, total, pages } = await getResources({
+  const { resources } = await getResources({
     limit: 6
   }) || { resources: [], total: 0, pages: 0 }
   

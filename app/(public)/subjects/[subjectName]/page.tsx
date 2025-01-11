@@ -4,7 +4,6 @@ import { ResourceType, CurriculumType } from "@prisma/client"
 import { ResourceList } from '@/components/subjects/resource-list'
 import { ResourceFilters } from '@/components/subjects/resource-filters'
 import { Pagination } from '@/components/pagination'
-import Link from 'next/link'
 
 interface PageProps {
   params: {
