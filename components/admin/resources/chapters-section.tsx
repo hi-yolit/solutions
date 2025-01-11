@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { AddChapterDialog } from "./add-chapter-dialog"
 import { ChaptersTable } from "./chapters-table"
 import type { Chapter, ResourceType } from "@prisma/client"
+import { FAB } from "@/components/ui/fab"
 
 interface ChaptersSectionProps {
   chapters: Chapter[]
@@ -28,16 +29,9 @@ export function ChaptersSection({ chapters, resourceId, resourceType }: Chapters
         <h3 className="text-xl font-semibold">
           {resourceType === 'PAST_PAPER' ? 'Questions' : 'Chapters'}
         </h3>
-        <Button onClick={() => {
-          setSelectedChapter(undefined)
-          setDialogOpen(true)
-        }}>
-          <Plus className="h-4 w-4 mr-2" />
-          {resourceType === 'PAST_PAPER' ? 'Add Question' : 'Add Chapter'}
-        </Button>
       </div>
 
-      <ChaptersTable 
+      <ChaptersTable
         chapters={chapters}
         resourceId={resourceId}
         resourceType={resourceType}
@@ -50,6 +44,15 @@ export function ChaptersSection({ chapters, resourceId, resourceType }: Chapters
         onOpenChange={setDialogOpen}
         resourceType={resourceType}
         chapter={selectedChapter}
+      />
+
+
+      <FAB
+        onClick={() => {
+          setSelectedChapter(undefined)
+          setDialogOpen(true)
+        }}
+        text={resourceType === 'PAST_PAPER' ? 'Add Question' : 'Add Chapter'}
       />
     </div>
   )

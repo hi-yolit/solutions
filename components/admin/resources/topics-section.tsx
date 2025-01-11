@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { FAB } from "@/components/ui/fab"
 import { TopicsTable } from "./topics-table"
 import { AddTopicDialog } from "./add-topic-dialog"
 import type { Topic } from "@prisma/client"
@@ -26,10 +27,6 @@ export function TopicsSection({ topics, resourceId, chapterId }: TopicsSectionPr
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold">Topics</h3>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Topic
-        </Button>
       </div>
 
       <TopicsTable 
@@ -45,6 +42,11 @@ export function TopicsSection({ topics, resourceId, chapterId }: TopicsSectionPr
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         topic={selectedTopic}
+      />
+
+      <FAB 
+        onClick={() => setDialogOpen(true)}
+        text="Add Topic"
       />
     </div>
   )

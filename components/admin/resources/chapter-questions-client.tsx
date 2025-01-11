@@ -5,33 +5,34 @@ import { Plus, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card"
 import { QuestionsTable } from "./questions-table"
 import { AddQuestionDialog } from "./add-question-dialog"
 import { ChapterWithQuestions } from "@/types/question"
+import { FAB } from "@/components/ui/fab"
 
 interface ChapterQuestionsClientProps {
-  chapter: ChapterWithQuestions;
-  resourceId: string;
-  chapterId: string;
+    chapter: ChapterWithQuestions;
+    resourceId: string;
+    chapterId: string;
 }
 
-export function ChapterQuestionsClient({ 
-  chapter,
-  resourceId,
-  chapterId,
+export function ChapterQuestionsClient({
+    chapter,
+    resourceId,
+    chapterId,
 }: ChapterQuestionsClientProps) {
     const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false)
 
     // Calculate totals from real data
-/*     const totalMarks = chapter.questions.reduce((acc, q) => {
-        const content = q.content as any;
-        return acc + (content.marks || 0);
-    }, 0); */
+    /*     const totalMarks = chapter.questions.reduce((acc, q) => {
+            const content = q.content as any;
+            return acc + (content.marks || 0);
+        }, 0); */
 
     const questionsWithSolutions = chapter.questions.filter(q => q.solutions.length > 0);
 
@@ -58,7 +59,7 @@ export function ChapterQuestionsClient({
                             <dt className="text-sm font-medium text-gray-500">Total Questions</dt>
                             <dd>{chapter.questions.length}</dd>
                         </div>
-{/*                         <div>
+                        {/*                         <div>
                             <dt className="text-sm font-medium text-gray-500">Total Marks</dt>
                             <dd>{totalMarks}</dd>
                         </div> */}
@@ -73,10 +74,6 @@ export function ChapterQuestionsClient({
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-semibold">Questions</h3>
-                    <Button onClick={() => setIsAddQuestionOpen(true)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Question
-                    </Button>
                 </div>
 
                 <QuestionsTable
@@ -92,6 +89,12 @@ export function ChapterQuestionsClient({
                     onOpenChange={setIsAddQuestionOpen}
                 />
             </div>
+
+
+            <FAB
+                onClick={() => setIsAddQuestionOpen(true)}
+                text="Add Question"
+            />
         </div>
     )
 }

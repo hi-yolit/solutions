@@ -22,33 +22,10 @@ interface QuestionContent extends Prisma.JsonObject {
 interface CreateQuestionInput {
   questionNumber: string;
   pageNumber?: number | null;
+  exerciseNumber?: number | null;
   type: SolutionType;
   content: QuestionContent;
 }
-
-// Example data for testing
-const exampleQuestions: CreateQuestionInput[] = [
-  {
-    questionNumber: "1.1",
-    type: "STRUCTURED",
-    content: {
-      mainQuestion: "Solve the following quadratic equation:",
-      marks: 5,
-      subQuestions: [
-        { part: "a", text: "Solve by factorization: 2x² + 5x - 12 = 0", marks: 3 },
-        { part: "b", text: "Verify your solutions", marks: 2 }
-      ]
-    }
-  },
-  {
-    questionNumber: "1.2",
-    type: "MCQ",
-    content: {
-      mainQuestion: "What is the derivative of x²?",
-      marks: 2
-    }
-  }
-]
 
 export async function addQuestion(
   resourceId: string,
@@ -62,6 +39,7 @@ export async function addQuestion(
       chapter: { connect: { id: chapterId } },
       topic: topicId ? { connect: { id: topicId } } : undefined,
       questionNumber: data.questionNumber,
+      exerciseNumber: data.exerciseNumber,
       pageNumber: data.pageNumber,
       type: data.type,
       content: data.content as Prisma.InputJsonValue,
@@ -71,10 +49,10 @@ export async function addQuestion(
       data: questionData
     })
 
-    const path = topicId 
+    const path = topicId
       ? `/admin/resources/${resourceId}/chapters/${chapterId}/topics/${topicId}`
       : `/admin/resources/${resourceId}/chapters/${chapterId}/questions`;
-    
+
     revalidatePath(path)
     return { question }
   } catch (error) {
@@ -97,6 +75,11 @@ export async function getTopicWithQuestions(topicId: string) {
               select: {
                 id: true,
               }
+            },
+            resource: {
+              select: {
+                type: true
+              }
             }
           }
         }
@@ -116,9 +99,14 @@ export async function getChapterWithQuestions(chapterId: string) {
       where: { id: chapterId },
       include: {
         questions: {
-          orderBy: {
-            questionNumber: 'asc'
-          },
+          orderBy: [
+            {
+              questionNumber: 'asc',
+            },
+            {
+              exerciseNumber: 'asc',
+            },
+          ],
           include: {
             solutions: {
               select: {
@@ -137,7 +125,6 @@ export async function getChapterWithQuestions(chapterId: string) {
   }
 }
 
-// actions/questions.ts
 export async function updateQuestionStatus(questionId: string, status: QuestionStatus) {
   try {
     const question = await prisma.question.update({
@@ -153,13 +140,13 @@ export async function updateQuestionStatus(questionId: string, status: QuestionS
   }
 }
 
-// actions/questions.ts
 export async function updateQuestion(questionId: string, data: QuestionFormValues) {
   try {
     const question = await prisma.question.update({
       where: { id: questionId },
       data: {
         questionNumber: data.questionNumber,
+        exerciseNumber: data.exerciseNumber,
         type: data.type,
         status: data.status,
         pageNumber: data.pageNumber,
@@ -172,29 +159,5 @@ export async function updateQuestion(questionId: string, data: QuestionFormValue
   } catch (error) {
     console.error('Failed to update question:', error);
     return { error: 'Failed to update question' };
-  }
-}
-
-// For testing purposes
-export async function seedQuestions(resourceId: string, chapterId: string, topicId: string) {
-  try {
-    for (const question of exampleQuestions) {
-      const questionData: Prisma.QuestionCreateInput = {
-        resource: { connect: { id: resourceId } },
-        chapter: { connect: { id: chapterId } },
-        topic: { connect: { id: topicId } },
-        questionNumber: question.questionNumber,
-        type: question.type,
-        content: question.content as Prisma.InputJsonValue,
-      }
-
-      await prisma.question.create({
-        data: questionData
-      })
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to seed questions:', error)
-    return { error: 'Failed to seed questions' }
   }
 }

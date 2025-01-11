@@ -42,6 +42,7 @@ export interface QuestionFormValues {
   questionNumber: string;
   type: SolutionType;
   pageNumber?: number | null;
+  exerciseNumber?: number | null;
   status: QuestionStatus; // Add status field
   content: QuestionContent;
 }

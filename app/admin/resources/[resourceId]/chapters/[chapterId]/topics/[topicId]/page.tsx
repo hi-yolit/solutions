@@ -12,6 +12,8 @@ export default async function TopicDetailsPage({
     return <div>Failed to load topic</div>
   }
 
+  console.log(topic)
+
   return (
     <TopicQuestionsClient 
       topic={topic}

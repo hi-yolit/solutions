@@ -24,6 +24,7 @@ enum SolutionType {
   MCQ
   DRAWING
   PROOF
+  HEADER
 }
 
 enum ResourceType {
@@ -104,6 +105,7 @@ model Question {
   topicId         String?
   pageNumber      Int?
   questionNumber  String
+  exerciseNumber  Int?
   type            SolutionType
   content         Json
   status          QuestionStatus @default(DRAFT)

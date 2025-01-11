@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Plus, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { FAB } from "@/components/ui/fab"
 import {
   Card,
   CardContent,
@@ -13,14 +14,16 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { QuestionsTable } from "./questions-table"
 import { AddQuestionDialog } from "./add-question-dialog"
-import { Topic, Question } from "@prisma/client"
+import { Topic, Question, ResourceType } from "@prisma/client"
 
 interface TopicWithQuestions extends Topic {
   questions: (Question & {
     solutions: {
-      id: string;
-      verificationStatus: string;
+      id: string
     }[];
+    resource: {
+      type: ResourceType
+    }
   })[];
 }
 
@@ -84,11 +87,7 @@ export function TopicQuestionsClient({
 
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xl font-semibold">Questions</h3>
-          <Button onClick={() => setIsAddQuestionOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Question
-          </Button>
+          <h3 className="text-xl font-semibold">{topic.questions[0].resource.type != "TEXTBOOK" ? "Questions" : "Exercises"}</h3>
         </div>
 
         <QuestionsTable 
@@ -106,6 +105,11 @@ export function TopicQuestionsClient({
           onOpenChange={setIsAddQuestionOpen}
         />
       </div>
+
+      <FAB 
+        onClick={() => setIsAddQuestionOpen(true)}
+        text="Add Question"
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,7 +24,6 @@ import {
   EssayOutlinePoint,
   ProofStep,
   SolutionContent,
-  SubQuestionSolution
 } from '@/types/solution'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
@@ -59,14 +58,16 @@ export function SolutionWrapper({
   marks,
   existingSolution,
 }: SolutionWrapperProps) {
-  const [activeTab, setActiveTab] = useState('main')
+  const [activeTab, setActiveTab] = useState(() => {
+    // If main question is HEADER, start with first sub-question tab
+    return initialType === 'HEADER' && subQuestions?.length ? subQuestions[0].part : 'main'
+  })
+  
   const [solutionTypes, setSolutionTypes] = useState<Record<string, QuestionType>>(() => {
-    // Initial state should consider existing solutions
     const types: Record<string, QuestionType> = {
       main: existingSolution?.mainSolution?.type || initialType,
     };
     
-    // Add types for sub-questions
     subQuestions?.forEach((sq) => {
       const existingSubSolution = existingSolution?.subSolutions?.find(s => s.part === sq.part);
       types[sq.part] = existingSubSolution?.solution?.type || sq.type;
@@ -99,17 +100,13 @@ export function SolutionWrapper({
     part?: string
   ) => {
     try {
-      console.log("A. Starting handleSave");
       setIsLoading(true);
-  
-      console.log("B. Creating solution content", { type: part ? solutionTypes[part] : solutionTypes.main });
+
       const solutionContent: SolutionContent = {
         type: part ? solutionTypes[part] : solutionTypes.main,
         content: data
       };
-      console.log("C. Solution content created:", solutionContent);
-  
-      console.log("D. Creating solution data");
+
       const solutionData: SolutionData = {
         questionId,
         mainSolution: part ? existingSolution?.mainSolution : solutionContent,
@@ -118,31 +115,25 @@ export function SolutionWrapper({
           { part, solution: solutionContent }
         ] : existingSolution?.subSolutions
       };
-      console.log("E. Solution data created:", solutionData);
-  
-      console.log("F. Calling server action");
+
       let result;
       if (existingSolution?.id) {
         result = await updateSolution(existingSolution.id, solutionData);
       } else {
         result = await createSolution(solutionData);
       }
-      console.log("G. Server action completed:", result);
-  
+
       if (result.error) {
-        console.error("H. Server returned error:", result.error);
         throw new Error(result.error);
       }
-  
+
       toast({
         title: "Success",
         description: "Solution saved successfully"
       });
-  
-      console.log("I. Redirecting");
+
       router.push(getReturnPath());
     } catch (error) {
-      console.error("J. Error in handleSave:", error);
       toast({
         title: "Error",
         description: typeof error === 'string' ? error : "Failed to save solution",
@@ -163,7 +154,6 @@ export function SolutionWrapper({
   const renderEditor = (part?: string) => {
     const solutionType = part ? solutionTypes[part] : solutionTypes.main;
     
-    // Get the correct solution based on whether it's a main or sub solution
     let content;
     if (part) {
       const subSolution = existingSolution?.subSolutions?.find(s => s.part === part);
@@ -261,76 +251,82 @@ export function SolutionWrapper({
           </CardContent>
         </Card>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="main">Main Question</TabsTrigger>
+        {(subQuestions && subQuestions?.length > 0 || initialType !== 'HEADER') && (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              {initialType !== 'HEADER' && (
+                <TabsTrigger value="main">Main Question</TabsTrigger>
+              )}
+              {subQuestions?.map((sq) => (
+                <TabsTrigger key={sq.part} value={sq.part}>
+                  Part {sq.part}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {initialType !== 'HEADER' && (
+              <TabsContent value="main">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle>Main Solution</CardTitle>
+                      <Select
+                        value={solutionTypes.main}
+                        onValueChange={(value: QuestionType) =>
+                          setSolutionTypes(prev => ({ ...prev, main: value }))
+                        }
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MCQ">Multiple Choice</SelectItem>
+                          <SelectItem value="STRUCTURED">Structured</SelectItem>
+                          <SelectItem value="ESSAY">Essay</SelectItem>
+                          <SelectItem value="PROOF">Proof</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {renderEditor()}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
+
             {subQuestions?.map((sq) => (
-              <TabsTrigger key={sq.part} value={sq.part}>
-                Part {sq.part}
-              </TabsTrigger>
+              <TabsContent key={sq.part} value={sq.part}>
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle>Solution for Part {sq.part}</CardTitle>
+                      <Select
+                        value={solutionTypes[sq.part]}
+                        onValueChange={(value: QuestionType) =>
+                          setSolutionTypes(prev => ({ ...prev, [sq.part]: value }))
+                        }
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MCQ">Multiple Choice</SelectItem>
+                          <SelectItem value="STRUCTURED">Structured</SelectItem>
+                          <SelectItem value="ESSAY">Essay</SelectItem>
+                          <SelectItem value="PROOF">Proof</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {renderEditor(sq.part)}
+                  </CardContent>
+                </Card>
+              </TabsContent>
             ))}
-          </TabsList>
-
-          <TabsContent value="main">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle>Main Solution</CardTitle>
-                  <Select
-                    value={solutionTypes.main}
-                    onValueChange={(value: QuestionType) =>
-                      setSolutionTypes(prev => ({ ...prev, main: value }))
-                    }
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MCQ">Multiple Choice</SelectItem>
-                      <SelectItem value="STRUCTURED">Structured</SelectItem>
-                      <SelectItem value="ESSAY">Essay</SelectItem>
-                      <SelectItem value="PROOF">Proof</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {renderEditor()}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {subQuestions?.map((sq) => (
-            <TabsContent key={sq.part} value={sq.part}>
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle>Solution for Part {sq.part}</CardTitle>
-                    <Select
-                      value={solutionTypes[sq.part]}
-                      onValueChange={(value: QuestionType) =>
-                        setSolutionTypes(prev => ({ ...prev, [sq.part]: value }))
-                      }
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MCQ">Multiple Choice</SelectItem>
-                        <SelectItem value="STRUCTURED">Structured</SelectItem>
-                        <SelectItem value="ESSAY">Essay</SelectItem>
-                        <SelectItem value="PROOF">Proof</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {renderEditor(sq.part)}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          ))}
-        </Tabs>
+          </Tabs>
+        )}
       </div>
     </div>
   )

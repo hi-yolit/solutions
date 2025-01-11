@@ -44,6 +44,7 @@ const questionFormSchema = z.object({
   type: z.nativeEnum(SolutionType),
   status: z.nativeEnum(QuestionStatus).default('DRAFT'),
   pageNumber: z.number().nullable().optional(),
+  exerciseNumber: z.number().nullable().optional(),
   content: z.object({
     mainQuestion: z.string().min(1, "Question content is required"),
     blocks: z.array(z.object({
@@ -93,6 +94,7 @@ export function AddQuestionDialog({
       type: "STRUCTURED",
       status: "DRAFT",
       pageNumber: null,
+      exerciseNumber: null,
       content: {
         mainQuestion: "",
         blocks: [],
@@ -106,6 +108,7 @@ export function AddQuestionDialog({
     if (questionToEdit) {
       form.reset({
         questionNumber: questionToEdit.questionNumber,
+        exerciseNumber: questionToEdit.exerciseNumber,
         type: questionToEdit.type,
         status: questionToEdit.status,
         pageNumber: questionToEdit.pageNumber,
@@ -137,6 +140,7 @@ export function AddQuestionDialog({
         type: data.type,
         status: data.status,
         pageNumber: data.pageNumber,
+        exerciseNumber: data.exerciseNumber,
         content: {
           ...data.content,
           marks: data.content?.marks
@@ -218,6 +222,29 @@ export function AddQuestionDialog({
                   </FormItem>
                 )}
               />
+
+
+              <FormField
+                control={form.control}
+                name="exerciseNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Exercise Number (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value ? parseInt(e.target.value) : null;
+                          field.onChange(value);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -234,6 +261,7 @@ export function AddQuestionDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                      <SelectItem value="HEADER">Header</SelectItem>
                         <SelectItem value="MCQ">Multiple Choice</SelectItem>
                         <SelectItem value="STRUCTURED">Structured</SelectItem>
                         <SelectItem value="ESSAY">Essay</SelectItem>
@@ -318,10 +346,6 @@ export function AddQuestionDialog({
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <FormLabel>Sub Questions</FormLabel>
-                <Button type="button" variant="outline" onClick={handleAddSubQuestion}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Part
-                </Button>
               </div>
 
               {subQuestionFields.map((field, index) => (
@@ -429,6 +453,11 @@ export function AddQuestionDialog({
                   </div>
                 </Card>
               ))}
+              
+              <Button type="button" variant="outline" onClick={handleAddSubQuestion}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Part
+                </Button>
             </div>
 
             <div className="flex justify-end gap-2">

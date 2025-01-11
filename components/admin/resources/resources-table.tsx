@@ -37,6 +37,7 @@ import { deleteResource, updateResourceStatus } from "@/actions/resources"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { FAB } from "@/components/ui/fab"
 
 interface ResourcesTableProps {
     initialResources: Resource[]
@@ -127,10 +128,6 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
         <div>
             <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold">Resources</h2>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Resource
-                </Button>
             </div>
 
             {/* Filters */}
@@ -318,6 +315,13 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+
+            <FAB
+                onClick={() => setIsAddDialogOpen(true)}
+                text="Add Resource"
+            />
+
         </div>
     )
 }
