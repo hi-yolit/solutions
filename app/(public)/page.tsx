@@ -24,7 +24,7 @@ export default async function Home() {
   }, {} as Record<string, Resource[]>);
 
   return (
-    <section className="w-full sm:px-4 py-6 sm:py-12 md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
+    <section className="w-full px-4 pb-6 sm:py-12 md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
       <div className="text-center mb-8 sm:mb-12">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-gray-900">
           Find textbook solutions you can trust
@@ -35,7 +35,7 @@ export default async function Home() {
         </p>
 
         {/* Search Bar - Responsive width and padding */}
-        <div className="w-full max-w-xs sm:max-w-md md:max-w-2xl mx-auto px-2 mb-6 sm:mb-8">
+        <div className="w-full max-w-xs sm:max-w-md md:max-w-2xl mx-auto px- mb-6 sm:mb-8">
           <SearchBox />
         </div>
       </div>

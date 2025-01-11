@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { ResourceType } from "@prisma/client"
 import { ResourceWithContent } from "@/types/resource"
 import { ChapterAccordion } from '@/components/resources/chapter-accordion'
+import ResponsiveBreadcrumb from '@/components/responsive-breadcrumb'
 
 interface PageProps {
   params: {
@@ -30,9 +31,9 @@ export default async function ResourcePage({ params }: PageProps) {
   const questionCount = getQuestionCount(resource);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background bg-green-400">
       {/* Breadcrumb */}
-      <div className="border-b">
+      {/* <div className="border-b bg-blue-400">
         <div className="container max-w-[64rem] mx-auto px-4">
           <div className="flex items-center h-14 text-sm">
             <Link
@@ -52,7 +53,14 @@ export default async function ResourcePage({ params }: PageProps) {
             <span className="text-foreground truncate">{resource.title}</span>
           </div>
         </div>
-      </div>
+      </div> */}
+
+      <ResponsiveBreadcrumb
+        resource={{
+          subject: resource.subject.toLowerCase(),
+          title: resource.title,
+        }}
+      />
 
       {/* Main Content */}
       <div className="container max-w-[64rem] mx-auto px-4 py-8">
@@ -61,7 +69,6 @@ export default async function ResourcePage({ params }: PageProps) {
           {/* Cover Image */}
           <div className="bg-muted rounded-lg">
             {resource.coverImage ? (
-
               <div className="flex-shrink-0 w-32 h-40 bg-muted relative">
                 <Image
                   src={resource.coverImage}
@@ -87,17 +94,20 @@ export default async function ResourcePage({ params }: PageProps) {
           <div className="flex-1 w-full">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <h1 className="text-2xl md:text-3xl font-bold">{resource.title}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">
+                  {resource.title}
+                </h1>
                 <div className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
                   <span>{resource.subject}</span>
                   <span>•</span>
                   <span>Grade {resource.grade}</span>
-                  {resource.type === ResourceType.TEXTBOOK && resource.publisher && (
-                    <>
-                      <span>•</span>
-                      <span>{resource.publisher}</span>
-                    </>
-                  )}
+                  {resource.type === ResourceType.TEXTBOOK &&
+                    resource.publisher && (
+                      <>
+                        <span>•</span>
+                        <span>{resource.publisher}</span>
+                      </>
+                    )}
                 </div>
               </div>
             </div>
@@ -105,15 +115,17 @@ export default async function ResourcePage({ params }: PageProps) {
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge>{resource.curriculum}</Badge>
               <Badge variant="secondary">
-                {resource.type === ResourceType.TEXTBOOK ? 'Textbook' : 'Past Paper'}
+                {resource.type === ResourceType.TEXTBOOK
+                  ? "Textbook"
+                  : "Past Paper"}
               </Badge>
               {resource.type === ResourceType.TEXTBOOK && resource.edition && (
                 <Badge variant="outline">{resource.edition} Edition</Badge>
               )}
               {resource.type === ResourceType.PAST_PAPER && (
                 <Badge variant="outline">
-                  {resource.term ? `Term ${resource.term}` : ''}
-                  {resource.year ? ` ${resource.year}` : ''}
+                  {resource.term ? `Term ${resource.term}` : ""}
+                  {resource.year ? ` ${resource.year}` : ""}
                 </Badge>
               )}
             </div>
@@ -122,8 +134,7 @@ export default async function ResourcePage({ params }: PageProps) {
               <p className="text-muted-foreground">
                 {resource.type === ResourceType.TEXTBOOK
                   ? `Complete solutions for ${resource.title}. Access step-by-step solutions to exercises, examples, and practice problems.`
-                  : `Detailed solutions for ${resource.title}. Access comprehensive solutions with detailed explanations and working.`
-                }
+                  : `Detailed solutions for ${resource.title}. Access comprehensive solutions with detailed explanations and working.`}
               </p>
             </div>
 
@@ -142,7 +153,9 @@ export default async function ResourcePage({ params }: PageProps) {
         <div className="mt-12 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">
-              {resource.type === ResourceType.TEXTBOOK ? 'Chapters' : 'Questions'}
+              {resource.type === ResourceType.TEXTBOOK
+                ? "Chapters"
+                : "Questions"}
             </h2>
           </div>
 
@@ -164,5 +177,5 @@ export default async function ResourcePage({ params }: PageProps) {
         </div>
       </div>
     </main>
-  )
+  );
 }
