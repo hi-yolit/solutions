@@ -79,3 +79,11 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .vertical-padding{
+    @apply px-4 sm:px-8 md:px-16;
+  }
+  
+  
+}

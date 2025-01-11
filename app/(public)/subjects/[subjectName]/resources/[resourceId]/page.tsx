@@ -1,11 +1,10 @@
 // app/resources/[resourceId]/page.tsx
 import { getResourceWithContent } from '@/actions/resources'
-import { ChevronLeft, Book, BookOpen, FileText } from 'lucide-react'
-import Link from 'next/link'
+import { Book, BookOpen, FileText } from 'lucide-react'
 import Image from 'next/image'
 import { Badge } from "@/components/ui/badge"
 import { ResourceType } from "@prisma/client"
-import { ResourceWithContent } from "@/types/resource"
+// import { ResourceWithContent } from "@/types/resource"
 import { ChapterAccordion } from '@/components/resources/chapter-accordion'
 import ResponsiveBreadcrumb from '@/components/responsive-breadcrumb'
 
@@ -32,29 +31,6 @@ export default async function ResourcePage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Breadcrumb */}
-      {/* <div className="border-b bg-blue-400">
-        <div className="container max-w-[64rem] mx-auto px-4">
-          <div className="flex items-center h-14 text-sm">
-            <Link
-              href="/"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Home
-            </Link>
-            <ChevronLeft className="h-4 w-4 mx-2 text-muted-foreground" />
-            <Link
-              href={`/subjects/${resource.subject.toLowerCase()}`}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {resource.subject}
-            </Link>
-            <ChevronLeft className="h-4 w-4 mx-2 text-muted-foreground" />
-            <span className="text-foreground truncate">{resource.title}</span>
-          </div>
-        </div>
-      </div> */}
-
       <ResponsiveBreadcrumb
         resource={{
           subject: resource.subject.toLowerCase(),
@@ -63,92 +39,98 @@ export default async function ResourcePage({ params }: PageProps) {
       />
 
       {/* Main Content */}
-      <div className="container max-w-[64rem] mx-auto py-8">
+      <div className="container max-w-[64rem] mx-auto py-4 md:py-8">
         {/* Resource Header */}
-        <div className="flex flex-row w-full gap-4">
-          <div className="flex gap-4">
-            {/* Cover Image */}
-            <div className="bg-muted rounded-lg">
-              {resource.coverImage ? (
-                <div className="flex-shrink-0 w-32 h-40 bg-muted relative">
-                  <Image
-                    src={resource.coverImage}
-                    alt={resource.title}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  {resource.type === ResourceType.TEXTBOOK ? (
-                    <Book className="h-12 w-12 text-muted-foreground" />
-                  ) : resource.type === ResourceType.PAST_PAPER ? (
-                    <FileText className="h-12 w-12 text-muted-foreground" />
-                  ) : (
-                    <BookOpen className="h-12 w-12 text-muted-foreground" />
-                  )}
-                </div>
-              )}
-            </div>
+        <div>
+          <div className="vertical-padding">
+            <div className="flex flex-row w-full gap-2">
+              <div className="flex w-full gap-2 justify-between items-center">
+                {/* Title & Basic Info */}
+                <div className="gap-4 space-y-1">
+                  <div className="flex flex-wrap items-center gap-x-2 text-xs font-bold text-blue-500 md:text-base">
+                    <span>{resource.year ? ` ${resource.year}` : ""}</span>
+                    <span>•</span>
+                    <span>{resource.subject.toLocaleUpperCase()}</span>
+                    <span>•</span>
+                    <span>GR {resource.grade}</span>
+                    {resource.type === "TEXTBOOK" && resource.publisher && (
+                      <>
+                        <span>•</span>
+                        <span>{resource.publisher}</span>
+                      </>
+                    )}
+                  </div>
 
-            {/* Title & Basic Info */}
-            <div className="gap-4">
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold tracking-tight md:text-3xl lg:text-4xl">
-                  {resource.title}
-                </h1>
-                <div className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-gray-500 md:text-base">
-                  <span>{resource.subject}</span>
-                  <span>•</span>
-                  <span>Grade {resource.grade}</span>
-                  {resource.type === "TEXTBOOK" && resource.publisher && (
-                    <>
-                      <span>•</span>
-                      <span>{resource.publisher}</span>
-                    </>
+                  <h1 className="text-2xl text-pretty font-semibold tracking-tight md:text-3xl lg:text-4xl">
+                    {resource.title}
+                  </h1>
+                </div>
+
+                {/* Cover Image */}
+                <div className="bg-muted rounded-lg">
+                  {resource.coverImage ? (
+                    <div className="flex-shrink-0 w-16 h-20 bg-muted relative">
+                      <Image
+                        src={resource.coverImage}
+                        alt={resource.title}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      {resource.type === ResourceType.TEXTBOOK ? (
+                        <Book className="h-12 w-12 text-muted-foreground" />
+                      ) : resource.type === ResourceType.PAST_PAPER ? (
+                        <FileText className="h-12 w-12 text-muted-foreground" />
+                      ) : (
+                        <BookOpen className="h-12 w-12 text-muted-foreground" />
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Details */}
-        <div className="flex-1 w-full">
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge>{resource.curriculum}</Badge>
-            <Badge variant="secondary">
-              {resource.type === ResourceType.TEXTBOOK
-                ? "Textbook"
-                : "Past Paper"}
-            </Badge>
-            {resource.type === ResourceType.TEXTBOOK && resource.edition && (
-              <Badge variant="outline">{resource.edition} Edition</Badge>
-            )}
-            {resource.type === ResourceType.PAST_PAPER && (
-              <Badge variant="outline">
-                {resource.term ? `Term ${resource.term}` : ""}
-                {resource.year ? ` ${resource.year}` : ""}
-              </Badge>
-            )}
-          </div>
+            {/* Details */}
+            <div className="flex-1 w-full">
+              <div className="py-4 md:py-8">
+                <p className="text-muted-foreground text-sm md:text-md">
+                  {resource.type === ResourceType.TEXTBOOK
+                    ? `Complete solutions for ${resource.title}. Access step-by-step solutions to exercises, examples, and practice problems.`
+                    : `Detailed solutions for ${resource.title}. Access comprehensive solutions with detailed explanations and working.`}
+                </p>
+              </div>
 
-          <div className="mt-6">
-            <p className="text-muted-foreground text-sm">
-              {resource.type === ResourceType.TEXTBOOK
-                ? `Complete solutions for ${resource.title}. Access step-by-step solutions to exercises, examples, and practice problems.`
-                : `Detailed solutions for ${resource.title}. Access comprehensive solutions with detailed explanations and working.`}
-            </p>
-          </div>
-
-          <div className="mt-6 flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm">
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">
-                {questionCount || 0} questions
-              </span>
+              <div className="flex items-center justify-between w-full gap-2 md:justify-start md:gap-4 flex-wrap">
+                <div className="flex items-center gap-2 text-sm">
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-bold">
+                    {questionCount || 0} questions
+                  </span>
+                </div>
+                <Badge>{resource.curriculum}</Badge>
+                <Badge variant="secondary">
+                  {resource.type === ResourceType.TEXTBOOK
+                    ? "Textbook"
+                    : "Past Paper"}
+                </Badge>
+                {resource.type === ResourceType.TEXTBOOK &&
+                  resource.edition && (
+                    <Badge variant="outline">{resource.edition} Edition</Badge>
+                  )}
+                {/* {resource.type === ResourceType.PAST_PAPER && (
+                  <Badge variant="outline">
+                    {resource.term ? `Term ${resource.term}` : ""}
+                    {resource.year ? ` ${resource.year}` : ""}
+                  </Badge>
+                )} */}
+              </div>
             </div>
           </div>
+
+          {/* Divider */}
+          <div className="border-b border-slate-500/50 pb-4"></div>
         </div>
 
         {/* Resource Content */}
@@ -156,7 +138,7 @@ export default async function ResourcePage({ params }: PageProps) {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">
               {resource.type === ResourceType.TEXTBOOK
-                ? "Chapters"
+                ? "Table of Contents"
                 : "Questions"}
             </h2>
           </div>

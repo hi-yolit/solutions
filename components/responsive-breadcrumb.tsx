@@ -149,7 +149,7 @@ const ResponsiveBreadcrumb = ({ resource }: ResourceBreadcrumbProps) => {
                       <BreadcrumbSeparator />
                     </>
                   ) : (
-                    <BreadcrumbPage className="text-slate-500 max-w-20 truncate md:max-w-none">
+                    <BreadcrumbPage className="text-slate-500 max-w-60 truncate md:max-w-none">
                       {item.label}
                     </BreadcrumbPage>
                   )}

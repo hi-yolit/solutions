@@ -23,7 +23,7 @@ export function ChapterAccordion({ chapter, resourceType }: ChapterAccordionProp
         <div key={topic.id} className="p-4">
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium">Section {topic.title}</h3>
+              <h3 className="text-sm font-medium">{topic.title}</h3>
             </div>
             
             {/* Questions Grid */}
@@ -62,19 +62,20 @@ export function ChapterAccordion({ chapter, resourceType }: ChapterAccordionProp
     </div>
   )
 
+  console.log(chapter)
   return (
     <div className="border rounded-lg">
       <button 
-        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-accent transition-colors"
+        className="w-full px-1 py-4 text-left flex items-center justify-between hover:bg-accent transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="flex items-baseline gap-2">
-          <span className="font-medium">
-            {resourceType === ResourceType.TEXTBOOK ? 'Chapter' : 'Question'} {chapter.number}
+        <div className="flex items-baseline gap-1">
+          <span className="font-bold">
+            {resourceType === ResourceType.TEXTBOOK ? 'Chapter' : 'Question'} {chapter.number}:
           </span>
           {chapter.title && (
             <>
-              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground"></span>
               <span>{chapter.title}</span>
             </>
           )}
