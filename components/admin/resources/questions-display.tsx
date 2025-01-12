@@ -22,19 +22,21 @@ interface QuestionDisplayProps {
   };
   onManageSolutions: () => void;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
-export function QuestionDisplay({ 
-  question, 
+export function QuestionDisplay({
+  question,
   onManageSolutions,
-  onEdit 
+  onEdit,
+  onDelete
 }: QuestionDisplayProps) {
   const { toast } = useToast()
   const content = question.content as any;
   console.log(question)
-/* 
-  const totalMarks = content.marks || 0 + 
-    (content.subQuestions?.reduce((acc: number, sq: any) => acc + (sq.marks || 0), 0) || 0); */
+  /* 
+    const totalMarks = content.marks || 0 + 
+      (content.subQuestions?.reduce((acc: number, sq: any) => acc + (sq.marks || 0), 0) || 0); */
 
   const handleStatusChange = async (status: QuestionStatus) => {
     const result = await updateQuestionStatus(question.id, status)
@@ -83,12 +85,12 @@ export function QuestionDisplay({
         </div>
 
         {/* Images from blocks */}
-        {content.blocks?.map((block: any, index: number) => 
+        {content.blocks?.map((block: any, index: number) =>
           block.type === 'image' && (
             <div key={index} className="my-2">
-              <img 
-                src={block.imageData.url} 
-                alt={block.imageData.caption || 'Question image'} 
+              <img
+                src={block.imageData.url}
+                alt={block.imageData.caption || 'Question image'}
                 className="max-w-full"
               />
               {block.imageData.caption && (
@@ -116,12 +118,12 @@ export function QuestionDisplay({
                 </div>
 
                 {/* Sub Question Images */}
-                {subQ.blocks?.map((block: any, blockIndex: number) => 
+                {subQ.blocks?.map((block: any, blockIndex: number) =>
                   block.type === 'image' && (
                     <div key={blockIndex} className="my-2">
-                      <img 
-                        src={block.imageData.url} 
-                        alt={block.imageData.caption || 'Question image'} 
+                      <img
+                        src={block.imageData.url}
+                        alt={block.imageData.caption || 'Question image'}
                         className="max-w-full"
                       />
                       {block.imageData.caption && (
@@ -140,17 +142,27 @@ export function QuestionDisplay({
 
       <div className="flex justify-between items-center pt-4">
         <div className="space-x-2">
-          <Button 
-            variant="outline" 
+          <Button
+            onClick={onManageSolutions}
+            size="sm"
+          >
+            {question.solutions.length > 0 ? 'View Solutions' : 'Add Solution'}
+          </Button>
+
+          <Button
+            variant="outline"
             size="sm"
             onClick={onEdit}
           >
             Edit Question
           </Button>
+
           <Button
-            onClick={onManageSolutions}
+            variant="destructive"
+            size="sm"
+            onClick={onDelete}
           >
-            {question.solutions.length > 0 ? 'View Solutions' : 'Add Solution'}
+            Delete
           </Button>
         </div>
         <div className="text-sm text-muted-foreground">

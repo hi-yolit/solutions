@@ -307,14 +307,6 @@ export function AddQuestionDialog({
                     <ContentEditor
                       value={field.value}
                       onChange={field.onChange}
-                      onImageAdd={(imageData) => {
-                        const currentBlocks = form.getValues('content.blocks') || [];
-                        form.setValue('content.blocks', [...currentBlocks, {
-                          type: 'image',
-                          content: '',
-                          imageData
-                        }]);
-                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -424,17 +416,6 @@ export function AddQuestionDialog({
                               <ContentEditor
                                 value={field.value}
                                 onChange={field.onChange}
-                                onImageAdd={(imageData) => {
-                                  const currentBlocks =
-                                    form.getValues(`content.subQuestions.${index}.blocks`) || [];
-                                  form.setValue(`content.subQuestions.${index}.blocks`,
-                                    [...currentBlocks, {
-                                      type: 'image',
-                                      content: '',
-                                      imageData
-                                    }]
-                                  );
-                                }}
                               />
                             </FormControl>
                             <FormMessage />

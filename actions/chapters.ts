@@ -1,8 +1,9 @@
 'use server'
 
-import  prisma  from '@/lib/prisma'
+import prisma from '@/lib/prisma'
 import { ChapterFormValues } from '@/lib/validations/chapter'
 import { revalidatePath } from 'next/cache'
+import { verifyAdmin } from '@/actions/user'
 
 export async function getResourceWithChapters(resourceId: string) {
   try {
@@ -25,6 +26,13 @@ export async function getResourceWithChapters(resourceId: string) {
 
 export async function addChapter(resourceId: string, data: { number?: number; title?: string }) {
   try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     const chapter = await prisma.chapter.create({
       data: {
         resourceId,
@@ -43,6 +51,13 @@ export async function addChapter(resourceId: string, data: { number?: number; ti
 
 export async function updateChapter(chapterId: string, data: ChapterFormValues) {
   try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     const chapter = await prisma.chapter.update({
       where: { id: chapterId },
       data: {
@@ -58,6 +73,13 @@ export async function updateChapter(chapterId: string, data: ChapterFormValues) 
 
 export async function deleteChapter(chapterId: string) {
   try {
+    
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     await prisma.chapter.delete({
       where: { id: chapterId }
     })

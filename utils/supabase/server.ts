@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createClient as serviceClient } from '@supabase/supabase-js'
 
 export async function createClient() {
   const cookieStore = await cookies()
@@ -8,7 +9,7 @@ export async function createClient() {
   // which could be used to maintain user's session
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -29,3 +30,11 @@ export async function createClient() {
     }
   )
 }
+
+export async function createServiceClient() {
+
+  return serviceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+} 

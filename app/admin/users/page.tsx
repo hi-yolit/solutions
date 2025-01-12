@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { updateProfileRole, getProfiles } from '@/actions/users'
+import { updateProfileRole, getProfiles } from '@/actions/user'
 import type { ProfileWithMetadata, UserRole } from '@/types/user'
 import { useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
@@ -135,7 +135,6 @@ export default function UsersPage() {
               <TableHead>Role</TableHead>
               <TableHead>School</TableHead>
               <TableHead>Grade</TableHead>
-              <TableHead>Solutions</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>

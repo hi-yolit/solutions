@@ -1,21 +1,18 @@
 // actions/upload-image.ts
 'use server'
 
-import { createClient } from '@supabase/supabase-js'
+import { createServiceClient } from '@/utils/supabase/server'
 import { v4 as uuidv4 } from 'uuid'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function uploadImage(file: File) {
   try {
+    const serviceClient = await createServiceClient()
+
     const fileExt = file.name.split('.').pop()?.toLowerCase()
     const fileName = `${uuidv4()}.${fileExt}`
-    const filePath = fileName 
+    const filePath = fileName
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await serviceClient.storage
       .from('solutions')
       .upload(filePath, file, {
         cacheControl: '3600',
@@ -25,7 +22,7 @@ export async function uploadImage(file: File) {
 
     if (uploadError) throw uploadError
 
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = serviceClient.storage
       .from('solutions')
       .getPublicUrl(filePath)
 

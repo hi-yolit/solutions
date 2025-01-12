@@ -1,9 +1,10 @@
-export type ImagePosition = 'above' | 'below' | 'inline';
+export type ImageAlignment = 'left' | 'center' | 'right';
 
 export interface ImageData {
   url: string;
   caption?: string;
-  position: ImagePosition;
+  alignment: ImageAlignment;
+  width?: number;
 }
 
 export interface ContentBlock {

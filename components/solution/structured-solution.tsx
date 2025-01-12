@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Lightbulb, ChevronDown, ChevronRight, HelpCircle } from "lucide-react"
 import { StructuredStep } from '@/types/solution'
-import Latex from 'react-latex-next'
 import { cn } from '@/lib/utils'
+import { ContentRenderer } from '../shared/content-renderer'
 
 interface StepProps {
     step: StructuredStep
@@ -82,20 +82,20 @@ export function StructuredSolutionStep({
                     {showingHint && !isRevealed && (
                         <div className="flex items-start gap-2 p-4 bg-yellow-50 rounded-md">
                             <Lightbulb className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-1" />
-                            <p className="text-sm text-yellow-800">
-                                <Latex>{step.hint ?? ''}</Latex>
-                            </p>
+                            <div className="text-sm text-yellow-800">
+                                <ContentRenderer content={step.hint ?? ''} />
+                            </div>
                         </div>
                     )}
                     {isRevealed && (
                         <>
                             <div className="prose max-w-none">
-                                <Latex>{step.content}</Latex>
+                                <ContentRenderer content={step.content} />
                             </div>
                             {step.explanation && (
                                 <div className="bg-muted p-4 rounded-md">
                                     <div className="prose max-w-none">
-                                        <Latex>{step.explanation}</Latex>
+                                        <ContentRenderer content={step.explanation} />
                                     </div>
                                 </div>
                             )}

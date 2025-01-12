@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
 import { ProfileWithMetadata } from '@/types/user'
-import { getProfile } from '@/actions/users'
+import { getProfile } from '@/actions/user'
 
 interface AuthContextType {
   user: User | null

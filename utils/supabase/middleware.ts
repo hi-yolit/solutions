@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { getProfile } from '@/actions/users'
+import { getProfile } from '@/actions/user'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({

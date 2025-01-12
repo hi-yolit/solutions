@@ -3,6 +3,7 @@
 import prisma from '@/lib/prisma'
 import { TopicFormValues } from '@/lib/validations/topic'
 import { revalidatePath } from 'next/cache'
+import { verifyAdmin } from './user'
 
 export async function getChapterWithTopics(chapterId: string) {
     try {
@@ -18,7 +19,7 @@ export async function getChapterWithTopics(chapterId: string) {
                         }
                     },
                     orderBy: {
-                      number: 'asc'
+                        number: 'asc'
                     }
                 }
             }
@@ -33,6 +34,13 @@ export async function getChapterWithTopics(chapterId: string) {
 
 export async function addTopic(chapterId: string, data: { number: string; title?: string }) {
     try {
+
+        const { isAdmin, profile, error } = await verifyAdmin()
+
+        if (!isAdmin && !profile) {
+            return { error: error || 'Unauthorized - Admin access required' }
+        }
+
         const topic = await prisma.topic.create({
             data: {
                 chapterId,
@@ -50,6 +58,13 @@ export async function addTopic(chapterId: string, data: { number: string; title?
 
 export async function deleteTopic(topicId: string) {
     try {
+
+        const { isAdmin, profile, error } = await verifyAdmin()
+
+        if (!isAdmin && !profile) {
+            return { error: error || 'Unauthorized - Admin access required' }
+        }
+
         await prisma.topic.delete({
             where: { id: topicId }
         })
@@ -62,15 +77,22 @@ export async function deleteTopic(topicId: string) {
 
 export async function updateTopic(topicId: string, data: TopicFormValues) {
     try {
-      const chapter = await prisma.topic.update({
-        where: { id: topicId },
-        data: {
-          number: data.number,
-          title: data.title
+
+        const { isAdmin, profile, error } = await verifyAdmin()
+
+        if (!isAdmin && !profile) {
+            return { error: error || 'Unauthorized - Admin access required' }
         }
-      })
-      return { chapter }
+
+        const chapter = await prisma.topic.update({
+            where: { id: topicId },
+            data: {
+                number: data.number,
+                title: data.title
+            }
+        })
+        return { chapter }
     } catch (error) {
-      return { error: "Failed to update chapter" }
+        return { error: "Failed to update chapter" }
     }
-  }
+}

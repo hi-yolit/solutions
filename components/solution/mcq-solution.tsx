@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, XCircle, Lightbulb } from "lucide-react"
 import { MCQSolution } from '@/types/solution'
-import Latex from 'react-latex-next'
 import { cn } from "@/lib/utils"
+import { ContentRenderer } from '../shared/content-renderer'
 
 interface OptionFeedback {
   selected: boolean;
@@ -42,16 +42,16 @@ export function MCQSolutionView({
 
     // Check if the selected option is correct
     const isCorrect = optionLabel === solution.correctOption;
-    
+
     // Update feedback for the selected option
-    newFeedback[optionLabel] = { 
-      selected: true, 
-      isCorrect: isCorrect 
+    newFeedback[optionLabel] = {
+      selected: true,
+      isCorrect: isCorrect
     };
 
     setOptionFeedback(newFeedback);
     setSelectedOption(optionLabel);
-    
+
     // If correct, prevent further attempts
     if (isCorrect) {
       onComplete && onComplete(true);
@@ -84,17 +84,17 @@ export function MCQSolutionView({
           const isSelected = selectedOption === option.label;
 
           return (
-            <div 
-              key={option.label} 
+            <div
+              key={option.label}
               className="space-y-2"
             >
               <Button
                 variant={
-                  isRevealed 
+                  isRevealed
                     ? (isCorrect ? "default" : "outline")
-                    : (feedback.selected 
-                        ? (feedback.isCorrect ? "default" : "destructive")
-                        : "outline")
+                    : (feedback.selected
+                      ? (feedback.isCorrect ? "default" : "destructive")
+                      : "outline")
                 }
                 className={cn(
                   "w-full justify-start text-left",
@@ -107,7 +107,7 @@ export function MCQSolutionView({
                 <div className="flex items-center gap-4 w-full">
                   <Badge variant="outline">{option.label}</Badge>
                   <div className="flex-1">
-                    <Latex>{option.content}</Latex>
+                    <ContentRenderer content={option.content} />
                   </div>
                   {(feedback.selected || isRevealed) && (
                     <>
@@ -121,13 +121,13 @@ export function MCQSolutionView({
                   )}
                 </div>
               </Button>
-              
+
               {/* Inline Explanation */}
               {isSelected && !isRevealed && (
                 <div className={cn(
                   "p-3 rounded-lg text-sm",
-                  feedback.isCorrect 
-                    ? "bg-green-50 text-green-800" 
+                  feedback.isCorrect
+                    ? "bg-green-50 text-green-800"
                     : "bg-red-50 text-red-800"
                 )}>
                   {feedback.isCorrect ? (
@@ -151,17 +151,17 @@ export function MCQSolutionView({
       {/* Action buttons */}
       <div className="flex justify-between items-center">
         {selectedOption && !revealSolution && (
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={resetSelection}
           >
             Reset Selection
           </Button>
         )}
-        
+
         {!revealSolution && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleRevealSolution}
             className="ml-auto"
           >
@@ -178,12 +178,12 @@ export function MCQSolutionView({
             <h3 className="font-semibold">Complete Solution</h3>
           </div>
           <div className="text-sm text-blue-800">
-            <Latex>{solution.explanation}</Latex>
+          <ContentRenderer content={solution.explanation} />
           </div>
 
           {solution.tip && (
             <div className="text-sm text-blue-700 italic">
-              💡 Tip: <Latex>{solution.tip}</Latex>
+              💡 Tip:  <ContentRenderer content={solution.tip} />
             </div>
           )}
         </div>

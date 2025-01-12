@@ -1,7 +1,7 @@
 // components/admin/resources/resources-table.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Resource, ResourceType, ResourceStatus } from "@prisma/client"
 import { Plus } from "lucide-react"
@@ -55,6 +55,20 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
     const [typeFilter, setTypeFilter] = useState<string | null>(null)
     const [curriculumFilter, setCurriculumFilter] = useState<string | null>(null)
     const [resources, setResources] = useState<Resource[]>(initialResources)
+
+    useEffect(() => {
+        setResources(initialResources)
+    }, [initialResources])
+
+    const handleAddSuccess = (newResource: Resource) => {
+        setResources(prev => [newResource, ...prev])
+        setIsAddDialogOpen(false)
+        router.refresh()
+        toast({
+            title: "Success",
+            description: "Resource added successfully"
+        })
+    }
 
     const filteredResources = resources.filter(resource => {
         const matchesSearch = resource.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -274,10 +288,7 @@ export function ResourcesTable({ initialResources }: ResourcesTableProps) {
                     </DialogHeader>
                     <AddResourceForm
                         onClose={() => setIsAddDialogOpen(false)}
-                        onSuccess={() => {
-                            setIsAddDialogOpen(false)
-                            router.refresh()
-                        }}
+                        onSuccess={handleAddSuccess}
                     />
                 </DialogContent>
             </Dialog>

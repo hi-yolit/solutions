@@ -18,7 +18,6 @@ export default async function ResourceDetailsPage({
   params: { resourceId: string }
 }) {
   const { resource, error } = await getResourceWithChapters(params.resourceId)
-  console.log(resource)
 
   if (error || !resource) {
     return <div>Failed to load resource</div>

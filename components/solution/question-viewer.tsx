@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { QuestionType } from "@/types/solution"
-import Latex from 'react-latex-next'
+import { ContentRenderer } from "../shared/content-renderer"
 
 interface QuestionViewerProps {
   mainQuestion: string
@@ -20,7 +20,6 @@ export function QuestionViewer({
   marks,
   subQuestions 
 }: QuestionViewerProps) {
-    console.log(mainQuestion)
   return (
     <Card>
       <CardHeader>
@@ -30,7 +29,7 @@ export function QuestionViewer({
           </Badge>
         )}
         <div className="prose max-w-none">
-          <Latex>{mainQuestion}</Latex>
+          <ContentRenderer content={mainQuestion} />
         </div>
       </CardHeader>
 
@@ -43,7 +42,7 @@ export function QuestionViewer({
                   <Badge variant="outline">{sq.part}</Badge>
                   <div className="flex-1 space-y-2">
                     <div className="prose max-w-none">
-                      <Latex>{sq.text}</Latex>
+                    <ContentRenderer content={sq.text} />
                     </div>
                     {sq.marks && (
                       <p className="text-sm text-muted-foreground">

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
 import {
   Dialog,
   DialogContent,
@@ -19,8 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ImageData, ImagePosition } from '@/types/editor'
-import { Image as ImageIcon, Upload } from 'lucide-react'
+import { ImageData } from '@/types/editor'
+import { Image as ImageIcon, Upload, Loader2, X } from 'lucide-react'
+import { uploadImage } from '@/actions/upload-image'
+import { toast } from '@/hooks/use-toast';
 
 interface ImageUploadDialogProps {
   onImageAdd: (imageData: ImageData) => void;
@@ -30,8 +33,11 @@ export function ImageUploadDialog({ onImageAdd }: ImageUploadDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [caption, setCaption] = useState('');
-  const [position, setPosition] = useState<ImagePosition>('below');
+  const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('center');
+  const [width, setWidth] = useState(100);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,25 +45,36 @@ export function ImageUploadDialog({ onImageAdd }: ImageUploadDialogProps) {
 
     try {
       setUploading(true);
-      // Here you would implement your file upload logic
-      // For example using a cloud storage service
-      const uploadedUrl = await uploadImage(file);
-      setImageUrl(uploadedUrl);
+      setError(null);
+      setImageLoaded(false);
+
+      const { url } = await uploadImage(file);
+      setImageUrl(url);
+      setImageLoaded(true);
     } catch (error) {
-      console.error('Error uploading image:', error);
+      toast({
+        title: "Error",
+        description: 'Failed to upload image',
+        variant: "destructive",
+      })
     } finally {
       setUploading(false);
     }
   };
 
-  const uploadImage = async (file: File): Promise<string> => {
-    // Implement your image upload logic here
-    // This is just a placeholder that returns a fake URL
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(URL.createObjectURL(file));
-      }, 1000);
-    });
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setError('Failed to load image. Please try again.');
+    setImageUrl('');
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl('');
+    setImageLoaded(false);
+    setError(null);
   };
 
   const handleSubmit = () => {
@@ -66,7 +83,8 @@ export function ImageUploadDialog({ onImageAdd }: ImageUploadDialogProps) {
     onImageAdd({
       url: imageUrl,
       caption,
-      position,
+      alignment,
+      width,
     });
     setIsOpen(false);
     resetForm();
@@ -75,11 +93,20 @@ export function ImageUploadDialog({ onImageAdd }: ImageUploadDialogProps) {
   const resetForm = () => {
     setImageUrl('');
     setCaption('');
-    setPosition('below');
+    setAlignment('center');
+    setWidth(100);
+    setError(null);
+    setImageLoaded(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) resetForm();
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="outline" size="icon">
           <ImageIcon className="h-4 w-4" />
@@ -90,52 +117,73 @@ export function ImageUploadDialog({ onImageAdd }: ImageUploadDialogProps) {
           <DialogTitle>Add Image</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="image-upload">Upload Image</Label>
-            <div className="mt-2 flex items-center gap-4">
-              <Input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                onClick={() => document.getElementById('image-upload')?.click()}
-                disabled={uploading}
-                className="w-full"
-              >
-                {uploading ? (
-                  <span>Uploading...</span>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Choose File
-                  </>
+          <div className="flex justify-center">
+            {imageUrl ? (
+              <div className="relative">
+                {!imageLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-100 rounded-md">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
                 )}
-              </Button>
-            </div>
-            {imageUrl && (
-              <div className="mt-2">
                 <img
                   src={imageUrl}
                   alt="Preview"
-                  className="max-h-40 rounded-md"
+                  className="max-h-48 rounded-md object-contain"
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                  style={{
+                    visibility: imageLoaded ? 'visible' : 'hidden',
+                    maxWidth: '100%'
+                  }}
                 />
+                {imageLoaded && !uploading && (
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2"
+                    onClick={handleRemoveImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="w-full">
+                <Label htmlFor="image-upload" className="block mb-2">Upload Image</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => document.getElementById('image-upload')?.click()}
+                    disabled={uploading}
+                    className="w-full"
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Choose File
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="image-url">Or enter image URL</Label>
-            <Input
-              id="image-url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
 
           <div>
             <Label htmlFor="caption">Caption</Label>
@@ -149,27 +197,45 @@ export function ImageUploadDialog({ onImageAdd }: ImageUploadDialogProps) {
           </div>
 
           <div>
-            <Label htmlFor="position">Position</Label>
+            <Label htmlFor="alignment">Alignment</Label>
             <Select
-              value={position}
-              onValueChange={(value: ImagePosition) => setPosition(value)}
+              value={alignment}
+              onValueChange={(value: 'left' | 'center' | 'right') => setAlignment(value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select position" />
+                <SelectValue placeholder="Select alignment" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="above">Above Text</SelectItem>
-                <SelectItem value="below">Below Text</SelectItem>
-                <SelectItem value="inline">Inline with Text</SelectItem>
+                <SelectItem value="left">Left</SelectItem>
+                <SelectItem value="center">Center</SelectItem>
+                <SelectItem value="right">Right</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <div className="flex justify-between mb-2">
+              <Label>Image Width</Label>
+              <span className="text-sm text-muted-foreground">{width}%</span>
+            </div><Slider
+              value={[width]}
+              onValueChange={(value: number[]) => setWidth(value[0])}
+              min={25}
+              max={100}
+              step={25}
+              className="my-4"
+            />
+
           </div>
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={!imageUrl}>
+            <Button
+              onClick={handleSubmit}
+              disabled={!imageUrl || uploading || !imageLoaded}
+            >
               Add Image
             </Button>
           </div>

@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma'
 import { ResourceFormValues } from '@/lib/validations/resource'
 import { CurriculumType, Resource, ResourceStatus, ResourceType } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { verifyAdmin } from './user'
 
 type ResourcesResponse = {
   resources?: Resource[]
@@ -147,6 +148,13 @@ export async function updateResourceStatus(
 
 export async function addResource(data: ResourceFormValues) {
   try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     const resource = await prisma.resource.create({
       data: {
         title: data.title,
@@ -201,6 +209,13 @@ export async function getSuggestedSubjects(query: string = ''): Promise<Subjects
 
 export async function updateResource(resourceId: string, data: ResourceFormValues) {
   try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     const resource = await prisma.resource.update({
       where: { id: resourceId },
       data: {
@@ -227,6 +242,13 @@ export async function updateResource(resourceId: string, data: ResourceFormValue
 
 export async function deleteResource(resourceId: string) {
   try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     await prisma.resource.delete({
       where: { id: resourceId }
     })

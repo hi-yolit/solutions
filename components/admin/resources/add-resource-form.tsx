@@ -24,13 +24,20 @@ import { resourceFormSchema, type ResourceFormValues } from "@/lib/validations/r
 import { addResource } from "@/actions/resources"
 import { SubjectSelect } from './subject-autocomplete'
 import { ImageUpload } from "@/components/ui/image-upload"
+import { toast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
+import { Resource } from "@prisma/client"
+import { useState } from "react"
 
 interface AddResourceFormProps {
     onClose: () => void
-    onSuccess: () => void
+    onSuccess: (resource: Resource) => void
 }
 
 export function AddResourceForm({ onClose, onSuccess }: AddResourceFormProps) {
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const router = useRouter()
+
     const form = useForm<ResourceFormValues>({
         resolver: zodResolver(resourceFormSchema),
         defaultValues: {
@@ -43,13 +50,30 @@ export function AddResourceForm({ onClose, onSuccess }: AddResourceFormProps) {
 
     async function onSubmit(data: ResourceFormValues) {
         try {
+            setIsSubmitting(true)
             const result = await addResource(data)
+            
             if (result.error) {
-                throw new Error(result.error)
+                toast({
+                    title: "Error",
+                    description: result.error,
+                    variant: "destructive"
+                })
+                return
             }
-            onSuccess()
+
+            if (result.resource) {
+                onSuccess(result.resource)
+            }
+            
         } catch (error) {
-            console.error(error)
+            toast({
+                title: "Error",
+                description: "Failed to create resource",
+                variant: "destructive"
+            })
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -220,8 +244,8 @@ export function AddResourceForm({ onClose, onSuccess }: AddResourceFormProps) {
                     <Button variant="outline" type="button" onClick={onClose}>
                         Cancel
                     </Button>
-                    <Button type="submit">
-                        Create Resource
+                    <Button type="submit" disabled={isSubmitting}>
+                        { isSubmitting ? "Createing Resource" : "Create Resource"}
                     </Button>
                 </div>
             </form>

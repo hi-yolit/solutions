@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronDown, ChevronRight, Lightbulb } from "lucide-react"
 import { ProofStep } from '@/types/solution'
-import Latex from 'react-latex-next'
+import { ContentRenderer } from '../shared/content-renderer'
 
 interface ProofSolutionProps {
     steps: ProofStep[]
@@ -66,7 +66,7 @@ export function ProofSolutionView({
                                     </CardHeader>
                                     <CardContent>
                                         <div className="prose max-w-none">
-                                            <Latex>{step.statement}</Latex>
+                                            <ContentRenderer content={step.statement} />
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -76,7 +76,7 @@ export function ProofSolutionView({
                                     </CardHeader>
                                     <CardContent>
                                         <div className="prose max-w-none">
-                                            <Latex>{step.justification}</Latex>
+                                            <ContentRenderer content={step.justification} />
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -84,7 +84,7 @@ export function ProofSolutionView({
                             {step.hint && (
                                 <div className="flex items-start gap-2 text-sm text-muted-foreground">
                                     <Lightbulb className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-1" />
-                                    <p><Latex>{step.hint}</Latex></p>
+                                    <ContentRenderer content={step.hint} />
                                 </div>
                             )}
                         </CardContent>

@@ -202,7 +202,6 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                               <ContentEditor
                                 value={contentField.value}
                                 onChange={contentField.onChange}
-                                onImageAdd={() => { }}
                               />
                             </FormControl>
                             <FormMessage />
@@ -220,7 +219,6 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                               <ContentEditor
                                 value={explanationField.value || ''}
                                 onChange={explanationField.onChange}
-                                onImageAdd={() => { }}
                               />
                             </FormControl>
                             <FormMessage />
@@ -256,7 +254,6 @@ export function MCQSolutionEditor({ initialData, onSave }: MCQSolutionEditorProp
                   <ContentEditor
                     value={field.value}
                     onChange={field.onChange}
-                    onImageAdd={() => { }}
                   />
                 </FormControl>
                 <FormMessage />

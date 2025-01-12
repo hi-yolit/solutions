@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { EssayOutlinePoint } from '@/types/solution'
-import Latex from 'react-latex-next'
+import { ContentRenderer } from '../shared/content-renderer'
 
 interface EssaySolutionProps {
   points: EssayOutlinePoint[]
@@ -24,14 +24,14 @@ export function EssaySolutionView({
   return (
     <div className="space-y-4">
       {points.map((point, index) => (
-        <Card 
+        <Card
           key={index}
           className={!revealed ? 'opacity-60' : ''}
         >
-          <CardHeader 
+          <CardHeader
             className="cursor-pointer"
-            onClick={() => revealed && setExpandedPoints(prev => 
-              prev.includes(index) 
+            onClick={() => revealed && setExpandedPoints(prev =>
+              prev.includes(index)
                 ? prev.filter(p => p !== index)
                 : [...prev, index]
             )}
@@ -39,7 +39,7 @@ export function EssaySolutionView({
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 {revealed && (
-                  expandedPoints.includes(index) 
+                  expandedPoints.includes(index)
                     ? <ChevronDown className="h-4 w-4" />
                     : <ChevronRight className="h-4 w-4" />
                 )}
@@ -49,8 +49,8 @@ export function EssaySolutionView({
                 )}
               </div>
               {!revealed && (
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation()
                     onReveal()
@@ -64,9 +64,9 @@ export function EssaySolutionView({
           {revealed && expandedPoints.includes(index) && (
             <CardContent className="space-y-4">
               <div className="prose max-w-none">
-                <Latex>{point.content}</Latex>
+                <ContentRenderer content={point.content} />
               </div>
-{/*               {point.subPoints?.length > 0 && (
+              {/*               {point.subPoints?.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="font-medium">Supporting Points:</h4>
                   <ul className="list-disc pl-5 space-y-1">
@@ -93,7 +93,7 @@ export function EssaySolutionView({
               {point.explanation && (
                 <div className="bg-muted p-4 rounded-md">
                   <div className="prose max-w-none">
-                    <Latex>{point.explanation}</Latex>
+                    <ContentRenderer content={point.explanation} />
                   </div>
                 </div>
               )}

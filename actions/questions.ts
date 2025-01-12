@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma'
 import { QuestionFormValues } from '@/types/question';
 import { SolutionType, Prisma, QuestionStatus } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { verifyAdmin } from './user';
 
 // Make sure content follows Prisma's JSON type
 interface QuestionContent extends Prisma.JsonObject {
@@ -34,6 +35,13 @@ export async function addQuestion(
   data: CreateQuestionInput
 ) {
   try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     const questionData: Prisma.QuestionCreateInput = {
       resource: { connect: { id: resourceId } },
       chapter: { connect: { id: chapterId } },
@@ -127,6 +135,13 @@ export async function getChapterWithQuestions(chapterId: string) {
 
 export async function updateQuestionStatus(questionId: string, status: QuestionStatus) {
   try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     const question = await prisma.question.update({
       where: { id: questionId },
       data: { status }
@@ -142,6 +157,13 @@ export async function updateQuestionStatus(questionId: string, status: QuestionS
 
 export async function updateQuestion(questionId: string, data: QuestionFormValues) {
   try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
     const question = await prisma.question.update({
       where: { id: questionId },
       data: {
@@ -159,5 +181,23 @@ export async function updateQuestion(questionId: string, data: QuestionFormValue
   } catch (error) {
     console.error('Failed to update question:', error);
     return { error: 'Failed to update question' };
+  }
+}
+
+export async function deleteQuestion(questionId: string) {
+  try {
+
+    const { isAdmin, error } = await verifyAdmin()
+
+    if (!isAdmin) {
+      return { error: error || 'Unauthorized - Admin access required' }
+    }
+
+    await prisma.question.delete({
+      where: { id: questionId }
+    })
+    return { success: true }
+  } catch (error) {
+    return { error: "Failed to delete question" }
   }
 }

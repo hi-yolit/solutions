@@ -87,7 +87,7 @@ export function TopicQuestionsClient({
 
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xl font-semibold">{topic.questions[0].resource.type != "TEXTBOOK" ? "Questions" : "Exercises"}</h3>
+          <h3 className="text-xl font-semibold">{topic?.questions[0]?.resource.type === "TEXTBOOK" ? "Exercises" : "Questions"}</h3>
         </div>
 
         <QuestionsTable 
