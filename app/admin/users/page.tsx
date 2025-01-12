@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -14,35 +14,28 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { createClient } from '@/utils/supabase/client'
-import { User } from '@supabase/supabase-js'
-
-interface Profile extends User {
-  full_name: string | null
-  role: 'ADMIN' | 'USER'
-}
+import { updateProfileRole, getProfiles } from '@/actions/users'
+import type { ProfileWithMetadata, UserRole } from '@/types/user'
+import { useEffect } from "react"
+import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<Profile[]>([])
-  const [loading, setLoading] = useState(true)
+  const [users, setUsers] = useState<ProfileWithMetadata[]>([])
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
   const { toast } = useToast()
-  const supabase = createClient()
+  const { profile: currentUserProfile } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     async function loadUsers() {
       try {
-        // Get all users with their profiles and subscriptions
-        const { data, error } = await supabase
-          .from('profile')
-          .select(`*`)
-          .order('createdAt', { ascending: false })
-
-        if (error) throw error
-
-        console.log('Users data:', data)
-        setUsers(data)
+        const result = await getProfiles()
+        if (result.error) throw new Error(result.error)
+          console.log(result)
+        setUsers(result.profiles?.filter(p => p.id !== currentUserProfile?.id) || [])
       } catch (error) {
         console.error('Error loading users:', error)
         toast({
@@ -55,19 +48,32 @@ export default function UsersPage() {
       }
     }
 
-    loadUsers()
-  }, [supabase, toast])
+    if (currentUserProfile?.role === 'ADMIN') {
+      loadUsers()
+    }
+  }, [currentUserProfile, toast])
 
-  const handleUpdateRole = async (userId: string, newRole: 'ADMIN' | 'USER') => {
-    setUpdating(userId)
+  // Redirect if not admin
+  if (currentUserProfile && currentUserProfile.role !== 'ADMIN') {
+    router.push('/')
+    return null
+  }
+
+  const handleUpdateRole = async (userId: string, newRole: UserRole) => {
     try {
-      const { error } = await supabase
-        .from('profile')
-        .update({ role: newRole })
-        .eq('id', userId)
+      setUpdating(userId)
+      const result = await updateProfileRole(userId, newRole)
 
-      if (error) throw error
+      if (result.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        })
+        return
+      }
 
+      // Update local state
       setUsers(users.map(user => 
         user.id === userId ? { ...user, role: newRole } : user
       ))
@@ -86,20 +92,7 @@ export default function UsersPage() {
     } finally {
       setUpdating(null)
     }
-  }
-
-  const getSubscriptionBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'default'
-      case 'past_due':
-        return 'warning'
-      case 'canceled':
-        return 'destructive'
-      default:
-        return 'secondary'
-    }
-  }
+      }
 
   if (loading) {
     return (
@@ -109,10 +102,14 @@ export default function UsersPage() {
     )
   }
 
-  const filteredUsers = users.filter(user => 
-    user.email?.toLowerCase().includes(search.toLowerCase()) ||
-    user.full_name?.toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredUsers = users.filter(user => {
+    const searchTerm = search.toLowerCase()
+    return (
+      user.user_metadata?.full_name?.toLowerCase().includes(searchTerm) ||
+      user.email?.toLowerCase().includes(searchTerm) ||
+      user.school?.toLowerCase().includes(searchTerm)
+    )
+  })
 
   return (
     <div className="p-6">
@@ -136,27 +133,32 @@ export default function UsersPage() {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>School</TableHead>
+              <TableHead>Grade</TableHead>
+              <TableHead>Solutions</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUsers.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>{user.full_name || 'N/A'}</TableCell>
+                <TableCell>{user.user_metadata?.full_name || 'N/A'}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Badge variant={user.role === "ADMIN" ? "secondary" : "outline"}>
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell className="space-x-2">
+                <TableCell>{user.school || 'N/A'}</TableCell>
+                <TableCell>{user.grade || 'N/A'}</TableCell>
+                <TableCell>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
+                    onClick={() => 
                       handleUpdateRole(
                         user.id,
-                        user.role === "ADMIN" ? "USER" : "ADMIN"
+                        user.role === "ADMIN" ? "STUDENT" : "ADMIN"
                       )
                     }
                     disabled={updating === user.id}
@@ -164,7 +166,7 @@ export default function UsersPage() {
                     {updating === user.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : user.role === "ADMIN" ? (
-                      "Demote to User"
+                      "Demote to Student"
                     ) : (
                       "Promote to Admin"
                     )}

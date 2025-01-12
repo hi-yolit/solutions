@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import type { User } from '@supabase/supabase-js'
+import { User } from '@supabase/supabase-js'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '@/contexts/auth-context'
-import { Loader2 } from 'lucide-react'
+import { Loader2, School, GraduationCap } from 'lucide-react'
+import { ProfileWithMetadata } from '@/types/user'
 
 export function Navbar() {
-  const { user, signOut, isLoading } = useAuth()
+  const { user, profile, signOut, isLoading } = useAuth()
   const router = useRouter()
 
   const handleSignOut = async () => {
@@ -43,7 +44,7 @@ export function Navbar() {
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : user ? (
-              <UserMenu user={user} onSignOut={handleSignOut} onUpgrade={handleUpgrade} />
+              <UserMenu user={user} profile={profile} onSignOut={handleSignOut} onUpgrade={handleUpgrade} />
             ) : (
               <div className="flex gap-2">
                 <Link href="/auth/login">
@@ -63,11 +64,12 @@ export function Navbar() {
 
 interface UserMenuProps {
   user: User
+  profile: ProfileWithMetadata | null
   onSignOut: () => void
   onUpgrade: () => void
 }
 
-function UserMenu({ user, onSignOut, onUpgrade }: UserMenuProps) {
+function UserMenu({ user, profile, onSignOut, onUpgrade }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -106,21 +108,50 @@ function UserMenu({ user, onSignOut, onUpgrade }: UserMenuProps) {
             </p>
           </div>
         </div>
-        
+
         <DropdownMenuSeparator />
 
-        <div className="space-y-1 p-2">
+        {profile && (
+          <>
+            <div className="space-y-2 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <School className="h-4 w-4" />
+                <span>{profile.school || 'No school set'}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <GraduationCap className="h-4 w-4" />
+                <span>Grade {profile.grade || 'not set'}</span>
+              </div>
+            </div>
+
+            <DropdownMenuSeparator />
+
+            {profile.role === 'ADMIN' && (
+              <>
+                <div className="p-2">
+                  <Link href="/admin">
+                    <DropdownMenuItem className="cursor-pointer">
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  </Link>
+                </div>
+                <DropdownMenuSeparator />
+              </>
+            )}
+          </>
+        )}
+
+
+
+        <div className="p-2">
+
+
           <DropdownMenuItem
             className="cursor-pointer text-muted-foreground"
             onClick={onUpgrade}
           >
             Upgrade
           </DropdownMenuItem>
-        </div>
-
-        <DropdownMenuSeparator />
-
-        <div className="p-2">
           <DropdownMenuItem
             className="cursor-pointer text-red-600 focus:text-red-600"
             onClick={onSignOut}

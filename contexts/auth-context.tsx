@@ -3,9 +3,12 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
+import { ProfileWithMetadata } from '@/types/user'
+import { getProfile } from '@/actions/users'
 
 interface AuthContextType {
   user: User | null
+  profile: ProfileWithMetadata | null
   isLoading: boolean
   signOut: () => Promise<void>
 }
@@ -14,13 +17,35 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<ProfileWithMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
+
+  // Fetch profile data when user changes
+  useEffect(() => {
+    async function loadProfile() {
+      if (!user) {
+        setProfile(null)
+        return
+      }
+
+      try {
+        const result = await getProfile(user.id)
+        if (result.error) throw new Error(result.error)
+        // Handle the case where profile might be undefined
+        setProfile(result.profile ?? null)
+      } catch (error) {
+        console.error('Error loading profile:', error)
+        setProfile(null)
+      }
+    }
+
+    loadProfile()
+  }, [user])
 
   useEffect(() => {
     const getUser = async () => {
       try {
-        // Get initial session
         const { data: { user: initialUser }, error } = await supabase.auth.getUser()
         if (error) {
           throw error
@@ -36,7 +61,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getUser()
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id)
@@ -54,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true)
       await supabase.auth.signOut()
       setUser(null)
+      setProfile(null)
     } catch (error) {
       console.error('Error signing out:', error)
     } finally {
@@ -62,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signOut }}>
+    <AuthContext.Provider value={{ user, profile, isLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   )

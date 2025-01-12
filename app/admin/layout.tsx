@@ -1,10 +1,11 @@
+// app/admin/layout.tsx
 "use client"
 
 import "../globals.css";
 import { cn } from "@/lib/utils"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { Users, BookOpen, LogOut } from "lucide-react"
+import { Users, BookOpen, LogOut, Globe } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -37,7 +38,12 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const { user, signOut } = useAuth()
+  const router = useRouter()
+  const { user, profile, signOut } = useAuth()
+
+  const handleSeeWebsite = () => {
+    router.push('/')
+  }
 
   return (
     <div className="h-full relative">
@@ -93,13 +99,42 @@ export default function AdminLayout({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[240px]">
-                <DropdownMenuItem
-                  className="text-red-600 cursor-pointer"
-                  onClick={() => signOut()}
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
+                <div className="flex items-center gap-4 p-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={user?.user_metadata?.avatar_url}
+                      alt={user?.user_metadata?.full_name ?? user?.email ?? ''}
+                    />
+                    <AvatarFallback>
+                      {user?.user_metadata?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <p className="text-sm font-medium">
+                      {user?.user_metadata?.full_name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-2">
+                  <DropdownMenuItem
+                    className="text-muted-foreground cursor-pointer"
+                    onClick={handleSeeWebsite}
+                  >
+                    <Globe className="h-4 w-4 mr-2" />
+                    See Website
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-red-600 cursor-pointer"
+                    onClick={() => signOut()}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
+import { getProfile } from '@/actions/users'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -44,11 +45,7 @@ export async function updateSession(request: NextRequest) {
   let profileRole = null;
   if (user) {
     try {
-      const { data: profile, error } = await supabase
-        .from('profile')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      const { profile, error } = await getProfile(user.id);
 
       if (error) {
         console.error('Failed to fetch profile:', error);
@@ -64,7 +61,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Admin route protection
-  if (request.nextUrl.pathname.startsWith('/admin') && profileRole !== 'admin') {
+  if (request.nextUrl.pathname.startsWith('/admin') && profileRole !== 'ADMIN') {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
