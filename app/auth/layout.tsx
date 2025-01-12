@@ -20,8 +20,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   }
 
   return (
-    <html lang="en">
-      <body>
         <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
           {/* Left side - Content */}
           <div className="flex items-center justify-center p-8">
@@ -45,7 +43,5 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             </div>
           </div>
         </div>
-      </body>
-    </html>
   )
 }

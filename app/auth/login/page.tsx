@@ -1,8 +1,7 @@
-// app/auth/login/page.tsx
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -16,10 +15,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Mail, Loader2, Lock, ArrowLeft, Facebook, Chrome } from 'lucide-react'
+import { Mail, Loader2, Lock, ArrowLeft, Chrome, Facebook } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
-import { login } from '@/actions/auth'
 import { loginSchema, type LoginFormValues } from '@/lib/validations/auth'
+import { toast, useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
   const [isEmailLoading, setIsEmailLoading] = useState(false)
@@ -28,6 +27,27 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+
+  // Debug OAuth error from URL
+  useEffect(() => {
+    const error = searchParams.get('error')
+    const errorDescription = searchParams.get('error_description')
+    if (error) {
+      console.error('OAuth Error:', { error, description: errorDescription })
+      setError(errorDescription || error)
+    }
+  }, [searchParams])
+
+  // Debug initial auth state
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession()
+      console.log('Current session:', session, 'Error:', error)
+    }
+    checkSession()
+  }, [supabase.auth])
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -38,25 +58,41 @@ export default function LoginPage() {
   })
 
   const onSubmit = async (data: LoginFormValues) => {
+    console.log('Starting email login...')
     setIsEmailLoading(true)
     setError(null)
 
     try {
-      const formData = new FormData()
-      formData.append('email', data.email)
-      formData.append('password', data.password)
+      console.log('Attempting login for:', data.email)
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
 
-      const result = await login(formData)
+      console.log('Auth response:', { data: authData, error })
 
-      if (result?.error) {
-        setError(result.error)
+      if (error) {
+        console.error('Login error:', error)
+        setError(error.message)
         return
       }
 
-      router.refresh()
-      router.push('/')
+      // Check if session was created
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Session after login:', session)
 
+      if (session) {
+        toast({
+          title: "Success",
+          description: "Successfully logged in",
+        })
+        router.push('/')
+        router.refresh()
+      } else {
+        throw new Error('No session created after login')
+      }
     } catch (error) {
+      console.error('Unexpected error:', error)
       setError('An unexpected error occurred')
     } finally {
       setIsEmailLoading(false)
@@ -64,22 +100,25 @@ export default function LoginPage() {
   }
 
   const handleOAuthLogin = async (provider: 'google' | 'facebook') => {
+    console.log('Starting OAuth login...')
     const setLoading = provider === 'google' ? setIsGoogleLoading : setIsFacebookLoading
 
     try {
       setLoading(true)
       setError(null)
 
-      const { error: authError } = await supabase.auth.signInWithOAuth({
+      const { data, error: authError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
+          redirectTo: `${window.location.origin}/api/auth/callback`
         }
       })
+      console.log('OAuth response:', { data, error })
 
       if (authError) throw authError
 
     } catch (error) {
+      console.error('OAuth error:', error)
       setError(`Failed to sign in with ${provider}`)
     } finally {
       setLoading(false)
@@ -103,6 +142,7 @@ export default function LoginPage() {
       </div>
 
       <div className="space-y-4">
+
         <Button
           variant="outline"
           className="w-full"
@@ -160,7 +200,7 @@ export default function LoginPage() {
                         autoComplete="email"
                         autoCapitalize="none"
                         autoCorrect="off"
-                        disabled={isGoogleLoading || isFacebookLoading || isEmailLoading}
+                        disabled={isGoogleLoading || isEmailLoading}
                         className="pl-10"
                       />
                     </FormControl>
@@ -191,7 +231,7 @@ export default function LoginPage() {
                         {...field}
                         type="password"
                         autoComplete="current-password"
-                        disabled={isGoogleLoading || isFacebookLoading || isEmailLoading}
+                        disabled={isGoogleLoading || isEmailLoading}
                         className="pl-10"
                       />
                     </FormControl>
@@ -210,7 +250,7 @@ export default function LoginPage() {
             <Button
               className="w-full"
               type="submit"
-              disabled={isEmailLoading || isGoogleLoading || isFacebookLoading}
+              disabled={isEmailLoading || isGoogleLoading}
             >
               {isEmailLoading ? (
                 <>

@@ -16,10 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <>
       <NextTopLoader />
-      <body
-      >
         <div className="min-h-screen flex flex-col">
           <Navbar />
           <main className="flex-grow">
@@ -29,7 +27,6 @@ export default function RootLayout({
           </main>
           <Footer />
         </div>
-      </body>
-    </html>
+    </>
   );
 }

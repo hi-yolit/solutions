@@ -1,14 +1,12 @@
-// contexts/auth-context.tsx
 'use client'
 
-import { createContext, useContext, useEffect, useState, useRef } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
-import { User } from '@supabase/auth-helpers-nextjs'
 
 interface AuthContextType {
   user: User | null
-  loading: boolean
+  isLoading: boolean
   signOut: () => Promise<void>
 }
 
@@ -16,47 +14,55 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [mounted, setMounted] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
-  const router = useRouter()
-  const isInitialized = useRef(false)
 
   useEffect(() => {
-    if (isInitialized.current) return
-    isInitialized.current = true
-    setMounted(true)
+    const getUser = async () => {
+      try {
+        // Get initial session
+        const { data: { user: initialUser }, error } = await supabase.auth.getUser()
+        if (error) {
+          throw error
+        }
+        setUser(initialUser)
+      } catch (error) {
+        console.error('Error getting user:', error)
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    getUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id)
+        setUser(session?.user ?? null)
+      }
+    )
 
     return () => {
-      subscription?.unsubscribe()
+      subscription.unsubscribe()
     }
-  }, [])
+  }, [supabase])
 
-  if (!mounted) {
-    return null
-  }
-
-  const value = {
-    user,
-    loading,
-    signOut: async () => {
+  const signOut = async () => {
+    try {
+      setIsLoading(true)
       await supabase.auth.signOut()
-      router.push('/')
+      setUser(null)
+    } catch (error) {
+      console.error('Error signing out:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, isLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   )
@@ -64,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context

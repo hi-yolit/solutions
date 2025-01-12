@@ -17,16 +17,7 @@ import { useToast } from "@/hooks/use-toast"
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
 
-interface Profile {
-  id: string
-  email: string
-  full_name: string | null
-  role: 'ADMIN' | 'USER'
-  status: 'active' | 'inactive'
-}
-
-interface UserProfile {
-  id: string
+interface Profile extends User {
   full_name: string | null
   role: 'ADMIN' | 'USER'
 }
@@ -42,57 +33,18 @@ export default function UsersPage() {
   useEffect(() => {
     async function loadUsers() {
       try {
-        console.log('Fetching users...')
-        // Get users from auth
-        const { data, error: usersError } = await supabase.auth.admin.listUsers()
-        
-        if (usersError) {
-          console.error('Auth error:', usersError)
-          toast({
-            title: "Error",
-            description: usersError.message,
-            variant: "destructive",
-          })
-          return
-        }
+        // Get all users with their profiles and subscriptions
+        const { data, error } = await supabase
+          .from('profile')
+          .select(`*`)
+          .order('createdAt', { ascending: false })
 
-        const authUsers = data.users as User[]
-        console.log('Auth users:', authUsers)
-        
-        // Get profiles data
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, role')
-          .returns<UserProfile[]>()
+        if (error) throw error
 
-        if (profilesError) {
-          console.error('Profiles error:', profilesError)
-          toast({
-            title: "Error",
-            description: profilesError.message,
-            variant: "destructive",
-          })
-          return
-        }
-
-        const profiles = profilesData || []
-        console.log('Profiles:', profiles)
-
-        // Combine auth users with their profiles
-        const combinedUsers: Profile[] = authUsers.map(authUser => {
-          const profile = profiles.find(p => p.id === authUser.id)
-          return {
-            id: authUser.id,
-            email: authUser.email || '',
-            full_name: profile?.full_name || null,
-            role: profile?.role || 'USER',
-            status: authUser ? 'inactive' : 'active'
-          }
-        })
-
-        setUsers(combinedUsers)
+        console.log('Users data:', data)
+        setUsers(data)
       } catch (error) {
-        console.error('Unexpected error:', error)
+        console.error('Error loading users:', error)
         toast({
           title: "Error",
           description: "Failed to load users",
@@ -106,22 +58,16 @@ export default function UsersPage() {
     loadUsers()
   }, [supabase, toast])
 
-  const filteredUsers = users.filter(user => 
-    user.email?.toLowerCase().includes(search.toLowerCase()) ||
-    user.full_name?.toLowerCase().includes(search.toLowerCase())
-  )
-
   const handleUpdateRole = async (userId: string, newRole: 'ADMIN' | 'USER') => {
     setUpdating(userId)
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from('profile')
         .update({ role: newRole })
         .eq('id', userId)
 
       if (error) throw error
 
-      // Update local state
       setUsers(users.map(user => 
         user.id === userId ? { ...user, role: newRole } : user
       ))
@@ -131,7 +77,7 @@ export default function UsersPage() {
         description: `User role updated to ${newRole}`,
       })
     } catch (error) {
-      console.error('Update error:', error)
+      console.error('Error updating role:', error)
       toast({
         title: "Error",
         description: "Failed to update user role",
@@ -142,6 +88,19 @@ export default function UsersPage() {
     }
   }
 
+  const getSubscriptionBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'default'
+      case 'past_due':
+        return 'warning'
+      case 'canceled':
+        return 'destructive'
+      default:
+        return 'secondary'
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -149,6 +108,11 @@ export default function UsersPage() {
       </div>
     )
   }
+
+  const filteredUsers = users.filter(user => 
+    user.email?.toLowerCase().includes(search.toLowerCase()) ||
+    user.full_name?.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="p-6">
@@ -172,7 +136,6 @@ export default function UsersPage() {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -186,12 +149,7 @@ export default function UsersPage() {
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  <Badge variant={user.status === "active" ? "default" : "destructive"}>
-                    {user.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
+                <TableCell className="space-x-2">
                   <Button
                     variant="outline"
                     size="sm"

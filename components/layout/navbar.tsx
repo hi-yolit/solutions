@@ -1,12 +1,9 @@
-// components/layout/navbar.tsx
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { User } from '@supabase/auth-helpers-nextjs'
+import type { User } from '@supabase/supabase-js'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,19 +13,19 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '@/contexts/auth-context'
+import { Loader2 } from 'lucide-react'
 
 export function Navbar() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, isLoading } = useAuth()
   const router = useRouter()
-
-  console.log(user)
 
   const handleSignOut = async () => {
     await signOut()
-    router.push('/')
+    router.refresh()
+    router.push('/auth/login')
   }
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = () => {
     router.push('/upgrade')
   }
 
@@ -43,8 +40,10 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-4">
-            {user ? (
-              <UserMenu user={user} onSignOut={handleSignOut} onUpgrade={handleUpgrade}/>
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : user ? (
+              <UserMenu user={user} onSignOut={handleSignOut} onUpgrade={handleUpgrade} />
             ) : (
               <div className="flex gap-2">
                 <Link href="/auth/login">
@@ -69,8 +68,6 @@ interface UserMenuProps {
 }
 
 function UserMenu({ user, onSignOut, onUpgrade }: UserMenuProps) {
-
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -109,29 +106,10 @@ function UserMenu({ user, onSignOut, onUpgrade }: UserMenuProps) {
             </p>
           </div>
         </div>
+        
         <DropdownMenuSeparator />
 
-        <div className="px-2 py-1.5">
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-            <span className="ms-3 text-sm font-medium">Light mode</span>
-          </label>
-        </div>
-
-        <DropdownMenuSeparator />
-
-        <div className="space-y-1 p-2">{/* 
-          <DropdownMenuItem
-            className="cursor-pointer text-muted-foreground"
-          >
-            Privacy policy
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="cursor-pointer text-muted-foreground"
-          >
-            Help and feedback
-          </DropdownMenuItem> */}
+        <div className="space-y-1 p-2">
           <DropdownMenuItem
             className="cursor-pointer text-muted-foreground"
             onClick={onUpgrade}

@@ -1,34 +1,73 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createClient } from '@/utils/supabase/server'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
+  const supabase = await createClient()
+
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Define paths that should bypass middleware checks
+  const isCallbackPath = request.nextUrl.pathname === '/api/auth/callback';
+  const isPublicPath =
+    request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/public');
+  const isAuthPath = request.nextUrl.pathname.startsWith('/auth');
+  const isApiPath = request.nextUrl.pathname.startsWith('/api');
+
+  // Allow callback and API routes
+  if (isCallbackPath || isApiPath) {
+    return NextResponse.next();
+  }
+
+  // Redirect to home if authenticated user tries to access auth pages
+  if (user && isAuthPath) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Redirect unauthenticated users trying to access protected routes
+  if (!user && !isPublicPath && !isAuthPath) {
+    const returnUrl = request.nextUrl.pathname;
+    const loginUrl = new URL('/auth/login', request.url);
+    if (returnUrl !== '/') {
+      loginUrl.searchParams.set('returnUrl', returnUrl);
     }
-  )
+    return NextResponse.redirect(loginUrl);
+  }
 
-  // refreshing the auth token
-  await supabase.auth.getUser()
+  // Fetch the user's role if authenticated
+  let profileRole = null;
+  if (user) {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profile')
+        .select('role')
+        .eq('id', user.id)
+        .single();
 
-  return supabaseResponse
+      if (error) {
+        console.error('Failed to fetch profile:', error);
+        // Let the user pass for now if the profile fetch fails
+        return NextResponse.next();
+      }
+
+      profileRole = profile?.role;
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+      return NextResponse.next(); // Prevent redirect loops on profile fetch failure
+    }
+  }
+
+  // Admin route protection
+  if (request.nextUrl.pathname.startsWith('/admin') && profileRole !== 'admin') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Return the default response if no conditions match
+  return supabaseResponse;
 }

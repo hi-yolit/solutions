@@ -43,84 +43,82 @@ enum ResourceStatus {
   LIVE
 }
 
-model User {
-  id         String     @id @default(cuid())
-  email      String     @unique
-  password   String
-  fullName   String
-  role       UserRole
-  grade      Int?      // For students
-  school     String?   // For students
-  subjects   String[]  // For subjects they're interested in
-  isVerified Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  solutions  Solution[]
+model Profile {
+  id        String     @id @db.Uuid
+  role      UserRole   @default(STUDENT)
+  grade     Int?
+  school    String?
+  subjects  String[]
+  solutions Solution[]
+  createdAt DateTime   @default(now())
+
+  @@map("profile")
 }
 
 model Resource {
-  id          String         @id @default(cuid())
-  type        ResourceType
-  title       String      
-  subject     String
-  grade       Int
-  year        Int?        
-  term        Int?        
-  publisher   String?     
-  edition     String?
-  coverImage  String?  
-  curriculum  CurriculumType
-  status      ResourceStatus @default(DRAFT)
-  chapters    Chapter[]
-  questions   Question[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id         String         @id @default(uuid()) @db.Uuid
+  type       ResourceType
+  title      String
+  subject    String
+  grade      Int
+  year       Int?
+  term       Int?
+  publisher  String?
+  edition    String?
+  coverImage String?
+  curriculum CurriculumType
+  status     ResourceStatus @default(DRAFT)
+  chapters   Chapter[]
+  questions  Question[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 }
 
 model Chapter {
-  id          String    @id @default(cuid())
-  resource    Resource  @relation(fields: [resourceId], references: [id])
-  resourceId  String
-  number      Int?
-  title       String?
-  topics      Topic[]
-  questions   Question[]
+  id         String     @id @default(uuid()) @db.Uuid
+  resource   Resource   @relation(fields: [resourceId], references: [id])
+  resourceId String     @db.Uuid
+  number     Int?
+  title      String?
+  topics     Topic[]
+  questions  Question[]
 }
 
 model Topic {
-  id          String    @id @default(cuid())
-  chapter     Chapter   @relation(fields: [chapterId], references: [id])
-  chapterId   String
-  number      String?
-  title       String?
-  questions   Question[]
+  id        String     @id @default(uuid()) @db.Uuid
+  chapter   Chapter    @relation(fields: [chapterId], references: [id])
+  chapterId String     @db.Uuid
+  number    String?
+  title     String?
+  questions Question[]
 }
 
 model Question {
-  id              String       @id @default(cuid())
-  resource        Resource     @relation(fields: [resourceId], references: [id])
-  resourceId      String
-  chapter         Chapter?     @relation(fields: [chapterId], references: [id])
-  chapterId       String?
-  topic           Topic?       @relation(fields: [topicId], references: [id])
-  topicId         String?
-  pageNumber      Int?
-  questionNumber  String
-  exerciseNumber  Int?
-  type            SolutionType
-  content         Json
-  status          QuestionStatus @default(DRAFT)
-  solutions       Solution[]
+  id             String         @id @default(uuid()) @db.Uuid
+  resource       Resource       @relation(fields: [resourceId], references: [id])
+  resourceId     String         @db.Uuid
+  chapter        Chapter?       @relation(fields: [chapterId], references: [id])
+  chapterId      String?        @db.Uuid
+  topic          Topic?         @relation(fields: [topicId], references: [id])
+  topicId        String?        @db.Uuid
+  pageNumber     Int?
+  questionNumber String
+  exerciseNumber Int?
+  type           SolutionType
+  content        Json
+  status         QuestionStatus @default(DRAFT)
+  solutions      Solution[]
 }
 
 model Solution {
-  id                String            @id @default(cuid())
-  question          Question          @relation(fields: [questionId], references: [id])
-  questionId        String
-  admin             User              @relation(fields: [adminId], references: [id])
-  adminId           String
-  content           Json
-  steps             Json[]
-  metrics           Json
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id         String   @id @default(uuid()) @db.Uuid
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String   @db.Uuid
+  admin      Profile  @relation(fields: [adminId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  adminId    String   @db.Uuid
+  content    Json
+  steps      Json[]
+  metrics    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
