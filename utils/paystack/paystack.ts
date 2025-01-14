@@ -8,10 +8,10 @@ import {
 } from './types';
 import { decryptString, encryptString } from '@/lib/utils';
 
-const baseUrl = process.env.NGROK_URL || process.env.NEXT_PUBLIC_APP_URL;
+const baseUrl = process.env.NGROK_URL ?? process.env.NEXT_PUBLIC_APP_URL;
 const supabase = createServiceClient();
 
-export class createPayStackClient {
+export class CreatePayStackClient {
     private readonly apiKey: string;
     private readonly axiosInstance: AxiosInstance;
 
@@ -188,7 +188,7 @@ export class createPayStackClient {
         try {
             const response = await this.axiosInstance.get(`/customer/${customerCode}`);
 
-            if (!response.data || !response.data.status) {
+            if (!response?.data.status) {
                 throw new Error('Invalid response or failed to retrieve subscription details');
             }
 

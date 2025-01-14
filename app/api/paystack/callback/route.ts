@@ -5,7 +5,7 @@ import { paystack } from '@/utils/paystack';
 import { createServiceClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
-const baseUrl = process.env.NGROK_URL || process.env.NEXT_PUBLIC_APP_URL;
+const baseUrl = process.env.NGROK_URL ?? process.env.NEXT_PUBLIC_APP_URL;
 
 export async function GET(request: Request) {
     try {

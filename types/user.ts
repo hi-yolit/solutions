@@ -18,7 +18,7 @@ export interface Profile {
     encryptedToken: string | null
     subscriptionStatus: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED' | 'TRIAL'
     currentPeriodEnd: Date | null
-    cancelAtPeriodEnd: Boolean
+    cancelAtPeriodEnd: boolean
     trialEndsAt: Date | null
     solutionCredits: number
 }

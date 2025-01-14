@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from '@/contexts/auth-context'
 import { isSubscriptionValid } from '@/actions/subscription'
 import Link from 'next/link'
-import { 
-  SolutionContent, 
+import {
+  SolutionContent,
   SubQuestionSolution,
   MCQSolution,
   StructuredStep,
@@ -21,7 +21,6 @@ import { MCQSolutionView } from './mcq-solution'
 import { StructuredSolutionView } from './structured-solution'
 import { EssaySolutionView } from './essay-solution'
 import { ProofSolutionView } from './proof-solution'
-import { Loader2 } from 'lucide-react'
 
 interface SolutionViewerProps {
   activeTab: string
@@ -77,7 +76,7 @@ export function SolutionViewer({
   onTabChange,
   mainSolution,
   subSolutions = []
-}: SolutionViewerProps) {
+}: Readonly<SolutionViewerProps>) {
   const { user } = useAuth()
 
   // Initialize all state hooks at the top
@@ -126,7 +125,7 @@ export function SolutionViewer({
   const revealStep = (tabKey: string, stepIndex: number) => {
     setRevealedSteps(prev => ({
       ...prev,
-      [tabKey]: [...new Set([...prev[tabKey], stepIndex])].sort()
+      [tabKey]: [...new Set([...prev[tabKey], stepIndex])].sort((a, b) => (a - b))
     }))
   }
 
@@ -143,7 +142,7 @@ export function SolutionViewer({
     switch (solution.type) {
       case 'MCQ':
         return (
-          <MCQSolutionView 
+          <MCQSolutionView
             solution={solution.content as MCQSolution}
           />
         )
@@ -179,18 +178,17 @@ export function SolutionViewer({
   }
 
   const getStepCount = (tabKey: string): number => {
-    const solution = tabKey === 'main' 
-      ? mainSolution 
+    const solution = tabKey === 'main'
+      ? mainSolution
       : subSolutions.find(s => s.part === tabKey)?.solution
 
     if (!solution) return 0
 
-    switch (solution.type) {
-      case 'STRUCTURED':
-        return (solution.content as StructuredStep[])?.length || 0
-      default:
-        return 1
+    if (solution.type === 'STRUCTURED') {
+      return (solution.content as StructuredStep[])?.length || 0
     }
+
+    return 1
   }
 
   const getCurrentProgress = () => {
@@ -214,7 +212,7 @@ export function SolutionViewer({
   return (
     <div className="space-y-6">
       <Progress value={(current / total) * 100} className="h-2" />
-      
+
       <Tabs value={activeTab} onValueChange={onTabChange}>
         <TabsList>
           {mainSolution && (

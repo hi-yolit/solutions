@@ -3,7 +3,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { paystack, PaystackSubscription } from '@/utils/paystack'
+import { paystack, PaystackPlan, PaystackSubscription } from '@/utils/paystack'
 import { getProfile } from './user'
 
 
@@ -11,7 +11,7 @@ export async function getPlans() {
   try {
     const plans = await paystack.listPlans()
     return plans
-      .filter(plan =>
+      .filter((plan: PaystackPlan) =>
         !plan.is_archived &&
         !plan.is_deleted &&
         plan.currency === 'ZAR'
@@ -26,7 +26,7 @@ export async function getCurrentSubscription(userId: string): Promise<PaystackSu
   try {
 
     // Fetch the user's profile to get Paystack customer ID
-    const { profile: profile, error: profileError } = await getProfile(userId)
+    const { profile, error: profileError } = await getProfile(userId)
 
     if (profileError || !profile?.paystackCustomerId) {
       console.error('Profile not found or no customer ID', profileError)
@@ -59,7 +59,7 @@ export async function initializeSubscription(planCode: string) {
     }
 
     // Get profile to check role and customer ID
-    const { profile, error } = await getProfile(user.id)
+    const { profile } = await getProfile(user.id)
 
     // Admin bypass
     if (profile?.role === 'ADMIN') {
@@ -69,7 +69,7 @@ export async function initializeSubscription(planCode: string) {
     let customerId = profile?.paystackCustomerId
 
     if (!customerId) {
-      customerId = await paystack.createCustomer(user.id, user.email!)
+      await paystack.createCustomer(user.id, user.email!)
     }
 
     return await paystack.initializeTransaction(
@@ -153,7 +153,7 @@ export async function cancelCurrentSubscription() {
       throw new Error('Not authenticated')
     }
 
-    const { profile, error } = await getProfile(user.id)
+    const { profile } = await getProfile(user.id)
 
     // Admin bypass
     if (profile?.role === 'ADMIN') {
@@ -180,7 +180,6 @@ export async function cancelCurrentSubscription() {
 
 export async function isSubscriptionValid(userId: string) {
   try {
-    const supabase = await createClient()
 
     const { profile } = await getProfile(userId)
 

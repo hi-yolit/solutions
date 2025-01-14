@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
 import { ProfileWithMetadata } from '@/types/user'
@@ -16,13 +16,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<ProfileWithMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isProfileLoading, setIsProfileLoading] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
   const supabase = createClient()
+
+  // Memoize signOut function
+  const signOut = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      await supabase.auth.signOut()
+      setUser(null)
+      setProfile(null)
+    } catch (error) {
+      console.error('Error signing out:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [supabase.auth])
 
   // Initial user load and auth state subscription
   useEffect(() => {
@@ -74,7 +88,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw new Error(result.error)
         }
 
-        // Handle the case where profile might be undefined
         setProfile(result.profile ?? null)
       } catch (error) {
         console.error('Error loading profile:', error)
@@ -89,26 +102,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, isInitialized])
 
-  const signOut = async () => {
-    try {
-      setIsLoading(true)
-      await supabase.auth.signOut()
-      setUser(null)
-      setProfile(null)
-    } catch (error) {
-      console.error('Error signing out:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const value = {
+  // Memoize context value
+  const value = useMemo(() => ({
     user,
     profile,
     isLoading: isLoading || !isInitialized,
     isProfileLoading,
     signOut
-  }
+  }), [
+    user,
+    profile,
+    isLoading,
+    isProfileLoading,
+    isInitialized,
+    signOut
+  ])
 
   return (
     <AuthContext.Provider value={value}>

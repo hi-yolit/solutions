@@ -14,7 +14,7 @@ interface SolutionPageContentProps {
 export function SolutionPageContent({ 
   questionContent, 
   solution 
-}: SolutionPageContentProps) {
+}: Readonly<SolutionPageContentProps>) {
   const [activeTab, setActiveTab] = useState<string>('main')
 
   return (

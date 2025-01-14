@@ -1,7 +1,6 @@
 // app/questions/[questionId]/page.tsx
 import { getQuestionWithSolutions } from '@/actions/solutions'
 import { SolutionPageContent } from '@/components/solution/solution-page-content'
-import type { SolutionData, QuestionContent } from '@/types/solution'
 
 interface PageProps {
   params: {
@@ -9,14 +8,14 @@ interface PageProps {
   }
 }
 
-export default async function QuestionPage({ params }: PageProps) {
+export default async function QuestionPage({ params }: Readonly<PageProps>) {
   const { question, error } = await getQuestionWithSolutions(params.questionId)
 
   if (error || !question) {
     return <div>Failed to load question</div>
   }
 
-  const content = question.content as QuestionContent
+  const content = question.content
   
   // Keep the same transformation as admin
   const solution = question.solutions[0] ? {

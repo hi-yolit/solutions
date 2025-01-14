@@ -47,7 +47,7 @@ interface SubscriptionManagementProps {
   profile: ProfileWithMetadata
 }
 
-export function SubscriptionManagement({ profile }: SubscriptionManagementProps) {
+export function SubscriptionManagement({ profile }: Readonly<SubscriptionManagementProps>) {
   const [availablePlans, setAvailablePlans] = useState<PaystackPlan[]>([])
   const [currentSubscription, setCurrentSubscription] = useState<PaystackSubscription | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<string>('')
@@ -59,7 +59,7 @@ export function SubscriptionManagement({ profile }: SubscriptionManagementProps)
     async function fetchSubscriptionDetails() {
       try {
         const plans = await getPlans()
-        const filteredPlans = plans.filter(plan => {
+        const filteredPlans = plans.filter((plan: PaystackPlan) => {
           const description = parsePlanDescription(plan.description)
           return !description?.disabled
         })
@@ -241,11 +241,7 @@ export function SubscriptionManagement({ profile }: SubscriptionManagementProps)
           <div className="space-y-2">
             <div className="text-sm font-medium">Current Plan</div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold">
-                {currentSubscription.plan?.name}
-              </span>
-              -
-              <span>
+              <span className="font-semibold">{currentSubscription.plan?.name}</span> - <span>
                 {currentSubscription.plan ? `${currentSubscription.plan.amount / 100} ZAR per ${currentSubscription.plan.interval}` : 'N/A'}
               </span>
             </div>
