@@ -13,6 +13,14 @@ export interface Profile {
     school: string | null
     subjects: string[]
     createdAt: Date
+    paystackCustomerId: string | null
+    subscriptionCode: string | null
+    encryptedToken: string | null
+    subscriptionStatus: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED' | 'TRIAL'
+    currentPeriodEnd: Date | null
+    cancelAtPeriodEnd: Boolean
+    trialEndsAt: Date | null
+    solutionCredits: number
 }
 
 export interface ProfileWithMetadata extends Profile {

@@ -27,7 +27,7 @@ export function Navbar() {
   }
 
   const handleUpgrade = () => {
-    router.push('/upgrade')
+    router.push('/account')
   }
 
   return (
@@ -150,7 +150,7 @@ function UserMenu({ user, profile, onSignOut, onUpgrade }: UserMenuProps) {
             className="cursor-pointer text-muted-foreground"
             onClick={onUpgrade}
           >
-            Upgrade
+            Account
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer text-red-600 focus:text-red-600"

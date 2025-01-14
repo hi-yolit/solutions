@@ -9,17 +9,18 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = await createClient()
 
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   // Define paths that should bypass middleware checks
   const isCallbackPath = request.nextUrl.pathname === '/api/auth/callback';
-  const isPublicPath =
-    request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/public');
-  const isAuthPath = request.nextUrl.pathname.startsWith('/auth');
   const isApiPath = request.nextUrl.pathname.startsWith('/api');
+  const isAuthPath = request.nextUrl.pathname.startsWith('/auth');
+  
+  // Define protected paths that require authentication
+  const isAccountPath = request.nextUrl.pathname.startsWith('/account');
+  const isSettingsPath = request.nextUrl.pathname.startsWith('/settings');
 
   // Allow callback and API routes
   if (isCallbackPath || isApiPath) {
@@ -32,7 +33,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Redirect unauthenticated users trying to access protected routes
-  if (!user && !isPublicPath && !isAuthPath) {
+  const protectedPaths = isAccountPath || isSettingsPath;
+  if (!user && protectedPaths) {
     const returnUrl = request.nextUrl.pathname;
     const loginUrl = new URL('/auth/login', request.url);
     if (returnUrl !== '/') {

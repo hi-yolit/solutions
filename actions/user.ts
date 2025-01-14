@@ -17,7 +17,7 @@ export async function getProfiles(): Promise<{ profiles?: ProfileWithMetadata[],
     }
 
     const supabase = await createClient()
-    const serviceClient = await createServiceClient()
+    const serviceClient = createServiceClient()
 
     const { data: profiles, error: profileError } = await supabase
       .from('profile')
@@ -55,9 +55,9 @@ export async function updateProfileRole(id: string, role: UserRole): Promise<{ p
     const { isAdmin, profile: adminProfile, error: adminError } = await verifyAdmin()
 
     if (!isAdmin && !adminProfile) {
-        return { error: adminError || 'Unauthorized - Admin access required' }
+      return { error: adminError || 'Unauthorized - Admin access required' }
     }
-    
+
     const supabase = await createClient()
 
     const { data: profile, error } = await supabase
@@ -81,7 +81,7 @@ export async function updateProfileRole(id: string, role: UserRole): Promise<{ p
 export async function getProfile(userId: string): Promise<{ profile?: ProfileWithMetadata, error?: string }> {
   try {
     const supabase = await createClient()
-    const serviceClient = await createServiceClient()
+    const serviceClient = createServiceClient()
 
     const { data: profile, error: profileError } = await supabase
       .from('profile')
@@ -140,3 +140,74 @@ export async function verifyAdmin(): Promise<{ isAdmin: boolean; error?: string;
     }
   }
 }
+
+/* export async function updateProfile(data: {
+  userId: string;
+  status?: string | null;
+  subscriptionCode?: string | null;
+  currentPeriodEnd?: string | null;
+  paystackCustomerId?: string | null;
+  cancelAtPeriodEnd?: boolean;
+}) {
+  try {
+    console.log('Updating Profile - Input Data:', data);
+
+    const supabase = await createClient();
+    const { data: existingProfile, error: profileFetchError } = await supabase
+      .from('profile')
+      .select('updatedAt')
+      .eq('id', data.userId)
+      .single();
+
+    if (profileFetchError) {
+      console.error('Error fetching existing profile:', profileFetchError);
+      throw profileFetchError;
+    }
+
+    // Build update object only including non-null values
+    const updateData: Record<string, any> = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Only add fields that are defined and not null
+    if (data.status !== undefined && data.status !== null) {
+      updateData.subscriptionStatus = data.status;
+    }
+    if (data.subscriptionCode !== undefined && data.subscriptionCode !== null) {
+      updateData.subscriptionCode = data.subscriptionCode;
+    }
+    if (data.currentPeriodEnd !== undefined && data.currentPeriodEnd !== null) {
+      updateData.currentPeriodEnd = new Date(data.currentPeriodEnd);
+    }
+    if (data.paystackCustomerId !== undefined && data.paystackCustomerId !== null) {
+      updateData.paystackCustomerId = data.paystackCustomerId;
+    }
+    if (data.cancelAtPeriodEnd !== undefined) {
+      updateData.cancelAtPeriodEnd = data.cancelAtPeriodEnd;
+    }
+
+    console.log('Preparing profile update:', updateData);
+
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('profile')
+      .update(updateData)
+      .eq('id', data.userId)
+      .gt('updatedAt', existingProfile?.updatedAt || '1970-01-01')
+      .select();
+
+    if (updateError) {
+      console.error('Error updating profile:', updateError);
+      throw updateError;
+    }
+
+    console.log('Profile update successful', {
+      updatedProfile,
+      rowsAffected: updatedProfile ? updatedProfile.length : 0,
+    });
+
+    return updatedProfile;
+  } catch (error) {
+    console.error('Unexpected error in updateProfile:', error);
+    throw error;
+  }
+} */

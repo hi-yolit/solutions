@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export async function uploadImage(file: File) {
   try {
-    const serviceClient = await createServiceClient()
+    const serviceClient =  createServiceClient()
 
     const fileExt = file.name.split('.').pop()?.toLowerCase()
     const fileName = `${uuidv4()}.${fileExt}`

@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null
   profile: ProfileWithMetadata | null
   isLoading: boolean
+  isProfileLoading: boolean
   signOut: () => Promise<void>
 }
 
@@ -19,47 +20,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<ProfileWithMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isProfileLoading, setIsProfileLoading] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
   const supabase = createClient()
 
-  // Fetch profile data when user changes
+  // Initial user load and auth state subscription
   useEffect(() => {
-    async function loadProfile() {
-      if (!user) {
-        setProfile(null)
-        return
-      }
-
+    const initializeAuth = async () => {
       try {
-        const result = await getProfile(user.id)
-        if (result.error) throw new Error(result.error)
-        // Handle the case where profile might be undefined
-        setProfile(result.profile ?? null)
-      } catch (error) {
-        console.error('Error loading profile:', error)
-        setProfile(null)
-      }
-    }
-
-    loadProfile()
-  }, [user])
-
-  useEffect(() => {
-    const getUser = async () => {
-      try {
+        setIsLoading(true)
         const { data: { user: initialUser }, error } = await supabase.auth.getUser()
         if (error) {
           throw error
         }
         setUser(initialUser)
       } catch (error) {
-        console.error('Error getting user:', error)
+        console.error('Error initializing auth:', error)
         setUser(null)
       } finally {
         setIsLoading(false)
+        setIsInitialized(true)
       }
     }
 
-    getUser()
+    initializeAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -72,6 +56,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
     }
   }, [supabase])
+
+  // Profile loading effect
+  useEffect(() => {
+    async function loadProfile() {
+      if (!user) {
+        setProfile(null)
+        return
+      }
+
+      try {
+        setIsProfileLoading(true)
+        const result = await getProfile(user.id)
+        
+        if (result.error) {
+          console.error('Profile load error:', result.error)
+          throw new Error(result.error)
+        }
+
+        // Handle the case where profile might be undefined
+        setProfile(result.profile ?? null)
+      } catch (error) {
+        console.error('Error loading profile:', error)
+        setProfile(null)
+      } finally {
+        setIsProfileLoading(false)
+      }
+    }
+
+    if (isInitialized) {
+      loadProfile()
+    }
+  }, [user, isInitialized])
 
   const signOut = async () => {
     try {
@@ -86,8 +102,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const value = {
+    user,
+    profile,
+    isLoading: isLoading || !isInitialized,
+    isProfileLoading,
+    signOut
+  }
+
   return (
-    <AuthContext.Provider value={{ user, profile, isLoading, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

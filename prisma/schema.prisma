@@ -43,6 +43,13 @@ enum ResourceStatus {
   LIVE
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  TRIAL
+}
+
 model Profile {
   id        String     @id @db.Uuid
   role      UserRole   @default(STUDENT)
@@ -51,6 +58,16 @@ model Profile {
   subjects  String[]
   solutions Solution[]
   createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
+
+  paystackCustomerId String?
+  subscriptionCode   String?
+  encryptedToken   String?
+  subscriptionStatus SubscriptionStatus?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean             @default(false)
+  trialEndsAt        DateTime?
+  solutionCredits    Int                 @default(3)
 
   @@map("profile")
 }
