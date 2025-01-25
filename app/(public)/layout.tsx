@@ -4,6 +4,7 @@ import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
 import 'katex/dist/katex.min.css'
 import NextTopLoader from "nextjs-toploader";
+import BottomNavigation from "@/components/bottom-navigation";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,17 +17,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <section className="relative">
       <NextTopLoader />
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-grow">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {children}
-            </div>
-          </main>
-          <Footer />
-        </div>
-    </>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {children}
+          </div>
+        </main>
+        <BottomNavigation />
+      </div>
+    </section>
   );
 }

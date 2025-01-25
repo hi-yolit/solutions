@@ -1,9 +1,11 @@
+
+import MillionLint from "@million/lint";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: '5mb',
+      bodySizeLimit: "5mb",
     },
   },
   images: {
@@ -16,4 +18,8 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
+export default MillionLint.next({
+  enabled: true,
+  rsc: true
+})(nextConfig);
+

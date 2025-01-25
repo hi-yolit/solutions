@@ -2,6 +2,8 @@
 'use client'
 
 import { AuthProvider } from '@/contexts/auth-context'
+import { HeroUIProvider } from "@heroui/react";
+
 import { ReactNode } from 'react'
 
 interface ProvidersProps {
@@ -11,7 +13,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <AuthProvider>
-      {children}
+      <HeroUIProvider>{children}</HeroUIProvider>
     </AuthProvider>
-  )
+  );
 }

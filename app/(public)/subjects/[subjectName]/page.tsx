@@ -5,6 +5,7 @@ import { ResourceList } from '@/components/subjects/resource-list'
 import { ResourceFilters } from '@/components/subjects/resource-filters'
 import { Pagination } from '@/components/pagination'
 import Link from 'next/link'
+import GradeSubjectNavbar from '@/components/shared/grade-subject-navbar'
 
 interface PageProps {
   params: {
@@ -44,15 +45,24 @@ export default async function SubjectPage({ params, searchParams }: PageProps) {
       .join(' ');
   }
 
+  //Get Selected Grade
+  //Get sel;cted Subject
+  //Apply fillters on the rsources
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="max-w-7xl mx-auto md:px-4 md:space-y-8">
+      {/* <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">
         {capitalizeSubject(decodeURIComponent(params.subjectName))}
         </h1>
+      </div> */}
+
+      {/* Grade subject Navigator */}
+      <div>
+        <GradeSubjectNavbar />
       </div>
 
-      <div className="space-y-6">
+      <div className="md:space-y-6">
         <ResourceFilters 
           type={type}
           grade={grade}
