@@ -7,7 +7,7 @@ import { Check } from 'lucide-react'
 import { cn, parsePlanDescription } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
 import { toast } from '@/hooks/use-toast'
-import { PaystackPlan, PaystackSubscription, PlanDescription } from '@/utils/paystack'
+import { PaystackPlan, PaystackSubscription } from '@/utils/paystack'
 import { useEffect, useState } from 'react'
 
 

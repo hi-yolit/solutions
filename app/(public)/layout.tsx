@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "../globals.css";
 import { Navbar } from '@/components/layout/navbar'
-import { Footer } from '@/components/layout/footer'
 import 'katex/dist/katex.min.css'
 import NextTopLoader from "nextjs-toploader";
 import BottomNavigation from "@/components/bottom-navigation";

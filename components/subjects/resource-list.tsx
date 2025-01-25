@@ -17,7 +17,7 @@ const resourceTypeLabels: Record<ResourceType, string> = {
   STUDY_GUIDE: 'Study Guide',
 }
 
-export function ResourceList({ resources = [], currentPage }: ResourceListProps) {
+export function ResourceList({ resources = [] }: Readonly<ResourceListProps>) {
   if (!resources?.length) {
     return (
       <div className="text-center py-8 text-muted-foreground">

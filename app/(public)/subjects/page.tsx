@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Subject, CurriculumType } from '@/types'
-import { BottomNavigation } from "@/components/bottom-navigation";
 
 const subjects: Subject[] = [
   {
