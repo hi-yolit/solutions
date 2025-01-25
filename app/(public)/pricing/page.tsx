@@ -21,7 +21,7 @@ export default async function PricingPage() {
   }
 
   return (
-    <div className="container py-10">
+    <div className="container py-16">
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold">Become a member</h1>
         <p className="text-muted-foreground mt-2">

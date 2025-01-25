@@ -9,7 +9,7 @@ const navItems = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/search", icon: Search, label: "Search" },
   { href: "/pricing", icon: Gem, label: "Premium" },
-  { href: "/subjects", icon: Menu, label: "More" },
+  { href: "/more", icon: Menu, label: "More" },
 ];
 
 const BottomNavigation = () => {
