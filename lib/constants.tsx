@@ -9,4 +9,16 @@ export const GRADES: Grade[] = [
   { key: "Gr10", label: "Gr10" },
 ];
 
-export const SUBJECTS: string[] = ["Mathematics", "Science","Accounting", "Life Sciences"];
+export const SUBJECTS: string[] = ["Mathematics", "Science", "Accounting", "Life Sciences"];
+
+export const RESOURCE_TYPES: string[] = [
+  "Textbook",
+  "Past Paper",
+  "Study Guide",
+];
+
+export enum ResourceTypeEnum {
+  Textbook = "Textbook",
+  PastPaper = "Past Paper",
+  StudyGuide = "Study Guide",
+}
