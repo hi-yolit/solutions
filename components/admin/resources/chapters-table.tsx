@@ -39,7 +39,7 @@ export function ChaptersTable({
   resourceId, 
   resourceType,
   onEdit 
-}: ChaptersTableProps) {
+}: Readonly<ChaptersTableProps>) {
   const router = useRouter()
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -76,6 +76,7 @@ export function ChaptersTable({
       })
       router.refresh()
     } catch (error) {
+      console.log(error)
       toast({
         title: "Error",
         description: "Something went wrong",

@@ -36,6 +36,31 @@ interface AddChapterDialogProps {
   totalChapters: number;
 }
 
+const getSuccessMessage = (isEdit: boolean, isPastPaper: boolean) => {
+  if (isEdit) {
+    return isPastPaper
+      ? "Question updated successfully"
+      : "Chapter updated successfully";
+  }
+  return isPastPaper
+    ? "Question added successfully"
+    : "Chapter added successfully";
+};
+
+const getDialogTitle = (isEdit: boolean, isPastPaper: boolean) => {
+  if (isEdit) {
+    return isPastPaper ? "Edit Question" : "Edit Chapter";
+  }
+  return isPastPaper ? "Add Question" : "Add Chapter";
+};
+
+const getButtonText = (isEdit: boolean, isPastPaper: boolean) => {
+  if (isEdit) {
+    return isPastPaper ? "Update Question" : "Update Chapter";
+  }
+  return isPastPaper ? "Add Question" : "Add Chapter";
+};
+
 export function AddChapterDialog({
   resourceId,
   open,
@@ -43,7 +68,7 @@ export function AddChapterDialog({
   resourceType,
   chapter,
   totalChapters,
-}: AddChapterDialogProps) {
+}: Readonly<AddChapterDialogProps>) {
   const { toast } = useToast();
   const isPastPaper = resourceType === "PAST_PAPER";
   const isEdit = !!chapter;
@@ -63,7 +88,7 @@ export function AddChapterDialog({
         title: "",
       });
     }
-  }, [open, form]);
+  }, [open, form, totalChapters]);
 
   useEffect(() => {
     if (chapter) {
@@ -97,17 +122,12 @@ export function AddChapterDialog({
       toast({
         title: "Success",
         variant: "success",
-        description: isEdit
-          ? isPastPaper
-            ? "Question updated successfully"
-            : "Chapter updated successfully"
-          : isPastPaper
-          ? "Question added successfully"
-          : "Chapter added successfully",
+        description:getSuccessMessage(isEdit, isPastPaper),
       });
       onOpenChange(false);
       form.reset();
     } catch (error) {
+      console.log(error)  
       toast({
         title: "Error",
         description: "Something went wrong",
@@ -120,15 +140,7 @@ export function AddChapterDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {isEdit
-              ? isPastPaper
-                ? "Edit Question"
-                : "Edit Chapter"
-              : isPastPaper
-              ? "Add Question"
-              : "Add Chapter"}
-          </DialogTitle>
+          <DialogTitle>{getDialogTitle(isEdit, isPastPaper)}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -174,13 +186,7 @@ export function AddChapterDialog({
                 Cancel
               </Button>
               <Button type="submit">
-                {isEdit
-                  ? isPastPaper
-                    ? "Update Question"
-                    : "Update Chapter"
-                  : isPastPaper
-                  ? "Add Question"
-                  : "Add Chapter"}
+                {getButtonText(isEdit, isPastPaper)}
               </Button>
             </div>
           </form>

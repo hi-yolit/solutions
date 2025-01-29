@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from "react"
-import { Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { AddChapterDialog } from "./add-chapter-dialog"
 import { ChaptersTable } from "./chapters-table"
 import type { Chapter, ResourceType } from "@prisma/client"
@@ -14,7 +12,7 @@ interface ChaptersSectionProps {
   resourceType: ResourceType
 }
 
-export function ChaptersSection({ chapters, resourceId, resourceType }: ChaptersSectionProps) {
+export function ChaptersSection({ chapters, resourceId, resourceType }: Readonly<ChaptersSectionProps>) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedChapter, setSelectedChapter] = useState<Chapter | undefined>()
 

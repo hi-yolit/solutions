@@ -3,8 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Resource, ResourceType, ResourceStatus } from "@prisma/client"
-import { Plus } from "lucide-react"
+import { Resource,ResourceStatus } from "@prisma/client"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
