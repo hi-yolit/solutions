@@ -25,6 +25,7 @@ import { Chapter, ResourceType } from "@prisma/client"
 import { useState } from "react"
 import { deleteChapter } from "@/actions/chapters"
 import { useToast } from "@/hooks/use-toast"
+import { Pencil, Trash } from "lucide-react"
 
 interface ChaptersTableProps {
   chapters: Chapter[]
@@ -87,16 +88,16 @@ export function ChaptersTable({
   }
 
   return (
-    <>
-      <div className="border rounded-md">
+    <div className="mb-24">
+      <div className="border rounded-md mb-12">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>
-                {resourceType === 'PAST_PAPER' ? 'Question' : 'Chapter'}
+                {resourceType === "PAST_PAPER" ? "Question" : "Chapter"}
               </TableHead>
               {!isPastPaper && <TableHead>Title</TableHead>}
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -107,30 +108,32 @@ export function ChaptersTable({
                   <TableCell className="font-medium">{chapter.title}</TableCell>
                 )}
                 <TableCell>
-                  <div className="flex gap-2">
+                  <div className="flex gap-4 justify-end">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleManageClick(chapter.id)}
                     >
-                      {resourceType === 'PAST_PAPER' ? 'Manage Questions' : 'Manage Topics'}
+                      {resourceType === "PAST_PAPER"
+                        ? "Manage Questions"
+                        : "Manage Topics"}
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
+                    <Button
+                      variant="outline"
+                      size="icon"
                       onClick={() => onEdit(chapter)}
                     >
-                      Edit
+                      <Pencil />
                     </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
+                    <Button
+                      variant="destructive"
+                      size="icon"
                       onClick={() => {
-                        setChapterToDelete(chapter)
-                        setDeleteDialogOpen(true)
+                        setChapterToDelete(chapter);
+                        setDeleteDialogOpen(true);
                       }}
                     >
-                      Delete
+                      <Trash />
                     </Button>
                   </div>
                 </TableCell>
@@ -146,8 +149,8 @@ export function ChaptersTable({
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              {resourceType === 'PAST_PAPER' ? ' question' : ' chapter'}
-              {resourceType !== 'PAST_PAPER' && ' and all its topics'}.
+              {resourceType === "PAST_PAPER" ? " question" : " chapter"}
+              {resourceType !== "PAST_PAPER" && " and all its topics"}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -156,6 +159,6 @@ export function ChaptersTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
-  )
+    </div>
+  );
 }
