@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import 'katex/dist/katex.min.css'
+import NextTopLoader from "nextjs-toploader";
 
 const routes = [
   {
@@ -47,6 +48,7 @@ export default function AdminLayout({
 
   return (
     <div className="h-full relative">
+      <NextTopLoader />
       <div className="hidden h-full md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 border-r bg-background">
         <div className="flex flex-col h-full">
           <div className="px-3 py-2 flex-1">
