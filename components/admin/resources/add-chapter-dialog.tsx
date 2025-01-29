@@ -94,6 +94,7 @@ export function AddChapterDialog({
 
       toast({
         title: "Success",
+        variant: "success",
         description: isEdit
           ? isPastPaper
             ? "Question updated successfully"
