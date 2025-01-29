@@ -33,6 +33,7 @@ interface AddChapterDialogProps {
   onOpenChange: (open: boolean) => void;
   resourceType: ResourceType;
   chapter?: Chapter;
+  totalChapters: number;
 }
 
 export function AddChapterDialog({
@@ -41,6 +42,7 @@ export function AddChapterDialog({
   onOpenChange,
   resourceType,
   chapter,
+  totalChapters,
 }: AddChapterDialogProps) {
   const { toast } = useToast();
   const isPastPaper = resourceType === "PAST_PAPER";
@@ -49,7 +51,7 @@ export function AddChapterDialog({
   const form = useForm<ChapterFormValues>({
     resolver: zodResolver(chapterFormSchema),
     defaultValues: {
-      number: 1,
+      number: totalChapters,
       title: "",
     },
   });
@@ -57,7 +59,7 @@ export function AddChapterDialog({
   useEffect(() => {
     if (!open) {
       form.reset({
-        number: 1,
+        number: totalChapters,
         title: "",
       });
     }

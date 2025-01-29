@@ -44,6 +44,7 @@ export function ChaptersSection({ chapters, resourceId, resourceType }: Chapters
         onOpenChange={setDialogOpen}
         resourceType={resourceType}
         chapter={selectedChapter}
+        totalChapters={chapters.length +1}
       />
 
 
