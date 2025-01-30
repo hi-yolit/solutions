@@ -33,10 +33,10 @@ export function QuestionDisplay({
 }: QuestionDisplayProps) {
   const { toast } = useToast()
   const content = question.content as any;
-  console.log(question)
-  /* 
-    const totalMarks = content.marks || 0 + 
-      (content.subQuestions?.reduce((acc: number, sq: any) => acc + (sq.marks || 0), 0) || 0); */
+
+  const test = question.resource.type;
+  const displayType = test == "TEXTBOOK" ? "Exercise" : "Question";
+
 
   const handleStatusChange = async (status: QuestionStatus) => {
     const result = await updateQuestionStatus(question.id, status)
@@ -58,12 +58,12 @@ export function QuestionDisplay({
     <Card className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h3 className="font-semibold text-lg">Question {question.questionNumber}</h3>
+          <h3 className="font-semibold text-lg">
+            {displayType}{" "}
+            {question.exerciseNumber}
+          </h3>
           <Badge variant="outline">{question.type}</Badge>
-          <Select
-            value={question.status}
-            onValueChange={handleStatusChange}
-          >
+          <Select value={question.status} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -73,9 +73,7 @@ export function QuestionDisplay({
             </SelectContent>
           </Select>
         </div>
-        {content?.marks > 0 && (
-          <Badge>{content?.marks} marks</Badge>
-        )}
+        {content?.marks > 0 && <Badge>{content?.marks} marks</Badge>}
       </div>
 
       <div className="space-y-4">
@@ -85,21 +83,22 @@ export function QuestionDisplay({
         </div>
 
         {/* Images from blocks */}
-        {content.blocks?.map((block: any, index: number) =>
-          block.type === 'image' && (
-            <div key={index} className="my-2">
-              <img
-                src={block.imageData.url}
-                alt={block.imageData.caption || 'Question image'}
-                className="max-w-full"
-              />
-              {block.imageData.caption && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {block.imageData.caption}
-                </p>
-              )}
-            </div>
-          )
+        {content.blocks?.map(
+          (block: any, index: number) =>
+            block.type === "image" && (
+              <div key={index} className="my-2">
+                <img
+                  src={block.imageData.url}
+                  alt={block.imageData.caption || "Question image"}
+                  className="max-w-full"
+                />
+                {block.imageData.caption && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {block.imageData.caption}
+                  </p>
+                )}
+              </div>
+            )
         )}
 
         {/* Sub Questions */}
@@ -118,21 +117,22 @@ export function QuestionDisplay({
                 </div>
 
                 {/* Sub Question Images */}
-                {subQ.blocks?.map((block: any, blockIndex: number) =>
-                  block.type === 'image' && (
-                    <div key={blockIndex} className="my-2">
-                      <img
-                        src={block.imageData.url}
-                        alt={block.imageData.caption || 'Question image'}
-                        className="max-w-full"
-                      />
-                      {block.imageData.caption && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {block.imageData.caption}
-                        </p>
-                      )}
-                    </div>
-                  )
+                {subQ.blocks?.map(
+                  (block: any, blockIndex: number) =>
+                    block.type === "image" && (
+                      <div key={blockIndex} className="my-2">
+                        <img
+                          src={block.imageData.url}
+                          alt={block.imageData.caption || "Question image"}
+                          className="max-w-full"
+                        />
+                        {block.imageData.caption && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {block.imageData.caption}
+                          </p>
+                        )}
+                      </div>
+                    )
                 )}
               </div>
             ))}
@@ -142,26 +142,15 @@ export function QuestionDisplay({
 
       <div className="flex justify-between items-center pt-4">
         <div className="space-x-2">
-          <Button
-            onClick={onManageSolutions}
-            size="sm"
-          >
-            {question.solutions.length > 0 ? 'View Solutions' : 'Add Solution'}
+          <Button onClick={onManageSolutions} size="sm">
+            {question.solutions.length > 0 ? "View Solutions" : "Add Solution"}
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onEdit}
-          >
-            Edit Question
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            Edit {displayType}
           </Button>
 
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={onDelete}
-          >
+          <Button variant="destructive" size="sm" onClick={onDelete}>
             Delete
           </Button>
         </div>
