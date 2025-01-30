@@ -4,6 +4,10 @@ import { SubjectResources } from "@/components/subject-resources";
 import { Resource } from "@prisma/client";
 import { SearchBox } from "@/components/search-box";
 
+
+
+
+
 export default async function Home() {
   const { subjects } = await getSuggestedSubjects();
   const { resources } = (await getResources({
@@ -21,18 +25,23 @@ export default async function Home() {
 
   const isLoggedIn = true; // Replace with actual auth check
 
+   const SubjectResourcesSection = () =>
+     subjects &&
+     resources && (
+       <SubjectResources
+         subjects={subjects}
+         resourcesBySubject={resourcesBySubject}
+       />
+     ); 
+
+
   return (
     <div className="max-w-[64rem] mx-auto px-4 py-12">
       {isLoggedIn ? (
         <div className="grid gap-8">
           {/* Browse section */}
           <section>
-            {subjects && resources && (
-              <SubjectResources
-                subjects={subjects}
-                resourcesBySubject={resourcesBySubject}
-              />
-            )}
+            <SubjectResourcesSection />
           </section>
         </div>
       ) : (
@@ -53,12 +62,7 @@ export default async function Home() {
 
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-6">Browse by subject</h2>
-            {subjects && resources && (
-              <SubjectResources
-                subjects={subjects}
-                resourcesBySubject={resourcesBySubject}
-              />
-            )}
+            <SubjectResourcesSection />
           </div>
         </>
       )}

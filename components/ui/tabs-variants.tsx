@@ -54,7 +54,7 @@ export interface TabsListProps
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   TabsListProps
->(({ className, variant, width, asChild = false, ...props }, ref) => (
+>(({ className, variant, width, ...props }, ref) => (
   <TabsPrimitive.List
     ref={ref}
     className={cn(TabsListVariants({ variant, width, className }))}
@@ -72,7 +72,7 @@ export interface TabsTriggerProps
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   TabsTriggerProps
->(({ className, variant, width, asChild = false, ...props }, ref) => (
+>(({ className, variant, width, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(TabsTriggerVariants({ variant, width, className }))}

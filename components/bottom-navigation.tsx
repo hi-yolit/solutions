@@ -16,13 +16,18 @@ const BottomNavigation = () => {
   const pathname = usePathname();
 
   return (
-    <div className="flex justify-around fixed bottom-4 left-4 right-4 p-2 rounded-lg bg-white shadow-md z-50">
+    <nav
+      aria-label="Bottom navigation"
+      className="flex justify-around fixed bottom-0 left-0 right-0 p-2 bg-white shadow-md z-50 safe-area-inset-bottom"
+    >
       {navItems.map(({ href, icon: Icon, label }) => {
         const isActive = pathname === href;
         return (
           <Link
             key={href}
             href={href}
+            aria-current={isActive ? "page" : undefined}
+            aria-label={label}
             className="flex flex-col justify-center items-center gap-2"
           >
             <Icon className={isActive ? "text-blue-600" : "text-gray-600"} />
@@ -36,7 +41,7 @@ const BottomNavigation = () => {
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 };
 

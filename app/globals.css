@@ -6,6 +6,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.safe-area-inset-bottom {  
+  padding-bottom: env(safe-area-inset-bottom);  
+}  
+
 @layer base {
   :root {
     --background: 0 0% 100%;

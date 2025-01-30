@@ -1,13 +1,6 @@
-import React from "react";
-import { RESOURCE_TYPES, ResourceTypeEnum } from "@/lib/constants";
+import { ResourceTypeEnum } from "@/lib/constants";
 
-
-const resourceTypeLabels: Record<ResourceType, string> = {
-  TEXTBOOK: "Textbook",
-  PAST_PAPER: "Past Paper",
-  STUDY_GUIDE: "Study Guide",
-};
-
+// Dummy data simulating API response
 export const dummyResources = [
   // Textbooks
   {
@@ -88,14 +81,3 @@ export const dummyResources = [
     pages: 189,
   },
 ];
-
-
-const ResourceList = () => {
-  return (
-    <div className="bg-slate-400">
-      <p>Resource List Grid</p>
-    </div>
-  );
-};
-
-export default ResourceList;

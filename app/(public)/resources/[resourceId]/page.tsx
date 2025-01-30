@@ -21,7 +21,6 @@ interface PageProps {
 export default async function ResourcePage({ params }: Readonly<PageProps>) {
   const { resource, error } = await getResourceWithContent(params.resourceId);
 
-  console.log(resource);
 
   if (error || !resource) {
     return <div>Failed to load resource</div>;

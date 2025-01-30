@@ -23,7 +23,7 @@ export function ChapterAccordion({ chapter, resourceType }: ChapterAccordionProp
         <div key={topic.id} className="p-4">
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium">Section234 {topic.title}</h3>
+              <h3 className="text-sm font-medium">Section {topic.title}</h3>
             </div>
             
             {/* Questions Grid */}

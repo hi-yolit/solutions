@@ -11,14 +11,9 @@ export const GRADES: Grade[] = [
 
 export const SUBJECTS: string[] = ["Mathematics", "Science", "Accounting", "Life Sciences"];
 
-export const RESOURCE_TYPES: string[] = [
-  "Textbook",
-  "Past Paper",
-  "Study Guide",
-];
-
 export enum ResourceTypeEnum {
   Textbook = "Textbook",
   PastPaper = "Past Paper",
   StudyGuide = "Study Guide",
 }
+export const RESOURCE_TYPES: ResourceTypeEnum[] = Object.values(ResourceTypeEnum);

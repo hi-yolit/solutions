@@ -4,7 +4,6 @@ import { ResourceType, CurriculumType } from "@prisma/client"
 import { ResourceList } from '@/components/subjects/resource-list'
 import { ResourceFilters } from '@/components/subjects/resource-filters'
 import { Pagination } from '@/components/pagination'
-import Link from 'next/link'
 import GradeSubjectNavbar from '@/components/shared/grade-subject-navbar'
 
 interface PageProps {
@@ -19,7 +18,7 @@ interface PageProps {
   }
 }
 
-export default async function SubjectPage({ params, searchParams }: PageProps) {
+export default async function SubjectPage({ params, searchParams }: Readonly<PageProps>) {
   const page = Number(searchParams.page) || 1
   const grade = searchParams.grade
   const curriculum = searchParams.curriculum
@@ -38,24 +37,12 @@ export default async function SubjectPage({ params, searchParams }: PageProps) {
   // Available grades for this subject
   const grades = [8, 9, 10, 11, 12]
 
-  function capitalizeSubject(subject: string): string {
-    return subject
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  }
-
   //Get Selected Grade
   //Get sel;cted Subject
   //Apply fillters on the rsources
 
   return (
     <div className="max-w-7xl mx-auto md:px-4 md:space-y-8">
-      {/* <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">
-        {capitalizeSubject(decodeURIComponent(params.subjectName))}
-        </h1>
-      </div> */}
 
       {/* Grade subject Navigator */}
       <div>
@@ -74,7 +61,6 @@ export default async function SubjectPage({ params, searchParams }: PageProps) {
 
         <ResourceList 
           resources={resources}
-          currentPage={page}
         />
 
         {pages > 1 && (
