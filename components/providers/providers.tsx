@@ -1,4 +1,5 @@
 import { AuthProvider } from '@/contexts/auth-context'
+import { MantineProvider } from "@mantine/core";
 import { ReactNode } from 'react'
 
 interface ProvidersProps {
@@ -7,8 +8,8 @@ interface ProvidersProps {
 
 export function Providers({ children }: Readonly<ProvidersProps>) {
   return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
+    <MantineProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </MantineProvider>
   );
 }

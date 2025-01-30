@@ -2,6 +2,7 @@
 import { getResourceWithContent } from '@/actions/resources'
 import { Badge } from "@/components/ui/badge"
 import { ChapterAccordion } from '@/components/resources/chapter-accordion'
+import { Button } from "@mantine/core";
 import { ResourceType } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
@@ -110,7 +111,7 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
             {resource.chapters.map((chapter) => (
               <TabsTrigger
                 key={chapter.id}
-                value={chapter.title ?? ''}
+                value={chapter.title ?? ""}
                 variant="underline"
               >
                 {resource.type === ResourceType.TEXTBOOK ? "Ch" : "Question"}
@@ -120,7 +121,7 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
           </TabsList>
 
           {resource.chapters.map((chapter) => (
-            <TabsContent key={chapter.id} value={chapter.title ?? ''}>
+            <TabsContent key={chapter.id} value={chapter.title ?? ""}>
               <div className="grid gap-6">
                 {chapter.topics.map((topic) => (
                   <div key={topic.id}>
