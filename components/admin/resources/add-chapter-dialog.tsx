@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ import {
 } from "@/lib/validations/chapter";
 import { useToast } from "@/hooks/use-toast";
 import { Chapter, ResourceType } from "@prisma/client";
+import { Loader2 } from "lucide-react";
 
 interface AddChapterDialogProps {
   resourceId: string;
@@ -70,6 +71,7 @@ export function AddChapterDialog({
   totalChapters,
 }: Readonly<AddChapterDialogProps>) {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isPastPaper = resourceType === "PAST_PAPER";
   const isEdit = !!chapter;
 
@@ -87,19 +89,19 @@ export function AddChapterDialog({
         number: totalChapters,
         title: "",
       });
-    }
-  }, [open, form, totalChapters]);
-
-  useEffect(() => {
-    if (chapter) {
+    } else if (chapter) {
       form.reset({
         number: chapter.number ?? 1,
         title: chapter.title ?? "",
       });
     }
-  }, [chapter, form]);
-
+    return () => {
+      form.reset();
+    };
+  }, [open, chapter, form, totalChapters]);
   async function onSubmit(data: ChapterFormValues) {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       let result;
 
@@ -122,17 +124,19 @@ export function AddChapterDialog({
       toast({
         title: "Success",
         variant: "success",
-        description:getSuccessMessage(isEdit, isPastPaper),
+        description: getSuccessMessage(isEdit, isPastPaper),
       });
       onOpenChange(false);
       form.reset();
     } catch (error) {
-      console.log(error)  
+      console.log(error);
       toast({
         title: "Error",
         description: "Something went wrong",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -149,7 +153,9 @@ export function AddChapterDialog({
               name="number"
               render={({ field }) => (
                 <FormItem>
-                  {isPastPaper ? "Question Number" : "Chapter Number"}
+                  <FormLabel>
+                    {isPastPaper ? "Question Number" : "Chapter Number"}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -185,7 +191,8 @@ export function AddChapterDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="animate-spin" />}
                 {getButtonText(isEdit, isPastPaper)}
               </Button>
             </div>

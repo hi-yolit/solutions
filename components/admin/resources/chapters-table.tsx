@@ -76,7 +76,6 @@ export function ChaptersTable({
       })
       router.refresh()
     } catch (error) {
-      console.log(error)
       toast({
         title: "Error",
         description: "Something went wrong",
@@ -109,7 +108,7 @@ export function ChaptersTable({
                   <TableCell className="font-medium">{chapter.title}</TableCell>
                 )}
                 <TableCell>
-                  <div className="flex gap-4 justify-end">
+                  <div className="flex gap-2 justify-end">
                     <Button
                       variant="outline"
                       size="sm"
@@ -121,6 +120,7 @@ export function ChaptersTable({
                     </Button>
                     <Button
                       variant="outline"
+                      aria-label="Edit Chapter"
                       size="icon"
                       onClick={() => onEdit(chapter)}
                     >
@@ -129,6 +129,7 @@ export function ChaptersTable({
                     <Button
                       variant="destructive"
                       size="icon"
+                      aria-label="Delete Chapter"
                       onClick={() => {
                         setChapterToDelete(chapter);
                         setDeleteDialogOpen(true);
