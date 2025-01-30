@@ -2,7 +2,7 @@
 import { getResourceWithContent } from '@/actions/resources'
 import { Badge } from "@/components/ui/badge"
 import { ChapterAccordion } from '@/components/resources/chapter-accordion'
-import { Button } from "@mantine/core";
+import { Button, Accordion } from "@mantine/core";
 import { ResourceType } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
@@ -27,7 +27,6 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
     return <div>Failed to load resource</div>;
   }
   
-
   return (
     <div className="max-w-4xl mx-auto">
       <section className="py-2 px-3">
@@ -103,7 +102,8 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
       </div> */}
 
       <div className="my-4">
-        <Tabs
+        {/* <Accordion defaultValue={resource.chapters[0]?.title ?? ""}>{items}</Accordion> */}
+        {/* <Tabs
           defaultValue={resource.chapters[0]?.title ?? ""}
           className="w-full"
         >
@@ -131,11 +131,11 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
               </div>
             </TabsContent>
           ))}
-        </Tabs>
+        </Tabs> */}
       </div>
 
       {/* Chapters List */}
-      {/* <div className="space-y-1">
+      <div className="space-y-1">
         {resource.chapters.map((chapter) => (
           <ChapterAccordion
             key={chapter.id}
@@ -143,7 +143,7 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
             resourceType={resource.type}
           />
         ))}
-      </div> */}
+      </div>
     </div>
   );
 }

@@ -55,7 +55,7 @@ export function ContentEditor({
   onChange,
   className,
   error 
-}: ContentEditorProps) {
+}: Readonly<ContentEditorProps>) {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
 
@@ -177,7 +177,7 @@ export function ContentEditor({
             onChange={(e) => onChange(e.target.value)}
             placeholder="Enter your content with LaTeX equations between $ symbols... You can also add images"
             className={cn(
-              "min-h-[400px] font-mono resize-none",
+              "min-h-[100px] font-mono resize-none",
               error && "border-red-500",
               isFullScreen && "min-h-[60vh]"
             )}

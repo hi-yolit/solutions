@@ -14,7 +14,7 @@ interface ChapterAccordionProps {
   resourceType: ResourceType
 }
 
-export function ChapterAccordion({ chapter, resourceType }: ChapterAccordionProps) {
+export function ChapterAccordion({ chapter, resourceType }: Readonly<ChapterAccordionProps>) {
   const [isOpen, setIsOpen] = useState(false)
 
   const renderTextbookContent = () => (
