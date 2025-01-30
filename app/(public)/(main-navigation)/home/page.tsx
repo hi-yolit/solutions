@@ -12,9 +12,14 @@ const HomePage = async () => {
   })) || { resources: [], total: 0, pages: 0 };
 
   if (!resources) {
-    return <div>Failed to load resources</div>
+    return (
+      <div className="p-4 text-red-600 bg-red-50 rounded-md">
+        <h2 className="font-semibold">Unable to load resources</h2>
+        <p>Please try refreshing the page or contact support if the issue persists.</p>
+      </div>
+    )
   }
-  
+
   return (
     <section>
       <ResourceList resources={resources} />

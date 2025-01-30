@@ -4,10 +4,6 @@ import { SubjectResources } from "@/components/subject-resources";
 import { Resource } from "@prisma/client";
 import { SearchBox } from "@/components/search-box";
 
-
-
-
-
 export default async function Home() {
   const { subjects } = await getSuggestedSubjects();
   const { resources } = (await getResources({
