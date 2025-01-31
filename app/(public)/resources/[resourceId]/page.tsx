@@ -88,53 +88,14 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
         </section>
       </section>
 
-      {/* Content Tabs */}
-      {/* <div className="mb-6 flex items-center gap-2 border-b">
-        <div className="px-4 py-2 border-b-2 border-primary">
-          {resource.type === ResourceType.TEXTBOOK
-            ? "Textbook solutions"
-            : "Questions"}
-          <Badge variant="secondary" className="ml-2">
-            Verified
-          </Badge>
-        </div>
-      </div> */}
-
-      <div className="my-4">
-        {/* <Accordion defaultValue={resource.chapters[0]?.title ?? ""}>{items}</Accordion> */}
-        {/* <Tabs
-          defaultValue={resource.chapters[0]?.title ?? ""}
-          className="w-full"
-        >
-          <TabsList variant="underline" width="full" className="overflow-auto">
-            {resource.chapters.map((chapter) => (
-              <TabsTrigger
-                key={chapter.id}
-                value={chapter.title ?? ""}
-                variant="underline"
-              >
-                {resource.type === ResourceType.TEXTBOOK ? "Ch" : "Question"}
-                {chapter.number}: {chapter.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {resource.chapters.map((chapter) => (
-            <TabsContent key={chapter.id} value={chapter.title ?? ""}>
-              <div className="grid gap-6">
-                {chapter.topics.map((topic) => (
-                  <div key={topic.id}>
-                    <h3 className="font-bold">{topic.title}</h3>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs> */}
-      </div>
-
       {/* Chapters List */}
-      <div className="space-y-1">
+      <Accordion
+        variant="contained"
+        chevronPosition="right"
+        classNames={{
+          control: "hover:bg-gray-50",
+        }}
+      >
         {resource.chapters.map((chapter) => (
           <ChapterAccordion
             key={chapter.id}
@@ -142,7 +103,7 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
             resourceType={resource.type}
           />
         ))}
-      </div>
+      </Accordion>
     </div>
   );
 }

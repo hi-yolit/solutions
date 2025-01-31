@@ -4,7 +4,6 @@ import { ResourceType, CurriculumType } from "@prisma/client"
 import { ResourceList } from '@/components/subjects/resource-list'
 import { ResourceFilters } from '@/components/subjects/resource-filters'
 import { Pagination } from '@/components/pagination'
-import GradeSubjectNavbar from '@/components/shared/grade-subject-navbar'
 
 interface PageProps {
   params: {
@@ -43,12 +42,6 @@ export default async function SubjectPage({ params, searchParams }: Readonly<Pag
 
   return (
     <div className="max-w-7xl mx-auto md:px-4 md:space-y-8">
-
-      {/* Grade subject Navigator */}
-      <div>
-        <GradeSubjectNavbar />
-      </div>
-
       <div className="md:space-y-6">
         <ResourceFilters 
           type={type}
