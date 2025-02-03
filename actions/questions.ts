@@ -201,3 +201,43 @@ export async function deleteQuestion(questionId: string) {
     return { error: "Failed to delete question" }
   }
 }
+
+export async function getExerciseQuestions(
+  chapterId: string,
+  exerciseNumber: string
+) {
+  try {
+    const questions = await prisma.question.findMany({
+      where: {
+        chapterId,
+        exerciseNumber: parseInt(exerciseNumber),
+      },
+      include: {
+        solutions: {
+          select: {
+            id: true,
+            content: true,
+            steps: true,
+            metrics: true,
+            createdAt: true,
+          },
+        },
+        topic: {
+          select: {
+            id: true,
+            title: true,
+            number: true,
+          },
+        },
+      },
+      orderBy: {
+        questionNumber: "asc",
+      },
+    });
+
+    return { questions };
+  } catch (error) {
+    console.error("Failed to fetch exercise questions:", error);
+    return { error: "Failed to fetch exercise questions" };
+  }
+}

@@ -55,6 +55,7 @@ function groupByExercise(topics: TopicWithQuestions[]): ExerciseGroup[] {
   const exerciseMap = new Map<string, QuestionWithTopic[]>();
 
   topics.forEach((topic) => {
+
     topic.questions.forEach((question) => {
       const exerciseNumber = String(question.exerciseNumber || "default");
       if (!exerciseMap.has(exerciseNumber)) {

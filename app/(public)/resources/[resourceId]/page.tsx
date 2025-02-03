@@ -2,7 +2,7 @@
 import { getResourceWithContent } from "@/actions/resources";
 import { Badge } from "@/components/ui/badge";
 import { ChapterAccordion } from "@/components/resources/chapter-accordion";
-import { Button, Accordion } from "@mantine/core";
+import { Accordion } from "@mantine/core";
 import { ResourceType } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
