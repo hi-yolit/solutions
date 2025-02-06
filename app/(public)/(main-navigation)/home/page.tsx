@@ -20,6 +20,7 @@ const HomePage = async () => {
     )
   }
 
+
   return (
     <section>
       <ResourceList resources={resources} />
