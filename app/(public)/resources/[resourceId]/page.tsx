@@ -1,17 +1,11 @@
 // app/resources/[resourceId]/page.tsx
 import { getResourceWithContent } from "@/actions/resources";
-import { Badge } from "@/components/ui/badge";
 import { ChapterAccordion } from "@/components/resources/chapter-accordion";
 import { Accordion } from "@mantine/core";
 import { ResourceType } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs-variants";
+
 
 interface PageProps {
   params: {
@@ -27,8 +21,8 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <section className="px-3">
+    <div className="max-w-4xl mx-auto space-y-4">
+      <section className="px-3 py-3">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
           <Link
