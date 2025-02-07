@@ -17,3 +17,23 @@ export enum ResourceTypeEnum {
   StudyGuide = "Study Guide",
 }
 export const RESOURCE_TYPES: ResourceTypeEnum[] = Object.values(ResourceTypeEnum);
+
+export const subjectEmojis: { [subject: string]: string } = {
+  Mathematics: "➗",
+  "Mathematical Literacy": "📊",
+  English: "🇬🇧",
+  Afrikaans: "🇿🇦",
+  isiZulu: "🇿🇦",
+  isiXhosa: "🇿🇦",
+  "Life Sciences": "🌿",
+  "Physical Sciences": "🧪",
+  "Computer Applications Technology": "💻",
+  "Information Technology": "👨‍💻",
+  Accounting: "🧾",
+  "Business Studies": "🏢",
+  Economics: "💸",
+  "Visual Arts": "🎨",
+  Music: "🎵",
+  Geography: "🌍",
+  History: "📜",
+};
