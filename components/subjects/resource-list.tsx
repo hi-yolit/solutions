@@ -1,6 +1,5 @@
 // components/subjects/resource-list.tsx
 import { Resource, ResourceType } from "@prisma/client";
-import { Card } from "@/components/ui/card";
 import { Book, BookOpen, FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,104 +10,126 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs-variants";
-
-// Mapping resource types to labels
-const resourceTypeLabels: Record<ResourceType, string> = {
-  TEXTBOOK: "Textbook",
-  PAST_PAPER: "Past Paper",
-  STUDY_GUIDE: "Study Guide",
-};
+import {
+  groupResourceByType,
+  groupResourcesBySubject,
+  resourceTypeLabels,
+} from "@/features/resources/utils/resources.utils";
+import { subjectEmojis } from "@/lib/constants";
 
 interface ResourceListProps {
   resources?: Resource[];
 }
 
-const ResourceCard = ({ resource }: { resource: Resource }) => {
+interface SubjectResourceListProps {
+  subject: string;
+  subjectResources: Resource[];
+}
+
+const ResourceCardComponent = ({ resource }: { resource: Resource }) => {
   return (
     <Link
       href={`/resources/${resource.id}`}
-      className="block"
+      className="block w-44 h-64 p-2 hover:shadow-md transition-shadow flex flex-col"
     >
-      <Card className="p-4 hover:shadow-md transition-shadow h-full">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <ResourceCoverImage resource={resource} />
-          <div className="flex-1">
-            <h3 className="font-semibold text-lg sm:text-xl mb-1">
-              {resource.title}
-            </h3>
-            <ResourceDetails resource={resource} />
-            <ResourceTags resource={resource} />
-            <ResourceAction resource={resource} />
-          </div>
+      {/* Adjusted width and height for a more book-like appearance */}
+      <ResourceCoverImage resource={resource} />
+      <div className="p-2 flex-grow flex flex-col justify-between">
+        <div>
+          <h3 className="font-semibold text-sm truncate overflow-hidden whitespace-nowrap">
+            {resource.title}
+          </h3>
         </div>
-      </Card>
+        <ResourceTags resource={resource} />
+      </div>
     </Link>
   );
 };
 
-const ResourceCoverImage = ({ resource }: { resource: Resource }) =>
-  resource.coverImage ? (
-    <div className="w-full sm:w-32 h-40 bg-muted relative">
+const ResourceCoverImage = ({ resource }: { resource: Resource }) => {
+  const getPlaceholderIcon = () => {
+    if (resource.type === "TEXTBOOK") {
+      return <Book className="h-8 w-8 text-muted-foreground" />;
+    } else if (resource.type === "PAST_PAPER") {
+      return <FileText className="h-8 w-8 text-muted-foreground" />;
+    } else {
+      return <BookOpen className="h-8 w-8 text-muted-foreground" />;
+    }
+  };
+
+  // A4 aspect ratio is approximately 1:1.414
+  const a4Height = 176 * 1.414; // width (176px) * aspect ratio
+
+  return resource.coverImage ? (
+    <div
+      className="w-full relative"
+      style={{ height: `${a4Height}px` }} // Set A4 height
+    >
+      {/* Increased height for cover image */}
       <Image
         src={resource.coverImage}
         alt={resource.title}
         fill
-        className="object-contain"
+        className="object-contain" // Changed to object-contain
       />
     </div>
   ) : (
-    <div className="w-full sm:w-32 h-40 bg-muted flex items-center justify-center">
-      {resource.type === "TEXTBOOK" ? (
-        <Book className="h-8 w-8 text-muted-foreground" />
-      ) : resource.type === "PAST_PAPER" ? (
-        <FileText className="h-8 w-8 text-muted-foreground" />
-      ) : (
-        <BookOpen className="h-8 w-8 text-muted-foreground" />
-      )}
+    <div
+      className="w-full bg-muted flex items-center justify-center"
+      style={{ height: `${a4Height}px` }} // Set A4 height
+    >
+      {getPlaceholderIcon()}
     </div>
   );
-
-const ResourceDetails = ({ resource }: { resource: Resource }) => (
-  <p className="text-sm sm:text-base text-muted-foreground mb-2">
-    {resourceTypeLabels[resource.type]}
-    {resource.edition && <> • Edition: {resource.edition}</>}
-    {resource.publisher && <> • Publisher: {resource.publisher}</>}
-    {resource.year && (
-      <>
-        {" "}
-        • Year: {resource.year} {resource.term && `• Term ${resource.term}`}
-      </>
-    )}
-  </p>
-);
+};
 
 const ResourceTags = ({ resource }: { resource: Resource }) => (
-  <div className="flex flex-wrap gap-2 mb-4">
+  <div className="flex flex-wrap gap-1 text-xs">
     <Badge>{resource.curriculum}</Badge>
     <Badge variant="outline">Grade {resource.grade}</Badge>
   </div>
 );
 
-const ResourceAction = ({ resource }: { resource: Resource }) => (
-  <div className="flex items-center text-primary">
-    <BookOpen className="h-4 w-4 mr-2" />
-    <span className="text-sm">
-      {resource.type === "TEXTBOOK" ? "View Chapters" : "View Questions"}
-    </span>
-  </div>
-);
+const SubjectResourceList: React.FC<SubjectResourceListProps> = ({
+  subject,
+  subjectResources,
+}) => {
+  const subjectEmoji = subjectEmojis[subject] || "📚";
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold text-lg flex items-center">
+          {subjectEmoji} {subject}
+        </h4>
+        <Link
+          href={`/subjects/${subject}`}
+          className="text-sm text-blue-500 hover:underline"
+        >
+          View All
+        </Link>
+      </div>
+      <div
+        className="flex gap-3 py-4 overflow-x-auto"
+        style={{ scrollSnapType: "x mandatory" }}
+      >
+        {subjectResources.map((resource) => (
+          <div
+            key={resource.id}
+            style={{ scrollSnapAlign: "start" }}
+            className="w-44 shrink-0" // Adjust width as needed
+          >
+            <ResourceCardComponent resource={resource} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export async function ResourceList({
   resources = [],
 }: Readonly<ResourceListProps>) {
-  const resourceByType = resources.reduce<Record<ResourceType, Resource[]>>(
-    (acc, resource) => {
-      acc[resource.type] = acc[resource.type] || [];
-      acc[resource.type].push(resource);
-      return acc;
-    },
-    { PAST_PAPER: [], TEXTBOOK: [], STUDY_GUIDE: [] }
-  );
+  const resourceByType = groupResourceByType(resources);
 
   if (!resources.length) {
     return (
@@ -119,7 +140,7 @@ export async function ResourceList({
   }
 
   return (
-    <div className="my-12">
+    <div className="my-20">
       <Tabs defaultValue={resourceTypeLabels.TEXTBOOK} className="w-full">
         <TabsList variant="underline" width="full" className="overflow-auto">
           {Object.entries(resourceTypeLabels).map(([key, label]) => (
@@ -129,15 +150,25 @@ export async function ResourceList({
           ))}
         </TabsList>
 
-        {Object.entries(resourceTypeLabels).map(([key, label]) => (
-          <TabsContent key={key} value={label}>
-            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 py-4">
-              {resourceByType[key as ResourceType]?.map((resource) => (
-                <ResourceCard key={resource.id} resource={resource} />
-              ))}
-            </div>
-          </TabsContent>
-        ))}
+        {Object.entries(resourceTypeLabels).map(([key, label]) => {
+          const resourceType = key as ResourceType;
+          const resourcesForType = resourceByType[resourceType] || [];
+          const resourcesBySubject = groupResourcesBySubject(resourcesForType);
+
+          return (
+            <TabsContent key={key} value={label}>
+              {Object.entries(resourcesBySubject).map(
+                ([subject, subjectResources]) => (
+                  <SubjectResourceList
+                    key={subject}
+                    subject={subject}
+                    subjectResources={subjectResources}
+                  />
+                )
+              )}
+            </TabsContent>
+          );
+        })}
       </Tabs>
     </div>
   );

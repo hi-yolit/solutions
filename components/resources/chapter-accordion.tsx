@@ -107,9 +107,9 @@ function TextbookContent({
   }
 
   return (
-    <Grid>
+    <Grid className="ml-8">
       {exercises.map((exercise) => (
-        <Grid.Col key={exercise.exerciseNumber} span={6}>
+        <Grid.Col key={exercise.exerciseNumber} span={4}>
           <ExerciseButton chapter={chapter} exercise={exercise} />
         </Grid.Col>
       ))}
@@ -177,7 +177,7 @@ export function ChapterAccordion({
     resourceType === ResourceType.TEXTBOOK ? "Ch" : "Question";
 
   return (
-    <Accordion.Item value={chapter.id}>
+    <Accordion.Item value={chapter.id} className="py-2">
       <Accordion.Control
         icon={
           <Avatar radius="xl" size="sm" color="blue">
@@ -185,7 +185,7 @@ export function ChapterAccordion({
           </Avatar>
         }
       >
-        <Text size="sm" fw={400}>
+        <Text size="md" fw={400}>
           {chapterType}
           {chapter.number} : {chapter.title}
         </Text>

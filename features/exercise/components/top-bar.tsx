@@ -11,7 +11,7 @@ const ExerciseTopBar = ({ exerciseNumber }: { exerciseNumber: number }) => {
           <ArrowLeft />
         </ActionIcon>
       </Link>
-      <Text>Exercise {exerciseNumber}</Text>
+      {exerciseNumber && <Text>Exercise {exerciseNumber}</Text>}
     </section>
   );
 };
