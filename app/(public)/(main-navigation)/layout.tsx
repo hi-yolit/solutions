@@ -4,7 +4,7 @@ import { Navbar } from "@/components/layout/navbar";
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <section>
+    <section className="pt-16 pb-16 min-h-screen">
       <Navbar />
       {children}
       <BottomNavigation />

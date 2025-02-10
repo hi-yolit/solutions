@@ -9,8 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { BookOpen, Book, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-variants";
-import { RESOURCE_TYPES } from "@/lib/constants";
+
 
 interface SubjectResourcesProps {
   subjects: string[];

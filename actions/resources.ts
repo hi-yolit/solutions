@@ -11,11 +11,6 @@ import {
 import { revalidatePath } from "next/cache";
 import { verifyAdmin } from "./user";
 
-type ResourcesResponse = {
-  resources?: Resource[];
-  error?: string;
-};
-
 type SubjectsResponse = {
   subjects: string[];
   error?: string;
@@ -186,6 +181,7 @@ export async function addResource(data: ResourceFormValues) {
     revalidatePath("/admin/resources");
     return { resource };
   } catch (error) {
+     console.error("Failed to create resource:", error);
     return { error: "Failed to create resource" };
   }
 }
@@ -273,6 +269,7 @@ export async function deleteResource(resourceId: string) {
     });
     return { success: true };
   } catch (error) {
+    console.error("Failed to delete resource:", error);
     return { error: "Failed to delete resource" };
   }
 }

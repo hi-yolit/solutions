@@ -1,5 +1,5 @@
-import { ResourceStatus, Resource } from "@prisma/client";
-import { getResources, getSuggestedSubjects } from "@/actions/resources";
+import { ResourceStatus } from "@prisma/client";
+import { getResources } from "@/actions/resources";
 
 
 interface UseResourcesProps {

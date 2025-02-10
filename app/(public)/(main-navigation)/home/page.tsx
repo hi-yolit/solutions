@@ -2,9 +2,12 @@ import React from "react";
 import { ResourceList } from "@/components/subjects/resource-list";
 import { getResources } from "@/actions/resources";
 import { ResourceStatus } from "@prisma/client";
+import { GRADES } from "@/lib/constants";
 
 const HomePage = async () => {
-  const grade = 12;
+  const defaultGrade = GRADES[0].key;
+  const grade = defaultGrade;
+
   const { resources } = (await getResources({
     status: ResourceStatus.LIVE,
     grade: grade ? Number(grade) : undefined,

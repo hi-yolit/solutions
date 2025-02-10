@@ -88,7 +88,8 @@ const SolutionStep = ({
   return (
     <div className="py-2 border-b last:border-b-0 relative">
       <div className="flex items-center justify-between gap-4">
-        <div
+        <button
+          type="button"
           className="flex-1"
           onClick={onToggleActive}
           style={{ cursor: "pointer" }}
@@ -107,12 +108,13 @@ const SolutionStep = ({
                   variant="ghost"
                   size="sm"
                   onClick={toggleHint}
+                  aria-label={showHint ? "Hide hint" : "Show hint"}
                   className="text-blue-600"
                 >
                   {showHint ? (
                     <Lightbulb fill="blue" strokeWidth={1.5} />
                   ) : (
-                    <Lightbulb  />
+                    <Lightbulb />
                   )}
                 </Button>
               )}
@@ -122,7 +124,7 @@ const SolutionStep = ({
               {isActive ? <LatexContent content={step.content} /> : null}
             </p>
           </div>
-        </div>
+        </button>
       </div>
 
       {isActive && (

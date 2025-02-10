@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import prisma from "@/lib/prisma";
 import ExerciseContent from "@/features/exercise/components/exercise-content";
-import  TopBar  from "@/features/exercise/components/top-bar";
+import TopBar from "@/features/exercise/components/top-bar";
 import { Container, Skeleton, Stack } from "@mantine/core";
 
 interface PageProps {
@@ -16,7 +16,7 @@ async function getExerciseQuestions(chapterId: string, exerciseId: string) {
     const questions = await prisma.question.findMany({
       where: {
         chapterId,
-        exerciseNumber: parseInt(exerciseId),
+        exerciseNumber: parseInt(exerciseId, 10),
       },
       include: {
         solutions: {
@@ -43,7 +43,11 @@ async function getExerciseQuestions(chapterId: string, exerciseId: string) {
     return questions;
   } catch (error) {
     console.error("Error fetching questions:", error);
-    throw new Error("Failed to fetch questions");
+    throw new Error(
+      `Failed to fetch questions: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 }
 
@@ -70,12 +74,10 @@ export default async function ExercisePage({ params }: Readonly<PageProps>) {
     params.exerciseId
   );
 
-  console.log("Questions From Excerse", questions)
-
   return (
     <Suspense fallback={<Loading />}>
       {/* Header */}
-      <TopBar exerciseNumber={questions[0].exerciseNumber ?? 0}/>
+      <TopBar exerciseNumber={questions[0]?.exerciseNumber ?? 0} />
       <ExerciseContent questions={questions} params={params} />
     </Suspense>
   );

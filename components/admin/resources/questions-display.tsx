@@ -1,66 +1,95 @@
-// components/admin/resources/questions-display.tsx
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Question, QuestionStatus } from "@prisma/client"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Question, QuestionStatus, ResourceType } from "@prisma/client";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import Latex from 'react-latex-next'
-import { updateQuestionStatus } from "@/actions/questions"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/select";
+import Latex from "react-latex-next";
+import { updateQuestionStatus } from "@/actions/questions";
+import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
 
 interface QuestionDisplayProps {
   question: Question & {
     solutions: {
       id: string;
     }[];
+    resource: {
+      type: ResourceType;
+    };
   };
   onManageSolutions: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
+interface QuestionContent {
+  marks?: number;
+  mainQuestion: string;
+  blocks?: Array<{
+    type: string;
+    imageData: {
+      url: string;
+      caption?: string;
+    };
+  }>;
+  subQuestions?: Array<SubQuestion>;
+}
+
+interface SubQuestion {
+  part: string;
+  text: string;
+  marks: number;
+  blocks?: Array<ImageBlock>;
+}
+
+interface ImageBlock {
+  type: string;
+  imageData: {
+    url: string;
+    caption?: string;
+  };
+}
+
 export function QuestionDisplay({
   question,
   onManageSolutions,
   onEdit,
-  onDelete
-}: QuestionDisplayProps) {
-  const { toast } = useToast()
-  const content = question.content as any;
+  onDelete,
+}: Readonly<QuestionDisplayProps>) {
+  const { toast } = useToast();
+  const content = question.content as unknown as QuestionContent;
 
-  const test = question.resource.type;
-  const displayType = test == "TEXTBOOK" ? "Exercise" : "Question";
-
+  const displayType =
+    question.resource.type === "TEXTBOOK" ? "Exercise" : "Question";
 
   const handleStatusChange = async (status: QuestionStatus) => {
-    const result = await updateQuestionStatus(question.id, status)
+    const result = await updateQuestionStatus(question.id, status);
     if (result.error) {
       toast({
         title: "Error",
         description: "Failed to update status",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     } else {
       toast({
         title: "Success",
-        description: "Status updated successfully"
-      })
+        description: "Status updated successfully",
+      });
     }
-  }
+  };
 
   return (
     <Card className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h3 className="font-semibold text-lg">
-            {displayType}{" "}
-            {question.exerciseNumber}
+            {displayType} {question.exerciseNumber}
           </h3>
           <Badge variant="outline">{question.type}</Badge>
           <Select value={question.status} onValueChange={handleStatusChange}>
@@ -73,7 +102,9 @@ export function QuestionDisplay({
             </SelectContent>
           </Select>
         </div>
-        {content?.marks > 0 && <Badge>{content?.marks} marks</Badge>}
+        {content?.marks != null && content?.marks > 0 && (
+          <Badge>{content?.marks} marks</Badge>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -84,13 +115,18 @@ export function QuestionDisplay({
 
         {/* Images from blocks */}
         {content.blocks?.map(
-          (block: any, index: number) =>
+          (block: ImageBlock) =>
             block.type === "image" && (
-              <div key={index} className="my-2">
-                <img
+              <div key={block.imageData.url} className="my-2">
+                <Image
                   src={block.imageData.url}
-                  alt={block.imageData.caption || "Question image"}
-                  className="max-w-full"
+                  alt={block.imageData.caption ?? "Question image"}
+                  width={500} // Adjust as needed
+                  height={300} // Adjust as needed
+                  style={{
+                    maxWidth: "100%",
+                    height: "auto",
+                  }}
                 />
                 {block.imageData.caption && (
                   <p className="text-sm text-muted-foreground mt-1">
@@ -102,29 +138,34 @@ export function QuestionDisplay({
         )}
 
         {/* Sub Questions */}
-        {content.subQuestions?.length > 0 && (
+        {content.subQuestions?.length && content.subQuestions.length > 0 && (
           <div className="pl-6 space-y-4 mt-4 border-l-2">
-            {content.subQuestions.map((subQ: any, index: number) => (
+            {content.subQuestions.map((subQ: SubQuestion, index) => (
               <div key={index} className="space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{subQ.part})</span>
                   <div className="flex-1">
                     <Latex>{subQ.text}</Latex>
                   </div>
-                  {subQ.marks > 0 && (
+                  {subQ.marks != null && (
                     <Badge variant="outline">{subQ.marks} marks</Badge>
                   )}
                 </div>
 
                 {/* Sub Question Images */}
                 {subQ.blocks?.map(
-                  (block: any, blockIndex: number) =>
+                  (block: ImageBlock, blockIndex: number) =>
                     block.type === "image" && (
                       <div key={blockIndex} className="my-2">
-                        <img
+                        <Image
                           src={block.imageData.url}
                           alt={block.imageData.caption || "Question image"}
-                          className="max-w-full"
+                          width={500} // Adjust as needed
+                          height={300} // Adjust as needed
+                          style={{
+                            maxWidth: "100%",
+                            height: "auto",
+                          }}
                         />
                         {block.imageData.caption && (
                           <p className="text-sm text-muted-foreground mt-1">

@@ -12,7 +12,7 @@ export default async function Home() {
 
   const { data, error } = await (await supabase).auth.getUser();
 
-  if (!error || data?.user) {
+  if (!error && data?.user) {
     redirect("/home");
   }
 
