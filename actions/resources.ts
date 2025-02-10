@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma";
 import { ResourceFormValues } from "@/lib/validations/resource";
 import {
   CurriculumType,
-  Resource,
   ResourceStatus,
   ResourceType,
 } from "@prisma/client";
