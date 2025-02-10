@@ -4,25 +4,30 @@
 import { useState } from 'react'
 import { Resource, ResourceType } from '@prisma/client'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, Book, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 
+
 interface SubjectResourcesProps {
-  subjects: string[]
-  resourcesBySubject: Record<string, Resource[]>
+  subjects: string[];
+  resourcesBySubject: Record<string, Resource[]>;
 }
 
 const resourceTypeLabels: Record<ResourceType, string> = {
-  TEXTBOOK: 'Textbook',
-  PAST_PAPER: 'Past Paper',
-  STUDY_GUIDE: 'Study Guide',
-}
+  TEXTBOOK: "Textbook",
+  PAST_PAPER: "Past Paper",
+  STUDY_GUIDE: "Study Guide",
+};
 
-export function SubjectResources({ subjects, resourcesBySubject }: SubjectResourcesProps) {
-  const [activeSubject, setActiveSubject] = useState(subjects[0])
+
+export function SubjectResources({
+  subjects,
+  resourcesBySubject,
+}: Readonly<SubjectResourcesProps>) {
+  const [activeSubject, setActiveSubject] = useState(subjects[0]);
 
   return (
     <div className="space-y-6">
@@ -32,7 +37,11 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
             key={subject}
             onClick={() => setActiveSubject(subject)}
             className={`text-sm hover:text-primary transition-colors whitespace-nowrap
-              ${subject === activeSubject ? 'text-primary border-b-2 border-primary pb-4 -mb-4' : 'text-muted-foreground'}`}
+              ${
+                subject === activeSubject
+                  ? "text-primary border-b-2 border-primary pb-4 -mb-4"
+                  : "text-muted-foreground"
+              }`}
           >
             {subject}
           </button>
@@ -42,7 +51,9 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
         {resourcesBySubject[activeSubject]?.map((resource) => (
           <Link
-            href={`/subjects/${resource.subject?.toLowerCase()}/resources/${resource.id}`}
+            href={`/subjects/${resource.subject?.toLowerCase()}/resources/${
+              resource.id
+            }`}
             key={resource.id}
             className="block"
           >
@@ -69,18 +80,26 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{resource.title}</h3>
+                  <h3 className="font-semibold text-lg mb-1">
+                    {resource.title}
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-2">
                     {resourceTypeLabels[resource.type]}
-                    {resource.type === ResourceType.TEXTBOOK && resource.edition && (
-                      <> • Edition: {resource.edition}</>
-                    )}
-                    {resource.type === ResourceType.TEXTBOOK && resource.publisher && (
-                      <> • Publisher: {resource.publisher}</>
-                    )}
-                    {(resource.type === ResourceType.PAST_PAPER || resource.type === ResourceType.STUDY_GUIDE) && resource.year && (
-                      <> • Year: {resource.year} {resource.term && ` • Term ${resource.term}`}</>
-                    )}
+                    {resource.type === ResourceType.TEXTBOOK &&
+                      resource.edition && <> • Edition: {resource.edition}</>}
+                    {resource.type === ResourceType.TEXTBOOK &&
+                      resource.publisher && (
+                        <> • Publisher: {resource.publisher}</>
+                      )}
+                    {(resource.type === ResourceType.PAST_PAPER ||
+                      resource.type === ResourceType.STUDY_GUIDE) &&
+                      resource.year && (
+                        <>
+                          {" "}
+                          • Year: {resource.year}{" "}
+                          {resource.term && ` • Term ${resource.term}`}
+                        </>
+                      )}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     <Badge>{resource.curriculum}</Badge>
@@ -129,5 +148,5 @@ export function SubjectResources({ subjects, resourcesBySubject }: SubjectResour
         </Link>
       </div>
     </div>
-  )
+  );
 }

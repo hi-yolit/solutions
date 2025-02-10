@@ -1,17 +1,21 @@
-// components/providers/providers.tsx
-'use client'
-
 import { AuthProvider } from '@/contexts/auth-context'
+import { createTheme, MantineProvider } from "@mantine/core";
 import { ReactNode } from 'react'
 
 interface ProvidersProps {
   children: ReactNode
 }
 
-export function Providers({ children }: ProvidersProps) {
+const theme = createTheme({
+  primaryColor: "blue",
+  defaultRadius: "md",
+});
+
+
+export function Providers({ children }: Readonly<ProvidersProps>) {
   return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
-  )
+    <MantineProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </MantineProvider>
+  );
 }

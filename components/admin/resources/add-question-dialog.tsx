@@ -84,7 +84,7 @@ export function AddQuestionDialog({
   questionToEdit,
   open,
   onOpenChange,
-}: AddQuestionDialogProps) {
+}: Readonly<AddQuestionDialogProps>) {
   const { toast } = useToast()
 
   const form = useForm<QuestionFormValues>({
@@ -182,26 +182,55 @@ export function AddQuestionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{questionToEdit ? 'Edit Question' : 'Add Question'}</DialogTitle>
+          <DialogTitle>
+            {questionToEdit ? "Edit Question" : "Add Question"}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="questionNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Question Number</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="e.g., 1.1" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 w-3/4">
+                <FormField
+                  control={form.control}
+                  name="exerciseNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Exercise Number (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          value={field.value ?? ""}
+                          placeholder="1"
+                          onChange={(e) => {
+                            const value = e.target.value
+                              ? parseInt(e.target.value)
+                              : null;
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="questionNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Question Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="e.g., 1.1" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
                 name="pageNumber"
@@ -211,9 +240,12 @@ export function AddQuestionDialog({
                     <FormControl>
                       <Input
                         type="number"
-                        value={field.value ?? ''}
+                        placeholder="Enter Page 2"
+                        value={field.value ?? ""}
                         onChange={(e) => {
-                          const value = e.target.value ? parseInt(e.target.value) : null;
+                          const value = e.target.value
+                            ? parseInt(e.target.value)
+                            : null;
                           field.onChange(value);
                         }}
                       />
@@ -222,29 +254,6 @@ export function AddQuestionDialog({
                   </FormItem>
                 )}
               />
-
-
-              <FormField
-                control={form.control}
-                name="exerciseNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Exercise Number (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        value={field.value ?? ''}
-                        onChange={(e) => {
-                          const value = e.target.value ? parseInt(e.target.value) : null;
-                          field.onChange(value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -261,7 +270,7 @@ export function AddQuestionDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                      <SelectItem value="HEADER">Header</SelectItem>
+                        <SelectItem value="HEADER">Header</SelectItem>
                         <SelectItem value="MCQ">Multiple Choice</SelectItem>
                         <SelectItem value="STRUCTURED">Structured</SelectItem>
                         <SelectItem value="ESSAY">Essay</SelectItem>
@@ -302,7 +311,9 @@ export function AddQuestionDialog({
               name="content.mainQuestion"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Main Question</FormLabel>
+                  <FormLabel className="font-bold text-md">
+                    Main Question
+                  </FormLabel>
                   <FormControl>
                     <ContentEditor
                       value={field.value}
@@ -323,9 +334,11 @@ export function AddQuestionDialog({
                   <FormControl>
                     <Input
                       type="number"
-                      value={field.value ?? ''}
+                      value={field.value ?? ""}
                       onChange={(e) => {
-                        const value = e.target.value ? parseInt(e.target.value) : null;
+                        const value = e.target.value
+                          ? parseInt(e.target.value)
+                          : null;
                         field.onChange(value);
                       }}
                     />
@@ -335,13 +348,15 @@ export function AddQuestionDialog({
               )}
             />
 
-            <div className="space-y-4">
+            <div className="space-y-4 ">
               <div className="flex justify-between items-center">
-                <FormLabel>Sub Questions</FormLabel>
+                <FormLabel className="font-bold text-md">
+                  Sub Questions
+                </FormLabel>
               </div>
 
               {subQuestionFields.map((field, index) => (
-                <Card key={field.id} className="p-4">
+                <Card key={field.id} className="p-4 bg-slate-100">
                   <div className="flex items-start gap-4">
                     <div className="flex-1 space-y-4">
                       <div className="grid grid-cols-3 gap-4">
@@ -350,7 +365,7 @@ export function AddQuestionDialog({
                           name={`content.subQuestions.${index}.part`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Part</FormLabel>
+                              <FormLabel>Number</FormLabel>
                               <FormControl>
                                 <Input {...field} placeholder="e.g., a" />
                               </FormControl>
@@ -365,18 +380,27 @@ export function AddQuestionDialog({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Type</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select type" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="MCQ">Multiple Choice</SelectItem>
-                                  <SelectItem value="STRUCTURED">Structured</SelectItem>
+                                  <SelectItem value="MCQ">
+                                    Multiple Choice
+                                  </SelectItem>
+                                  <SelectItem value="STRUCTURED">
+                                    Structured
+                                  </SelectItem>
                                   <SelectItem value="ESSAY">Essay</SelectItem>
                                   <SelectItem value="PROOF">Proof</SelectItem>
-                                  <SelectItem value="DRAWING">Drawing</SelectItem>
+                                  <SelectItem value="DRAWING">
+                                    Drawing
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -393,9 +417,11 @@ export function AddQuestionDialog({
                               <FormControl>
                                 <Input
                                   type="number"
-                                  value={field.value ?? ''}
+                                  value={field.value ?? ""}
                                   onChange={(e) => {
-                                    const value = e.target.value ? parseInt(e.target.value) : null;
+                                    const value = e.target.value
+                                      ? parseInt(e.target.value)
+                                      : null;
                                     field.onChange(value);
                                   }}
                                 />
@@ -411,7 +437,6 @@ export function AddQuestionDialog({
                         name={`content.subQuestions.${index}.text`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Question</FormLabel>
                             <FormControl>
                               <ContentEditor
                                 value={field.value}
@@ -434,19 +459,27 @@ export function AddQuestionDialog({
                   </div>
                 </Card>
               ))}
-              
-              <Button type="button" variant="outline" onClick={handleAddSubQuestion}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Part
-                </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAddSubQuestion}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Part
+              </Button>
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit">
-                {questionToEdit ? 'Update Question' : 'Add Question'}
+                {questionToEdit ? "Update Question" : "Add Question"}
               </Button>
             </div>
           </form>

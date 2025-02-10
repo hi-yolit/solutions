@@ -1,20 +1,19 @@
-'use server'
+"use server";
 
-import prisma from '@/lib/prisma'
-import { ResourceFormValues } from '@/lib/validations/resource'
-import { CurriculumType, Resource, ResourceStatus, ResourceType } from '@prisma/client'
-import { revalidatePath } from 'next/cache'
-import { verifyAdmin } from './user'
-
-type ResourcesResponse = {
-  resources?: Resource[]
-  error?: string
-}
+import prisma from "@/lib/prisma";
+import { ResourceFormValues } from "@/lib/validations/resource";
+import {
+  CurriculumType,
+  ResourceStatus,
+  ResourceType,
+} from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { verifyAdmin } from "./user";
 
 type SubjectsResponse = {
-  subjects: string[]
-  error?: string
-}
+  subjects: string[];
+  error?: string;
+};
 
 export async function getResources({
   subject,
@@ -23,58 +22,67 @@ export async function getResources({
   status,
   type,
   page = 1,
-  limit = 15
+  limit = 15,
 }: {
-  subject?: string
-  grade?: number
-  curriculum?: CurriculumType
-  status?: ResourceStatus
-  type?: ResourceType
-  page?: number
-  limit?: number
+  subject?: string;
+  grade?: number;
+  curriculum?: CurriculumType;
+  status?: ResourceStatus;
+  type?: ResourceType;
+  page?: number;
+  limit?: number;
 }) {
   try {
-    const skip = (page - 1) * limit
+    const skip = (page - 1) * limit;
 
     const resources = await prisma.resource.findMany({
       where: {
         status: status || undefined,
-        subject: subject ? {
-          equals: subject,
-          mode: 'insensitive'
-        } : undefined,
+        subject: subject
+          ? {
+              equals: subject,
+              mode: "insensitive",
+            }
+          : undefined,
         grade: grade || undefined,
         curriculum: curriculum || undefined,
-        type: type || undefined
+        type: type || undefined,
       },
       orderBy: {
-        title: 'asc'
+        title: "asc",
       },
       skip,
-      take: limit
-    })
+      take: limit,
+    });
 
     const total = await prisma.resource.count({
       where: {
         status: status || undefined,
-        subject: subject ? {
-          equals: subject,
-          mode: 'insensitive'
-        } : undefined,
+        subject: subject
+          ? {
+              equals: subject,
+              mode: "insensitive",
+            }
+          : undefined,
         grade: grade || undefined,
         curriculum: curriculum || undefined,
-        type: type || undefined
-      }
-    })
+        type: type || undefined,
+      },
+    });
 
     return {
       resources,
       total,
-      pages: Math.ceil(total / limit)
-    }
+      pages: Math.ceil(total / limit),
+    };
   } catch (error) {
-    console.error('Failed to fetch resources:', error)
-    return { error: 'Failed to fetch resources', resources: [], total: 0, pages: 0 }
+    console.error("Failed to fetch resources:", error);
+    return {
+      error: "Failed to fetch resources",
+      resources: [],
+      total: 0,
+      pages: 0,
+    };
   }
 }
 
@@ -82,49 +90,49 @@ export async function getResourceWithContent(resourceId: string) {
   try {
     const resource = await prisma.resource.findUnique({
       where: {
-        id: resourceId
+        id: resourceId,
       },
       include: {
         chapters: {
           orderBy: {
-            number: 'asc'
+            number: "asc",
           },
           include: {
             topics: {
               include: {
                 questions: {
                   where: {
-                    status: 'LIVE'
+                    status: "LIVE",
                   },
                   orderBy: {
-                    questionNumber: 'asc'
+                    questionNumber: "asc",
                   },
                   include: {
-                    solutions: true
-                  }
-                }
-              }
+                    solutions: true,
+                  },
+                },
+              },
             },
             questions: {
               where: {
-                status: 'LIVE'
+                status: "LIVE",
               },
               orderBy: {
-                questionNumber: 'asc'
+                questionNumber: "asc",
               },
               include: {
-                solutions: true
-              }
-            }
-          }
-        }
-      }
+                solutions: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     return { resource };
   } catch (error) {
-    console.error('Failed to fetch resource:', error);
-    return { error: 'Failed to fetch resource' };
+    console.error("Failed to fetch resource:", error);
+    return { error: "Failed to fetch resource" };
   }
 }
 
@@ -135,24 +143,23 @@ export async function updateResourceStatus(
   try {
     const resource = await prisma.resource.update({
       where: { id: resourceId },
-      data: { status }
+      data: { status },
     });
 
-    revalidatePath('/admin/resources');
+    revalidatePath("/admin/resources");
     return { resource };
   } catch (error) {
-    console.error('Failed to update resource status:', error);
-    return { error: 'Failed to update resource status' };
+    console.error("Failed to update resource status:", error);
+    return { error: "Failed to update resource status" };
   }
 }
 
 export async function addResource(data: ResourceFormValues) {
   try {
-
-    const { isAdmin, error } = await verifyAdmin()
+    const { isAdmin, error } = await verifyAdmin();
 
     if (!isAdmin) {
-      return { error: error || 'Unauthorized - Admin access required' }
+      return { error: error || "Unauthorized - Admin access required" };
     }
 
     const resource = await prisma.resource.create({
@@ -166,54 +173,62 @@ export async function addResource(data: ResourceFormValues) {
         publisher: data.publisher,
         edition: data.edition,
         term: data.term,
-        coverImage: data.coverImage
-      }
-    })
+        coverImage: data.coverImage,
+      },
+    });
 
-    revalidatePath('/admin/resources')
-    return { resource }
+    revalidatePath("/admin/resources");
+    return { resource };
   } catch (error) {
-    return { error: 'Failed to create resource' }
+     console.error("Failed to create resource:", error);
+    return { error: "Failed to create resource" };
   }
 }
 
-export async function getSuggestedSubjects(query: string = ''): Promise<SubjectsResponse> {
+export async function getSuggestedSubjects(
+  query: string = ""
+): Promise<SubjectsResponse> {
   try {
-    const results = await prisma.resource.findMany({
-      where: query ? {
-        subject: {
-          contains: query,
-          mode: 'insensitive',
+    const results =
+      (await prisma.resource.findMany({
+        where: query
+          ? {
+              subject: {
+                contains: query,
+                mode: "insensitive",
+              },
+            }
+          : undefined,
+        select: {
+          subject: true,
         },
-      } : undefined,
-      select: {
-        subject: true,
-      },
-      distinct: ['subject'],
-      orderBy: {
-        subject: 'asc',
-      },
-    }) || [];
+        distinct: ["subject"],
+        orderBy: {
+          subject: "asc",
+        },
+      })) || [];
 
     // Ensure we always return an array of strings
-    const subjects = results.map(r => r.subject).filter(Boolean)
+    const subjects = results.map((r) => r.subject).filter(Boolean);
 
     return {
-      subjects
-    }
+      subjects,
+    };
   } catch (error) {
-    console.error('Error fetching subjects:', error)
-    return { subjects: [] }
+    console.error("Error fetching subjects:", error);
+    return { subjects: [] };
   }
 }
 
-export async function updateResource(resourceId: string, data: ResourceFormValues) {
+export async function updateResource(
+  resourceId: string,
+  data: ResourceFormValues
+) {
   try {
-
-    const { isAdmin, error } = await verifyAdmin()
+    const { isAdmin, error } = await verifyAdmin();
 
     if (!isAdmin) {
-      return { error: error || 'Unauthorized - Admin access required' }
+      return { error: error || "Unauthorized - Admin access required" };
     }
 
     const resource = await prisma.resource.update({
@@ -228,32 +243,32 @@ export async function updateResource(resourceId: string, data: ResourceFormValue
         publisher: data.publisher,
         edition: data.edition,
         term: data.term,
-        coverImage: data.coverImage
-      }
+        coverImage: data.coverImage,
+      },
     });
 
-    revalidatePath('/admin/resources');
+    revalidatePath("/admin/resources");
     return { resource };
   } catch (error) {
-    console.error('Failed to update resource:', error);
-    return { error: 'Failed to update resource' };
+    console.error("Failed to update resource:", error);
+    return { error: "Failed to update resource" };
   }
 }
 
 export async function deleteResource(resourceId: string) {
   try {
-
-    const { isAdmin, error } = await verifyAdmin()
+    const { isAdmin, error } = await verifyAdmin();
 
     if (!isAdmin) {
-      return { error: error || 'Unauthorized - Admin access required' }
+      return { error: error || "Unauthorized - Admin access required" };
     }
 
     await prisma.resource.delete({
-      where: { id: resourceId }
-    })
-    return { success: true }
+      where: { id: resourceId },
+    });
+    return { success: true };
   } catch (error) {
-    return { error: "Failed to delete resource" }
+    console.error("Failed to delete resource:", error);
+    return { error: "Failed to delete resource" };
   }
 }
