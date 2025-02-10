@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo, memo, MouseEvent } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ArrowDown , Lightbulb} from "lucide-react";
+import { AlertCircle, ArrowDown, Lightbulb } from "lucide-react";
 import Latex from "react-latex-next";
 import "katex/dist/katex.min.css";
 import { Drawer } from "@mantine/core";
@@ -34,29 +34,34 @@ type Question = {
   }>;
 };
 
-
 const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
 
 // --- Helper Components ---
-const LatexContent = ({ content }: { content: string }) => (
-  <div className="prose-sm dark:prose-invert">
-    <Latex>{content}</Latex>
-  </div>
-);
 
-const StepProgress = ({
+const LatexContent = ({ content }: { content: string }) => {
+  const renderedContent = useMemo(() => <Latex>{content}</Latex>, [content]);
+
+  return <div className="prose-sm dark:prose-invert">{renderedContent}</div>;
+};
+
+const StepProgress = memo(function StepProgressComponent({
   current,
   total,
 }: {
   current: number;
   total: number;
-}) => (
-  <span className="text-xs text-muted-foreground whitespace-nowrap py-1">
-    {current} of {total}
-  </span>
-);
+}) {
+  return (
+    <div className="text-xs text-muted-foreground whitespace-nowrap py-1">
+      {current} of {total}
+    </div>
+  );
+});
+
+StepProgress.displayName = "StepProgress";
 
 // --- Solution Step Component ---
+
 const SolutionStep = ({
   stepNumber,
   totalSteps,
@@ -65,6 +70,7 @@ const SolutionStep = ({
   onNextStep,
   isLastStep,
   onToggleActive,
+  index,
 }: {
   stepNumber: number;
   totalSteps: number;
@@ -72,59 +78,56 @@ const SolutionStep = ({
   isActive: boolean;
   onNextStep: () => void;
   isLastStep: boolean;
-  onToggleActive: () => void;
+  onToggleActive: (index: number) => void;
+  index: number;
 }) => {
   const [showHint, setShowHint] = useState(false);
 
-  const toggleHint = (e: React.MouseEvent) => {
+  const toggleHint = useCallback((e: MouseEvent) => {
     e.stopPropagation(); // Stop event propagation
     setShowHint((prev) => !prev);
-  };
+  }, []);
 
-  const closeHint = () => {
+  const closeHint = useCallback(() => {
     setShowHint(false);
-  };
+  }, []);
+
+  const hintButton = (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggleHint}
+      aria-label={showHint ? "Hide hint" : "Show hint"}
+      className="text-blue-600"
+    >
+      {showHint ? <Lightbulb fill="blue" strokeWidth={1.5} /> : <Lightbulb />}
+    </Button>
+  );
 
   return (
-    <div className="py-2 border-b last:border-b-0 relative">
+    <div className="py-2 border-b last:border-b-0 relative bg-blue-700">
       <div className="flex items-center justify-between gap-4">
-        <button
-          type="button"
-          className="flex-1"
-          onClick={onToggleActive}
-          style={{ cursor: "pointer" }}
+        <div
+          className="flex-1 cursor-pointer" // Moved inline style to CSS class
+          onClick={() => onToggleActive(index)}
         >
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <div>
+          <div className="space-y-3 w-full">
+            <div className="flex justify-between items-start">
+              <div className="!bg-red-400 justify-start flex-col">
                 <StepProgress current={stepNumber} total={totalSteps} />
                 <h6 className="">
                   Step {stepNumber}: {step.title}
                 </h6>
               </div>
 
-              {step.hint && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleHint}
-                  aria-label={showHint ? "Hide hint" : "Show hint"}
-                  className="text-blue-600"
-                >
-                  {showHint ? (
-                    <Lightbulb fill="blue" strokeWidth={1.5} />
-                  ) : (
-                    <Lightbulb />
-                  )}
-                </Button>
-              )}
+              {step.hint && hintButton}
             </div>
 
             <p className="text-muted-foreground pl-4">
               {isActive ? <LatexContent content={step.content} /> : null}
             </p>
           </div>
-        </button>
+        </div>
       </div>
 
       {isActive && (
@@ -137,14 +140,17 @@ const SolutionStep = ({
         </div>
       )}
 
-      <Drawer
-        position="bottom"
-        opened={showHint && !!step.hint}
-        onClose={closeHint}
-        title={`Hint for Step ${stepNumber}`}
-      >
-        {step.hint && <LatexContent content={step.hint} />}
-      </Drawer>
+      {showHint &&
+        step.hint && ( // Conditional rendering of Drawer
+          <Drawer
+            position="bottom"
+            opened={showHint && !!step.hint}
+            onClose={closeHint}
+            title={`Hint for Step ${stepNumber}`}
+          >
+            <LatexContent content={step.hint} />
+          </Drawer>
+        )}
     </div>
   );
 };
@@ -160,13 +166,13 @@ const SolutionSection = ({
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = solution.solution.content.length;
 
-  const handleNextStep = () => {
+  const handleNextStep = useCallback(() => {
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
-  };
+  }, [totalSteps]);
 
-  const handleToggleActive = (index: number) => () => {
+  const handleToggleActive = useCallback((index: number) => {
     setCurrentStep((prev) => (prev === index ? -1 : index));
-  };
+  }, []);
 
   return (
     <div className="mb-6">
@@ -182,7 +188,8 @@ const SolutionSection = ({
               isActive={index === currentStep}
               onNextStep={handleNextStep}
               isLastStep={index === totalSteps - 1}
-              onToggleActive={handleToggleActive(index)}
+              onToggleActive={handleToggleActive}
+              index={index}
             />
           ))}
         </CardContent>

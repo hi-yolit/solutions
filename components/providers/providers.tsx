@@ -14,7 +14,7 @@ const theme = createTheme({
 
 export function Providers({ children }: Readonly<ProvidersProps>) {
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider>
       <AuthProvider>{children}</AuthProvider>
     </MantineProvider>
   );

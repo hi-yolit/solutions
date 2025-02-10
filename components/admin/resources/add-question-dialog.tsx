@@ -190,7 +190,7 @@ export function AddQuestionDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="flex items-center justify-between gap-4 bg-pink-700">
+            <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2 w-3/4">
                 <FormField
                   control={form.control}
