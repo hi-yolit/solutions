@@ -1,17 +1,18 @@
-'use client'
+"use client";
 
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { AlertCircle, ArrowDown , Lightbulb} from "lucide-react";
 import Latex from "react-latex-next";
 import "katex/dist/katex.min.css";
+import { Drawer } from "@mantine/core";
 
-// Types remain the same
+// Types (Keep these as they are, they're well-defined)
 type StepContent = {
   hint?: string;
   content: string;
+  title?: string;
 };
 
 type SolutionType = {
@@ -33,7 +34,10 @@ type Question = {
   }>;
 };
 
-// Static components with LaTeX support
+
+const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
+
+// --- Helper Components ---
 const LatexContent = ({ content }: { content: string }) => (
   <div className="prose-sm dark:prose-invert">
     <Latex>{content}</Latex>
@@ -47,109 +51,103 @@ const StepProgress = ({
   current: number;
   total: number;
 }) => (
-  <span className="text-sm text-muted-foreground whitespace-nowrap">
+  <span className="text-xs text-muted-foreground whitespace-nowrap py-1">
     {current} of {total}
   </span>
 );
 
-const VerticalSeparator = () => (
-  <Separator orientation="vertical" className="h-6" />
-);
-
-const HintContent = ({ hint }: { hint: string }) => (
-  <div className="mt-2 p-3 bg-blue-50 rounded-md text-blue-800 text-sm">
-    <LatexContent content={hint} />
-  </div>
-);
-
-// Step actions component
-const StepActions = ({
-  hasHint,
-  showHint,
-  isRevealed,
-  stepNumber,
-  totalSteps,
-  onToggleHint,
-  onToggleReveal,
-}: {
-  hasHint: boolean;
-  showHint: boolean;
-  isRevealed: boolean;
-  stepNumber: number;
-  totalSteps: number;
-  onToggleHint: () => void;
-  onToggleReveal: () => void;
-}) => (
-  <div className="flex items-center gap-2 shrink-0">
-    <Button variant="outline" size="sm" onClick={onToggleReveal}>
-      {isRevealed ? "Hide Step" : "Show Step"}
-    </Button>
-    {hasHint && (
-      <>
-        <VerticalSeparator />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleHint}
-          className="text-blue-600"
-        >
-          {showHint ? "Hide Hint" : "Show Hint"}
-        </Button>
-      </>
-    )}
-    <VerticalSeparator />
-    <StepProgress current={stepNumber} total={totalSteps} />
-  </div>
-);
-
-// Main step component
+// --- Solution Step Component ---
 const SolutionStep = ({
   stepNumber,
   totalSteps,
   step,
+  isActive,
+  onNextStep,
+  isLastStep,
+  onToggleActive,
 }: {
   stepNumber: number;
   totalSteps: number;
   step: StepContent;
+  isActive: boolean;
+  onNextStep: () => void;
+  isLastStep: boolean;
+  onToggleActive: () => void;
 }) => {
-  const [state, setState] = useState({
-    showHint: false,
-    isRevealed: false,
-  });
+  const [showHint, setShowHint] = useState(false);
+
+  const toggleHint = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event propagation
+    setShowHint((prev) => !prev);
+  };
+
+  const closeHint = () => {
+    setShowHint(false);
+  };
 
   return (
-    <div className="py-4 border-b last:border-b-0">
+    <div className="py-2 border-b last:border-b-0 relative">
       <div className="flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <div className="font-medium">
-            Step {stepNumber}:{" "}
-            {!state.isRevealed ? (
-              "..."
-            ) : (
-              <LatexContent content={step.content} />
-            )}
+        <div
+          className="flex-1"
+          onClick={onToggleActive}
+          style={{ cursor: "pointer" }}
+        >
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <StepProgress current={stepNumber} total={totalSteps} />
+                <h6 className="">
+                  Step {stepNumber}: {step.title}
+                </h6>
+              </div>
+
+              {step.hint && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleHint}
+                  className="text-blue-600"
+                >
+                  {showHint ? (
+                    <Lightbulb fill="blue" strokeWidth={1.5} />
+                  ) : (
+                    <Lightbulb  />
+                  )}
+                </Button>
+              )}
+            </div>
+
+            <p className="text-muted-foreground pl-4">
+              {isActive ? <LatexContent content={step.content} /> : null}
+            </p>
           </div>
-          {state.showHint && step.hint && <HintContent hint={step.hint} />}
         </div>
-        <StepActions
-          hasHint={!!step.hint}
-          showHint={state.showHint}
-          isRevealed={state.isRevealed}
-          stepNumber={stepNumber}
-          totalSteps={totalSteps}
-          onToggleHint={() =>
-            setState((prev) => ({ ...prev, showHint: !prev.showHint }))
-          }
-          onToggleReveal={() =>
-            setState((prev) => ({ ...prev, isRevealed: !prev.isRevealed }))
-          }
-        />
       </div>
+
+      {isActive && (
+        <div className="flex justify-end items-center mt-2">
+          {!isLastStep && (
+            <Button variant="ghost" size="sm" onClick={onNextStep}>
+              Next <ArrowDown className="h-4 w-4 ml-2" />
+            </Button>
+          )}
+        </div>
+      )}
+
+      <Drawer
+        position="bottom"
+        opened={showHint && !!step.hint}
+        onClose={closeHint}
+        title={`Hint for Step ${stepNumber}`}
+      >
+        {step.hint && <LatexContent content={step.hint} />}
+      </Drawer>
     </div>
   );
 };
 
-// Section component
+// --- Solution Section Component ---
 const SolutionSection = ({
   letter,
   solution,
@@ -157,7 +155,16 @@ const SolutionSection = ({
   letter: string;
   solution: SubSolutionType;
 }) => {
+  const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = solution.solution.content.length;
+
+  const handleNextStep = () => {
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
+  };
+
+  const handleToggleActive = (index: number) => () => {
+    setCurrentStep((prev) => (prev === index ? -1 : index));
+  };
 
   return (
     <div className="mb-6">
@@ -170,6 +177,10 @@ const SolutionSection = ({
               stepNumber={index + 1}
               totalSteps={totalSteps}
               step={step}
+              isActive={index === currentStep}
+              onNextStep={handleNextStep}
+              isLastStep={index === totalSteps - 1}
+              onToggleActive={handleToggleActive(index)}
             />
           ))}
         </CardContent>
@@ -178,7 +189,7 @@ const SolutionSection = ({
   );
 };
 
-// Empty state component
+// --- Empty State Component ---
 const EmptyState = ({ message }: { message: string }) => (
   <Card>
     <CardContent className="p-6 text-center">
@@ -188,16 +199,14 @@ const EmptyState = ({ message }: { message: string }) => (
   </Card>
 );
 
-const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
-
-// Main component
+// --- Main Component ---
 const ExerciseContent = ({ questions }: { questions?: Question[] }) => {
   if (!questions?.length) {
     return <EmptyState message="No solutions available" />;
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-8">
+    <div className="max-w-4xl mx-auto p-2 space-y-8">
       {questions.map((question) => {
         const solutions = question.solutions?.[0]?.content.subSolutions;
         if (!solutions?.length) {
@@ -211,9 +220,6 @@ const ExerciseContent = ({ questions }: { questions?: Question[] }) => {
 
         return (
           <div key={question.id} className="space-y-6">
-            <h2 className="text-xl font-bold">
-              Question {question.questionNumber}
-            </h2>
             {solutions.map((solution, index) => (
               <SolutionSection
                 key={solution.part}
