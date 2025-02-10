@@ -1,7 +1,6 @@
 // src/app/admin/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, BookOpen, Shield, BookCheck } from "lucide-react"
-
 const cards = [
   {
     label: "Total Users",
