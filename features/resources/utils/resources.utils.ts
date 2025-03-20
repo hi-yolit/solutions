@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import prisma  from "@/lib/prisma";
 import { ResourceStatus, Resource, ResourceType } from "@prisma/client";
 
 export async function getResourcesData(grade?: number, limit?: number) {
