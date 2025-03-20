@@ -1,4 +1,4 @@
-// app/search/page.tsx
+// app/(public)/(main-navigation)/search/page.tsx
 import { Suspense } from 'react'
 import { searchResources } from '@/actions/search'
 import { SearchBox } from '@/components/search-box'
@@ -26,27 +26,15 @@ interface SearchResults {
   currentPage: number
 }
 
-interface SearchError {
-  error: string
-}
-
-interface SearchPageProps {
-  searchParams: {
-    q?: string
-    type?: string
-    page?: string
-  }
-}
-
 async function SearchResults({ 
   query, 
   type, 
   page 
-}: { 
-  query: string
-  type: 'ALL' | 'QUESTIONS' | 'TEXTBOOKS' | 'PAST_PAPERS'
-  page: number 
-}) {
+}: Readonly<{ 
+  query: string;
+  type: 'ALL' | 'QUESTIONS' | 'TEXTBOOKS' | 'PAST_PAPERS';
+  page: number;
+}>) {
   const searchResult = query ? await searchResources({ query, type, page }) : null
 
   if (!searchResult) return null
@@ -185,10 +173,19 @@ async function SearchResults({
   )
 }
 
-export default function SearchPage({ searchParams }: SearchPageProps) {
-  const query = searchParams.q || ''
-  const type = (searchParams.type as 'ALL' | 'QUESTIONS' | 'TEXTBOOKS' | 'PAST_PAPERS') || 'ALL'
-  const page = parseInt(searchParams.page || '1')
+// Use Next.js's recommended type approach for App Router pages
+export default function SearchPage({
+  searchParams,
+}: Readonly<{
+  searchParams: {
+    q?: string;
+    type?: 'ALL' | 'QUESTIONS' | 'TEXTBOOKS' | 'PAST_PAPERS';
+    page?: string;
+  };
+}>) {
+  const query = searchParams.q ?? '';
+  const type = searchParams.type ?? 'ALL';
+  const page = parseInt(searchParams.page ?? '1');
 
   return (
     <div className="py-12">

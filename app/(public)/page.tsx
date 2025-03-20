@@ -7,26 +7,22 @@ import { SearchBox } from "@/components/search-box";
 import { getResources, getSuggestedSubjects } from "@/actions/resources";
 import { SubjectResources } from "@/components/subject-resources";
 
-async function handleGetUserData(supabase: any) {
+async function checkUserAuthentication() {
   try {
-    const { data, error } = await supabase.auth.getUser();
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
 
-    if (!error && data?.user) {
-      redirect("/home");
-    }
-
+    // Handle auth error (this is a system error, not just lack of authentication)
     if (error) {
       console.error("Supabase auth error:", error);
-      return { error: "Authentication failed." }; // Indicate an error
+      return { error: "Authentication service unavailable." };
     }
 
-    return { data }; // Return data if successful
-  } catch (supabaseError) {
-    console.error(
-      "Error initializing Supabase or fetching user:",
-      supabaseError
-    );
-    return { error: "Failed to initialize or fetch user data." }; // Indicate an error
+    // Return authentication status
+    return { isAuthenticated: !!user, userId: user?.id };
+  } catch (error) {
+    console.error("Error checking authentication:", error);
+    return { error: "Failed to check authentication status." };
   }
 }
 
@@ -36,7 +32,7 @@ async function handleGetSuggestedSubjects() {
     return { subjects: subjectsData?.subjects || [] };
   } catch (error) {
     console.error("Error fetching suggested subjects:", error);
-    return { subjects: [] }; // Provide a default value
+    return { subjects: [] };
   }
 }
 
@@ -49,28 +45,35 @@ async function handleGetResources() {
     return { resources: resourcesData?.resources || [] };
   } catch (error) {
     console.error("Error fetching resources:", error);
-    return { resources: [] }; // Provide a default value
+    return { resources: [] };
   }
 }
 
 export default async function Home() {
-  const supabase = createClient();
+  // Check authentication status
+  const authResult = await checkUserAuthentication();
 
-  const userData = await handleGetUserData(supabase);
-
-  if (userData?.error) {
+  // Handle system errors with auth
+  if (authResult?.error) {
     return (
       <div className="max-w-[64rem] mx-auto px-4 py-12">
         <Navbar />
         <div className="text-center my-12">
           <p className="text-red-500">
-            {userData.error} Please try again later.
+            {authResult.error} Please try again later.
           </p>
         </div>
       </div>
     );
   }
 
+  // If user is authenticated, redirect to home
+  // This should be outside of try/catch to let Next.js handle the redirect
+  if (authResult.isAuthenticated) {
+    redirect("/home");
+  }
+
+  // If we're here, the user is not authenticated, so show the public content
   const { subjects } = await handleGetSuggestedSubjects();
   const { resources } = await handleGetResources();
 

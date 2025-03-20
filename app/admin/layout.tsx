@@ -18,6 +18,7 @@ import {
 import 'katex/dist/katex.min.css'
 import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "@/components/ui/toaster";
+import { User } from "@supabase/supabase-js";
 
 
 const routes = [

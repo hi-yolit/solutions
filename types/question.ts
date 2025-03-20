@@ -1,5 +1,6 @@
 // types/question.ts
 import { SolutionType, Chapter, Question, Prisma, QuestionStatus } from '@prisma/client'
+import { ResourceType } from './resource';
 
 export interface QuestionContent extends Prisma.JsonObject {
   mainQuestion: string;
@@ -31,7 +32,10 @@ export interface QuestionWithSolutions extends Omit<Question, 'content'> {
   content: QuestionContent;
   solutions: {
     id: string;
-  }[]; // Removed verificationStatus
+  }[]; 
+  resource: {
+    type: ResourceType;
+  };// Removed verificationStatus
 }
 
 export interface ChapterWithQuestions extends Chapter {

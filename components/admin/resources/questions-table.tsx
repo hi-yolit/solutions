@@ -8,6 +8,7 @@ import { useState } from "react"
 import { deleteQuestion } from "@/actions/questions"
 import { AlertDialogHeader, AlertDialogFooter, AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogAction, AlertDialogCancel, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { toast } from "@/hooks/use-toast"
+import { ResourceType } from "@/types/resource"
 
 
 interface QuestionsTableProps {
@@ -15,6 +16,9 @@ interface QuestionsTableProps {
     solutions: {
       id: string;
     }[];
+    resource: {
+      type: ResourceType;
+    };
   })[];
   resourceId: string;
   chapterId: string;
@@ -26,7 +30,7 @@ export function QuestionsTable({
   resourceId,
   chapterId,
   topicId
-}: QuestionsTableProps) {
+}: Readonly<QuestionsTableProps>) {
   const router = useRouter()
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
