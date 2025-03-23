@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "tunnel": "ngrok http --hostname=faithful-boar-tight.ngrok-free.app 3000",
-    "migrate-dev": "npx prisma migrate dev && npx tsx lib/seed-triggers.ts"
+    "migrate-dev": "npx prisma migrate dev && npx tsx lib/seed-triggers.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
