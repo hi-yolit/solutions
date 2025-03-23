@@ -65,8 +65,9 @@ function groupByExercise(topics: TopicWithQuestions[]): ExerciseGroup[] {
       exerciseMap.get(exerciseNumber)!.push({
         ...question,
         topicId: topic.id,
-        topicTitle: topic.title || "",
-        topicNumber: topic.number || 0,
+        topicTitle: topic.title ?? "",
+        topicNumber: topic.number ? parseInt(topic.number, 10) : 0,
+        exerciseNumber: question.exerciseNumber?.toString() ?? "",
       });
     });
   });

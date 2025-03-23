@@ -9,13 +9,14 @@ import { ResourceWithContent } from "@/types/resource"
 import { ChapterAccordion } from '@/components/resources/chapter-accordion'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     resourceId: string
-  }
+  }>
 }
 
-export default async function ResourcePage({ params }: PageProps) {
-  const { resource, error } = await getResourceWithContent(params.resourceId)
+export default async function ResourcePage({ params }: Readonly<PageProps>) {
+  const resolvedParams = await params;
+  const { resource, error } = await getResourceWithContent(resolvedParams.resourceId)
 
   if (error || !resource) {
     return <div>Failed to load resource</div>

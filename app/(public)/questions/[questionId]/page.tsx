@@ -3,13 +3,14 @@ import { getQuestionWithSolutions } from '@/actions/solutions'
 import { SolutionPageContent } from '@/components/solution/solution-page-content'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     questionId: string
-  }
+  }>
 }
 
 export default async function QuestionPage({ params }: Readonly<PageProps>) {
-  const { question, error } = await getQuestionWithSolutions(params.questionId)
+  const resolvedParams = await params;
+  const { question, error } = await getQuestionWithSolutions(resolvedParams.questionId)
 
   if (error || !question) {
     return <div>Failed to load question</div>

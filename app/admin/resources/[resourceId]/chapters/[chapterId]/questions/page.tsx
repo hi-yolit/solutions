@@ -5,10 +5,11 @@ import { ChapterWithQuestions, QuestionContent } from '@/types/question'
 
 export default async function ChapterQuestionsPage({
   params
-}: {
-  params: { resourceId: string; chapterId: string }
-}) {
-  const { chapter, error } = await getChapterWithQuestions(params.chapterId)
+}: Readonly<{
+  params: Promise<{ resourceId: string; chapterId: string }>
+}>) {
+  const resolvedParams = await params;
+  const { chapter, error } = await getChapterWithQuestions(resolvedParams.chapterId)
   console.log(chapter)
 
   if (error || !chapter) {
@@ -26,8 +27,8 @@ export default async function ChapterQuestionsPage({
   return (
     <ChapterQuestionsClient 
       chapter={transformedChapter}
-      resourceId={params.resourceId}
-      chapterId={params.chapterId}
+      resourceId={resolvedParams.resourceId}
+      chapterId={resolvedParams.chapterId}
     />
   )
 }

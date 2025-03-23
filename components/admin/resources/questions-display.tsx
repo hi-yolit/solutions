@@ -19,7 +19,7 @@ interface QuestionDisplayProps {
     solutions: {
       id: string;
     }[];
-    resource: {
+    resource?: {
       type: ResourceType;
     };
   };
@@ -66,7 +66,7 @@ export function QuestionDisplay({
   const content = question.content as unknown as QuestionContent;
 
   const displayType =
-    question.resource.type === "TEXTBOOK" ? "Exercise" : "Question";
+    question?.resource?.type === "TEXTBOOK" ? "Exercise" : "Question";
 
   const handleStatusChange = async (status: QuestionStatus) => {
     const result = await updateQuestionStatus(question.id, status);

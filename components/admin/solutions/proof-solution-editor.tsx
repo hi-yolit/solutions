@@ -97,7 +97,6 @@ export function ProofSolutionEditor({
                       <ContentEditor
                         value={field.value}
                         onChange={field.onChange}
-                        onImageAdd={() => {}}
                       />
                     </FormControl>
                     <FormMessage />
@@ -115,7 +114,6 @@ export function ProofSolutionEditor({
                       <ContentEditor
                         value={field.value}
                         onChange={field.onChange}
-                        onImageAdd={() => {}}
                       />
                     </FormControl>
                     <FormMessage />

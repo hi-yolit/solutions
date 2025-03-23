@@ -5,15 +5,16 @@ import { SolutionData, QuestionContent, SolutionContent } from '@/types/solution
 
 export default async function QuestionSolutionPage({
   params
-}: {
-  params: { 
+}: Readonly<{
+  params: Promise<{ 
     resourceId: string; 
     chapterId: string; 
     questionId: string;
     topicId?: string;
-  }
-}) {
-  const { question, error } = await getQuestionWithSolutions(params.questionId)
+  }>
+}>) {
+  const resolvedParams = await params;
+  const { question, error } = await getQuestionWithSolutions(resolvedParams.questionId)
 
   if (error || !question) {
     return <div>Failed to load question</div>
@@ -35,9 +36,9 @@ export default async function QuestionSolutionPage({
   return (
     <SolutionWrapper
       questionId={question.id}
-      resourceId={params.resourceId}
-      chapterId={params.chapterId}
-      topicId={params.topicId}
+      resourceId={resolvedParams.resourceId}
+      chapterId={resolvedParams.chapterId}
+      topicId={resolvedParams.topicId}
       questionType={question.type}
       questionContent={content.mainQuestion}
       subQuestions={content.subQuestions}

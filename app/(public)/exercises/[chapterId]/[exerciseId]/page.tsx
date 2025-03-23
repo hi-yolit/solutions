@@ -5,10 +5,10 @@ import TopBar from "@/features/exercise/components/top-bar";
 import { Container, Skeleton, Stack } from "@mantine/core";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     chapterId: string;
     exerciseId: string;
-  };
+  }>;
 }
 
 async function getExerciseQuestions(chapterId: string, exerciseId: string) {
@@ -69,16 +69,40 @@ function Loading() {
 }
 
 export default async function ExercisePage({ params }: Readonly<PageProps>) {
+  const resolvedParams = await params;
   const questions = await getExerciseQuestions(
-    params.chapterId,
-    params.exerciseId
+    resolvedParams.chapterId,
+    resolvedParams.exerciseId
   );
+
+  const transformedQuestions = questions.map(question => {
+    // Pull out the basic fields
+    const { id, questionNumber, solutions } = question;
+    
+    // Create a new object with the expected structure
+    return {
+      id,
+      questionNumber,
+      solutions: solutions.map(solution => {
+        // Assuming content is stored as JSON in your database
+        // Cast it to any first to access properties
+        const contentData = solution.content as any;
+        
+        return {
+          content: {
+            // Ensure subSolutions exists, or provide an empty array
+            subSolutions: contentData?.subSolutions || []
+          }
+        };
+      })
+    };
+  });
 
   return (
     <Suspense fallback={<Loading />}>
       {/* Header */}
       <TopBar exerciseNumber={questions[0]?.exerciseNumber ?? 0} />
-      <ExerciseContent questions={questions} params={params} />
+      <ExerciseContent questions={transformedQuestions}/>
     </Suspense>
   );
 }

@@ -110,7 +110,6 @@ export function EssaySolutionEditor({
                       <ContentEditor
                         value={field.value}
                         onChange={field.onChange}
-                        onImageAdd={() => {}}
                       />
                     </FormControl>
                     <FormMessage />

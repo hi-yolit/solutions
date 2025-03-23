@@ -33,13 +33,16 @@ export interface QuestionWithSolutions extends Omit<Question, 'content'> {
   solutions: {
     id: string;
   }[]; 
-  resource: {
+  resource?: {
     type: ResourceType;
   };// Removed verificationStatus
 }
 
 export interface ChapterWithQuestions extends Chapter {
   questions: QuestionWithSolutions[];
+  resource?: {
+    type: ResourceType;
+  };
 }
 
 export interface QuestionFormValues {

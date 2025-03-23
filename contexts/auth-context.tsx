@@ -43,11 +43,29 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const initializeAuth = async () => {
       try {
         setIsLoading(true)
-        const { data: { user: initialUser }, error } = await supabase.auth.getUser()
-        if (error) {
-          throw error
+        
+        // First check for existing session
+        const { error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          // Check if it's the "Auth session missing" error
+          if (sessionError.message || sessionError.message.includes('Auth session missing')) {
+            console.warn('Auth session missing - this is expected for unauthenticated users')
+          } else {
+            console.error('Session error:', sessionError)
+          }
+          // Continue trying to get user anyway
         }
-        setUser(initialUser)
+        
+        // Then get the user (may work even if session has issues)
+        const { data: { user: initialUser }, error: userError } = await supabase.auth.getUser()
+        
+        if (userError) {
+          console.error('User error:', userError)
+          setUser(null)
+        } else {
+          setUser(initialUser)
+        }
       } catch (error) {
         console.error('Error initializing auth:', error)
         setUser(null)

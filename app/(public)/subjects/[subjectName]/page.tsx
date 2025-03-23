@@ -1,20 +1,20 @@
 // app/subjects/[subjectName]/page.tsx
 import { getResources } from "@/actions/resources";
-import { ResourceType, CurriculumType , Resource} from "@prisma/client";
+import { ResourceType, CurriculumType, Resource } from "@prisma/client";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import Image from "next/image"; // Import Image component
+import Image from "next/image";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     subjectName: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     page?: string;
     grade?: string;
     curriculum?: string;
-    type?: string; // Add type to the props
-  };
+    type?: string;
+  }>;
 }
 
 const ResourceDetailsList = ({ resources }: { resources: Resource[] }) => {
@@ -25,12 +25,10 @@ const ResourceDetailsList = ({ resources }: { resources: Resource[] }) => {
           key={resource.id}
           className="bg-white rounded-lg shadow-md p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between"
         >
-          {/* Mobile-first: Stacked layout, then horizontal on small screens */}
           <div className="mb-2 sm:mb-0 flex items-center">
-            {/* Image Placeholder */}
             <div className="w-20 h-24 mr-4 rounded-md overflow-hidden">
               <Image
-                src="/placeholder-book.png" // Replace with actual image URL or import
+                src="/placeholder-book.png"
                 alt={resource.title}
                 width={80}
                 height={96}
@@ -60,22 +58,31 @@ export default async function SubjectPage({
   params,
   searchParams,
 }: Readonly<PageProps>) {
-  const page = Number(searchParams.page) || 1;
-  const grade = searchParams.grade;
-  const curriculum = searchParams.curriculum;
-  const type = searchParams.type as ResourceType | undefined; // Get the type from searchParams
+  // Await the params and searchParams directly as suggested in StackOverflow
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  
+  // Now extract values safely
+  const subjectName = decodeURIComponent(resolvedParams.subjectName);
+  
+  const page = resolvedSearchParams.page ? parseInt(resolvedSearchParams.page, 10) : 1;
+  const grade = resolvedSearchParams.grade ? parseInt(resolvedSearchParams.grade, 10) : undefined;
+  const curriculum = resolvedSearchParams.curriculum as CurriculumType | undefined;
+  const type = resolvedSearchParams.type as ResourceType | undefined;
 
-  const { resources, pages } = (await getResources({
+  // Fetch resources
+  const result = await getResources({
     status: "LIVE",
-    subject: decodeURIComponent(params.subjectName),
-    grade: grade ? Number(grade) : undefined,
-    curriculum: curriculum as CurriculumType,
-    type: type, // Pass the type to getResources
+    subject: subjectName,
+    grade: grade,
+    curriculum: curriculum,
+    type: type,
     page: page,
     limit: 15,
-  })) || { resources: [], total: 0, pages: 0 };
+  });
 
-  const subjectName = decodeURIComponent(params.subjectName);
+  const resources = result?.resources || [];
+  const pages = result?.pages || 0;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -94,9 +101,16 @@ export default async function SubjectPage({
         </h2>
 
         {/* Resource List with Details */}
-        <ResourceDetailsList resources={resources} />
+        {resources.length > 0 ? (
+          <ResourceDetailsList resources={resources} />
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <p className="text-gray-500">No resources found for this subject.</p>
+          </div>
+        )}
 
         {/* Pagination (if needed) */}
+
         {pages > 1 && (
           <div className="mt-4">
             {/* You might need to adjust the Pagination component to fit this context */}

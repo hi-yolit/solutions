@@ -96,26 +96,6 @@ export function SolutionEditor({
     }
   };
 
-  const handleAddImage = (stepIndex: number, imageData: ImageData) => {
-    const currentStep = form.getValues(`steps.${stepIndex}`);
-    const contentBlocks = currentStep.contentBlocks || [];
-    
-    // Add image block based on position preference
-    const newBlocks = [...contentBlocks];
-    const imageBlock = {
-      type: 'image' as const,
-      content: '',
-      imageData
-    };
-
-    if (imageData.position === 'above') {
-      newBlocks.unshift(imageBlock);
-    } else {
-      newBlocks.push(imageBlock);
-    }
-
-    form.setValue(`steps.${stepIndex}.contentBlocks`, newBlocks);
-  };
 
   return (
     <Form {...form}>
@@ -208,7 +188,6 @@ export function SolutionEditor({
                         <ContentEditor
                           value={field.value}
                           onChange={field.onChange}
-                          onImageAdd={(imageData) => handleAddImage(index, imageData)}
                           error={form.formState.errors.steps?.[index]?.content?.message}
                         />
                       </FormControl>

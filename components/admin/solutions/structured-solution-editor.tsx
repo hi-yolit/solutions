@@ -99,7 +99,6 @@ export function StructuredSolutionEditor({
                       <ContentEditor
                         value={field.value}
                         onChange={field.onChange}
-                        onImageAdd={() => {}}
                       />
                     </FormControl>
                     <FormMessage />
@@ -117,7 +116,6 @@ export function StructuredSolutionEditor({
                       <ContentEditor
                         value={field.value || ''}
                         onChange={field.onChange}
-                        onImageAdd={() => {}}
                       />
                     </FormControl>
                     <FormMessage />
@@ -135,7 +133,6 @@ export function StructuredSolutionEditor({
                       <ContentEditor
                         value={field.value || ''}
                         onChange={field.onChange}
-                        onImageAdd={() => {}}
                       />
                     </FormControl>
                     <FormMessage />

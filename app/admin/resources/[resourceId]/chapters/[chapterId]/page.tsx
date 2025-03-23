@@ -12,10 +12,11 @@ import Link from "next/link"
 
 export default async function ChapterDetailsPage({
   params
-}: {
-  params: { resourceId: string; chapterId: string }
-}) {
-  const { chapter, error } = await getChapterWithTopics(params.chapterId)
+}: Readonly<{
+  params: Promise<{ resourceId: string; chapterId: string }>
+}>) {
+  const resolvedParams = await params;
+  const { chapter, error } = await getChapterWithTopics(resolvedParams.chapterId)
 
   if (error || !chapter) {
     return <div>Failed to load chapter</div>
@@ -27,7 +28,7 @@ export default async function ChapterDetailsPage({
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/admin/resources/${params.resourceId}`}>
+        <Link href={`/admin/resources/${resolvedParams.resourceId}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -57,8 +58,8 @@ export default async function ChapterDetailsPage({
 
       <TopicsSection 
         topics={chapter.topics}
-        resourceId={params.resourceId}
-        chapterId={params.chapterId}
+        resourceId={resolvedParams.resourceId}
+        chapterId={resolvedParams.chapterId}
       />
     </div>
   )

@@ -3,10 +3,11 @@ import { TopicQuestionsClient } from '@/components/admin/resources/topic-questio
 
 export default async function TopicDetailsPage({
   params
-}: {
-  params: { resourceId: string; chapterId: string; topicId: string }
-}) {
-  const { topic, error } = await getTopicWithQuestions(params.topicId)
+}: Readonly<{
+  params: Promise<{ resourceId: string; chapterId: string; topicId: string }>
+}>) {
+  const resolvedParams = await params;
+  const { topic, error } = await getTopicWithQuestions(resolvedParams.topicId)
 
   if (error || !topic) {
     return <div>Failed to load topic</div>
@@ -17,9 +18,9 @@ export default async function TopicDetailsPage({
   return (
     <TopicQuestionsClient 
       topic={topic}
-      resourceId={params.resourceId}
-      chapterId={params.chapterId}
-      topicId={params.topicId}
+      resourceId={resolvedParams.resourceId}
+      chapterId={resolvedParams.chapterId}
+      topicId={resolvedParams.topicId}
     />
   )
 }

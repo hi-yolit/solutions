@@ -173,19 +173,26 @@ async function SearchResults({
   )
 }
 
-// Use Next.js's recommended type approach for App Router pages
-export default function SearchPage({
-  searchParams,
-}: Readonly<{
-  searchParams: {
+// Matching the naming convention from your subject page
+interface PageProps {
+  searchParams: Promise<{
     q?: string;
     type?: 'ALL' | 'QUESTIONS' | 'TEXTBOOKS' | 'PAST_PAPERS';
     page?: string;
-  };
-}>) {
-  const query = searchParams.q ?? '';
-  const type = searchParams.type ?? 'ALL';
-  const page = parseInt(searchParams.page ?? '1');
+  }>;
+}
+
+// Use the named interface approach like in your subject page
+export default async function SearchPage({
+  searchParams,
+}: Readonly<PageProps>) {
+  // Apply the same fix that worked for the subject page
+  const resolvedSearchParams = await searchParams;
+  
+  // Extract values from the resolved search params
+  const query = resolvedSearchParams.q ?? '';
+  const type = resolvedSearchParams.type ?? 'ALL';
+  const page = parseInt(resolvedSearchParams.page ?? '1');
 
   return (
     <div className="py-12">

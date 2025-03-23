@@ -8,13 +8,14 @@ import Image from "next/image";
 
 
 interface PageProps {
-  params: {
+  params: Promise<{
     resourceId: string;
-  };
+  }>;
 }
 
 export default async function ResourcePage({ params }: Readonly<PageProps>) {
-  const { resource, error } = await getResourceWithContent(params.resourceId);
+  const resolvedParams = await params;
+  const { resource, error } = await getResourceWithContent(resolvedParams.resourceId);
 
   if (error || !resource) {
     return <div>Failed to load resource</div>;

@@ -14,10 +14,11 @@ import Link from "next/link"
 
 export default async function ResourceDetailsPage({
   params
-}: {
-  params: { resourceId: string }
-}) {
-  const { resource, error } = await getResourceWithChapters(params.resourceId)
+}: Readonly<{
+  params: Promise<{ resourceId: string }>
+}>) {
+  const resolvedParams = await params;
+  const { resource, error } = await getResourceWithChapters(resolvedParams.resourceId)
 
   if (error || !resource) {
     return <div>Failed to load resource</div>
@@ -78,7 +79,7 @@ export default async function ResourceDetailsPage({
 
       <ChaptersSection 
         chapters={resource.chapters}
-        resourceId={params.resourceId}
+        resourceId={resolvedParams.resourceId}
         resourceType={resource.type}
       />
     </div>

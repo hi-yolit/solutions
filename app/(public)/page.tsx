@@ -1,91 +1,109 @@
-// src/app/(public)/page.tsx
-import { ResourceStatus, Resource } from "@prisma/client";
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
-import { Navbar } from "@/components/layout/navbar";
-import { SearchBox } from "@/components/search-box";
-import { getResources, getSuggestedSubjects } from "@/actions/resources";
-import { SubjectResources } from "@/components/subject-resources";
+'use client'
 
-async function checkUserAuthentication() {
-  try {
-    const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Navbar } from '@/components/layout/navbar'
+import { SearchBox } from '@/components/search-box'
+import { SubjectResources } from '@/components/subject-resources'
+import { ResourceStatus, Resource } from '@prisma/client'
+import { useAuth } from '@/contexts/auth-context' 
+import { getResources, getSuggestedSubjects } from '@/actions/resources' // Import server actions
 
-    // Handle auth error (this is a system error, not just lack of authentication)
-    if (error) {
-      console.error("Supabase auth error:", error);
-      return { error: "Authentication service unavailable." };
+export default function ClientHomePage() {
+  const [subjects, setSubjects] = useState<string[]>([])
+  const [resources, setResources] = useState<Resource[]>([])
+  const [resourcesBySubject, setResourcesBySubject] = useState<Record<string, Resource[]>>({})
+  const [dataLoading, setDataLoading] = useState(true)
+  const [dataError, setDataError] = useState<string | null>(null)
+  
+  const router = useRouter()
+  const { user, isLoading: authLoading } = useAuth()
+
+  useEffect(() => {
+    // If auth is still loading, wait for it
+    if (authLoading) return
+    
+    // If user is authenticated, redirect to home
+    if (user) {
+      router.push('/home')
+      return
     }
+    
+    // Otherwise, fetch public content using server actions
+    async function loadPublicContent() {
+      setDataLoading(true)
+      try {
+        // Using the server actions from your original code
+        const [subjectsResult, resourcesResult] = await Promise.all([
+          getSuggestedSubjects(),
+          getResources({
+            status: ResourceStatus.LIVE,
+            limit: 15,
+          })
+        ])
+        
+        // Handle subjects
+        if (subjectsResult?.error) {
+          console.error('Error fetching subjects:', subjectsResult.error)
+        } else {
+          setSubjects(subjectsResult?.subjects || [])
+        }
+        
+        // Handle resources
+        if (resourcesResult?.error) {
+          console.error('Error fetching resources:', resourcesResult.error)
+        } else {
+          const fetchedResources = resourcesResult?.resources || []
+          setResources(fetchedResources)
+          
+          // Group resources by subject
+          const grouped = fetchedResources.reduce((acc: Record<string, Resource[]>, resource: Resource) => {
+            const subject = resource.subject
+            if (!acc[subject]) {
+              acc[subject] = []
+            }
+            acc[subject].push(resource)
+            return acc
+          }, {})
+          
+          setResourcesBySubject(grouped)
+        }
+      } catch (error) {
+        console.error('Error loading public content:', error)
+        setDataError('Failed to load content. Please try again later.')
+      } finally {
+        setDataLoading(false)
+      }
+    }
+    
+    loadPublicContent()
+  }, [user, authLoading, router])
 
-    // Return authentication status
-    return { isAuthenticated: !!user, userId: user?.id };
-  } catch (error) {
-    console.error("Error checking authentication:", error);
-    return { error: "Failed to check authentication status." };
-  }
-}
-
-async function handleGetSuggestedSubjects() {
-  try {
-    const subjectsData = await getSuggestedSubjects();
-    return { subjects: subjectsData?.subjects || [] };
-  } catch (error) {
-    console.error("Error fetching suggested subjects:", error);
-    return { subjects: [] };
-  }
-}
-
-async function handleGetResources() {
-  try {
-    const resourcesData = await getResources({
-      status: ResourceStatus.LIVE,
-      limit: 15,
-    });
-    return { resources: resourcesData?.resources || [] };
-  } catch (error) {
-    console.error("Error fetching resources:", error);
-    return { resources: [] };
-  }
-}
-
-export default async function Home() {
-  // Check authentication status
-  const authResult = await checkUserAuthentication();
-
-  // Handle system errors with auth
-  if (authResult?.error) {
+  // Show loading state
+  if (authLoading || dataLoading) {
     return (
       <div className="max-w-[64rem] mx-auto px-4 py-12">
         <Navbar />
         <div className="text-center my-12">
-          <p className="text-red-500">
-            {authResult.error} Please try again later.
-          </p>
+          <p>Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
-  // If user is authenticated, redirect to home
-  // This should be outside of try/catch to let Next.js handle the redirect
-  if (authResult.isAuthenticated) {
-    redirect("/home");
+  // Show error state
+  if (dataError) {
+    return (
+      <div className="max-w-[64rem] mx-auto px-4 py-12">
+        <Navbar />
+        <div className="text-center my-12">
+          <p className="text-red-500">{dataError}</p>
+        </div>
+      </div>
+    )
   }
 
-  // If we're here, the user is not authenticated, so show the public content
-  const { subjects } = await handleGetSuggestedSubjects();
-  const { resources } = await handleGetResources();
-
-  const resourcesBySubject = resources.reduce((acc, resource) => {
-    const subject = resource.subject;
-    if (!acc[subject]) {
-      acc[subject] = [];
-    }
-    acc[subject].push(resource);
-    return acc;
-  }, {} as Record<string, Resource[]>);
-
+  // Show public content
   return (
     <div className="max-w-[64rem] mx-auto px-4 py-12">
       <Navbar />
@@ -107,13 +125,13 @@ export default async function Home() {
       {/* Browse Section */}
       <div className="mb-12">
         <h2 className="text-2xl font-bold mb-6">Browse by subject</h2>
-        {subjects && resources && (
+        {subjects.length > 0 && Object.keys(resourcesBySubject).length > 0 && (
           <SubjectResources
             subjects={subjects}
-            resourcesBySubject={resourcesBySubject || {}}
+            resourcesBySubject={resourcesBySubject}
           />
         )}
       </div>
     </div>
-  );
+  )
 }

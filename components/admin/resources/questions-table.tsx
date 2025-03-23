@@ -16,7 +16,7 @@ interface QuestionsTableProps {
     solutions: {
       id: string;
     }[];
-    resource: {
+    resource?: {
       type: ResourceType;
     };
   })[];

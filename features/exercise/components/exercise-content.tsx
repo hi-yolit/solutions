@@ -123,9 +123,9 @@ const SolutionStep = ({
               {step.hint && hintButton}
             </div>
 
-            <p className="text-muted-foreground pl-4">
+            <div className="text-muted-foreground pl-4">
               {isActive ? <LatexContent content={step.content} /> : null}
-            </p>
+            </div>
           </div>
         </div>
       </div>
