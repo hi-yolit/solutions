@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Badge } from "@/components/ui/badge"
 import { ResourceType } from "@prisma/client"
-import { ResourceWithContent } from "@/types/resource"
 import { ChapterAccordion } from '@/components/resources/chapter-accordion'
 
 interface PageProps {
