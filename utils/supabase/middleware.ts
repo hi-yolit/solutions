@@ -2,71 +2,70 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { getProfile } from '@/actions/user'
 
+// Helper functions to determine path types
+function isPublicPath(pathname: string): boolean {
+  return (
+    pathname === '/api/auth/callback' ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/auth')
+  );
+}
+
+function isProtectedPath(pathname: string): boolean {
+  return (
+    pathname.startsWith('/account') ||
+    pathname.startsWith('/settings') ||
+    pathname === '/home'
+  );
+}
+
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
-
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Define paths that should bypass middleware checks
-  const isCallbackPath = request.nextUrl.pathname === '/api/auth/callback';
-  const isApiPath = request.nextUrl.pathname.startsWith('/api');
-  const isAuthPath = request.nextUrl.pathname.startsWith('/auth');
+  const { pathname } = request.nextUrl;
   
-  // Define protected paths that require authentication
-  const isAccountPath = request.nextUrl.pathname.startsWith('/account');
-  const isSettingsPath = request.nextUrl.pathname.startsWith('/settings');
-
-  // Allow callback and API routes
-  if (isCallbackPath || isApiPath) {
+  // Allow API routes to bypass authentication checks
+  if (pathname === '/api/auth/callback' || pathname.startsWith('/api')) {
     return NextResponse.next();
   }
 
-  // Redirect to home if authenticated user tries to access auth pages
-  if (user && isAuthPath) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // Redirect unauthenticated users trying to access protected routes
-  const protectedPaths = isAccountPath || isSettingsPath;
-  if (!user && protectedPaths) {
-    const returnUrl = request.nextUrl.pathname;
-    const loginUrl = new URL('/auth/login', request.url);
-    if (returnUrl !== '/') {
-      loginUrl.searchParams.set('returnUrl', returnUrl);
-    }
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Fetch the user's role if authenticated
-  let profileRole = null;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // Handle authentication-based redirects
   if (user) {
-    try {
-      const { profile, error } = await getProfile(user.id);
-
-      if (error) {
-        console.error('Failed to fetch profile:', error);
-        // Let the user pass for now if the profile fetch fails
-        return NextResponse.next();
+    // For authenticated users
+    if (pathname.startsWith('/auth')) {
+      return NextResponse.redirect(new URL('/home', request.url));
+    }
+    
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL('/home', request.url));
+    }
+    
+    // Check admin access
+    if (pathname.startsWith('/admin')) {
+      try {
+        const { profile } = await getProfile(user.id);
+        if (profile?.role !== 'ADMIN') {
+          return NextResponse.redirect(new URL('/home', request.url));
+        }
+      } catch (err) {
+        console.error('Error fetching user profile:', err);
       }
-
-      profileRole = profile?.role;
-    } catch (err) {
-      console.error('Error fetching user profile:', err);
-      return NextResponse.next(); // Prevent redirect loops on profile fetch failure
+    }
+  } else {
+    // For unauthenticated users
+    if (pathname === '/home' || 
+        pathname.startsWith('/account') || 
+        pathname.startsWith('/settings')) {
+      
+      const loginUrl = new URL('/auth/login', request.url);
+      if (pathname !== '/home') {
+        loginUrl.searchParams.set('returnUrl', pathname);
+      }
+      return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Admin route protection
-  if (request.nextUrl.pathname.startsWith('/admin') && profileRole !== 'ADMIN') {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // Return the default response if no conditions match
-  return supabaseResponse;
+  // Default: allow the request to proceed
+  return NextResponse.next({ request });
 }
