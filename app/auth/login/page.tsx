@@ -110,7 +110,7 @@ export default function LoginPage() {
       const { data, error: authError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`
         }
       })
       console.log('OAuth response:', { data, error })

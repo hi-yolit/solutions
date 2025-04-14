@@ -1,40 +1,30 @@
+// app/api/auth/callback/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 
-
-const baseUrl = process.env.NGROK_URL ?? process.env.NEXT_PUBLIC_APP_URL
-
 export async function GET(request: Request) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
-  const state = requestUrl.searchParams.get('state')
-  console.log(requestUrl)
-
+  const { searchParams } = new URL(request.url)
+  const code = searchParams.get('code')
+  
+  // Important security check
   if (!code) {
-    console.error('No code provided in callback')
-    return NextResponse.redirect(`${baseUrl}/auth/login?error=no_code`)
+    return NextResponse.redirect(
+      new URL('/auth/login?error=no_code', request.url)
+    )
   }
 
   const supabase = await createClient()
 
   try {
-    // Log more details for debugging
-    console.log('Exchanging code for session', {
-      code_length: code.length,
-      has_state: Boolean(state)
-    })
-
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (error) {
-      console.error('Auth exchange error:', error)
-      return NextResponse.redirect(`${baseUrl}/auth/login?error=${encodeURIComponent(error.message)}`)
-    }
+    if (error) throw error
 
-    console.log('Session created successfully')
-    return NextResponse.redirect(`${baseUrl}`)
+    return NextResponse.redirect(new URL('/', request.url))
   } catch (error) {
-    console.error('Unexpected auth error:', error)
-    return NextResponse.redirect(`${baseUrl}/auth/login?error=unexpected_error`)
+    console.error('Auth error:', error)
+    return NextResponse.redirect(
+      new URL(`/auth/login?error=auth_failed`, request.url)
+    )
   }
 }
