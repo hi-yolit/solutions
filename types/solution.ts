@@ -12,12 +12,7 @@ export interface SolutionContent extends Prisma.JsonObject {
 export interface QuestionContent extends Prisma.JsonObject {
   mainQuestion: string;
   marks?: number | null;
-  subQuestions?: {
-    type: QuestionType;
-    part: string;
-    text: string;
-    marks: number | null;
-  }[];
+  blocks?: ContentBlock[];
   [key: string]: any; // Add index signature for Prisma JsonObject compatibility
 }
 
@@ -75,27 +70,16 @@ export interface ProofStep {
   hint?: string;
 }
 
-export interface SolutionContent {
-  type: QuestionType;
-  content: MCQSolution | StructuredStep[] | EssayOutlinePoint[] | ProofStep[];
-}
-
 export interface DBSolution {
   id: string;
-  questionId: string
+  questionId: string;
   content: Prisma.JsonValue;
-}
-
-export interface SubQuestionSolution {
-  part: string;
-  solution: SolutionContent;
 }
 
 export interface SolutionData {
   id?: string;
   questionId: string;
   mainSolution?: SolutionContent;
-  subSolutions?: SubQuestionSolution[];
 }
 
 export interface QuestionWithSolution {
@@ -104,12 +88,7 @@ export interface QuestionWithSolution {
   content: {
     mainQuestion: string;
     marks?: number;
-    subQuestions?: {
-      part: string;
-      type: QuestionType;
-      text: string;
-      marks: number | null;
-    }[];
+    blocks?: ContentBlock[];
   };
-  solutions: SolutionData[];
+  solutions: DBSolution[];
 }

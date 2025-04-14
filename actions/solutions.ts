@@ -2,64 +2,74 @@
 
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { SolutionData, QuestionContent } from '@/types/solution'
-import { Prisma } from '@prisma/client'
+import { SolutionData } from '@/types/solution'
 import { verifyAdmin } from './user'
 
 export async function getQuestionWithSolutions(questionId: string) {
   try {
     const question = await prisma.question.findUnique({
-      where: { id: questionId },
+      where: {
+        id: questionId
+      },
       include: {
-        solutions: {
+        solutions: true,
+        resource: {
           select: {
-            id: true,
-            content: true,
-            createdAt: true,
-            updatedAt: true
+            type: true
           }
         }
       }
     })
 
-    return {
-      question: question ? {
-        ...question,
-        content: question.content as QuestionContent
-      } : null
+    if (!question) {
+      return { error: 'Question not found' }
     }
+
+    return { question }
   } catch (error) {
-    console.error('Failed to fetch question:', error)
-    return { error: 'Failed to fetch question' }
+    console.error('Failed to fetch question with solutions:', error)
+    return { error: 'Failed to fetch question details' }
   }
 }
 
 export async function createSolution(data: SolutionData) {
-
   try {
-
     const { isAdmin, profile, error } = await verifyAdmin()
 
     if (!isAdmin && !profile) {
       return { error: error || 'Unauthorized - Admin access required' }
     }
 
-    const solutionContent = {
-      mainSolution: data.mainSolution,
-      subSolutions: data.subSolutions
+    // Get the question to find its contentId for revalidation
+    const question = await prisma.question.findUnique({
+      where: { id: data.questionId },
+      select: {
+        resourceId: true,
+        contentId: true
+      }
+    })
+
+    if (!question) {
+      return { error: 'Question not found' }
     }
+
+    // First convert to JSON, then use as InputJsonValue
+    // This avoids TypeScript errors with Prisma's JSON types
+    const contentJson = JSON.parse(JSON.stringify(data.mainSolution?.content));
 
     const solution = await prisma.solution.create({
       data: {
         question: { connect: { id: data.questionId } },
         admin: { connect: { id: profile!.id } },
-        content: solutionContent as Prisma.InputJsonValue,
-        metrics: { views: 0, helpfulVotes: 0 } as Prisma.InputJsonValue,
+        content: contentJson,
+        metrics: { views: 0, helpfulVotes: 0 },
         steps: []
       }
     })
 
-    revalidatePath(`/admin/resources/*/chapters/*/questions/${data.questionId}`)
+    // Update the revalidation path to match the new structure
+    revalidatePath(`/admin/resources/${question.resourceId}/contents/${question.contentId}`)
+    
     return { solution }
   } catch (error) {
     console.error('Failed to create solution:', error)
@@ -68,27 +78,45 @@ export async function createSolution(data: SolutionData) {
 }
 
 export async function updateSolution(solutionId: string, data: Partial<SolutionData>) {
-
-  const { isAdmin, profile, error } = await verifyAdmin()
-
-  if (!isAdmin && !profile) {
-    return { error: error || 'Unauthorized - Admin access required' }
-  }
-
   try {
-    const solutionContent = {
-      mainSolution: data.mainSolution,
-      subSolutions: data.subSolutions
+    const { isAdmin, profile, error } = await verifyAdmin()
+
+    if (!isAdmin && !profile) {
+      return { error: error || 'Unauthorized - Admin access required' }
     }
+
+    // Find the solution and its related question info for revalidation
+    const existingSolution = await prisma.solution.findUnique({
+      where: { id: solutionId },
+      include: { 
+        question: {
+          select: {
+            id: true,
+            resourceId: true,
+            contentId: true
+          }
+        }
+      }
+    })
+    
+    if (!existingSolution) {
+      return { error: 'Solution not found' }
+    }
+
+    // First convert to JSON, then use as InputJsonValue
+    // This avoids TypeScript errors with Prisma's JSON types
+    const contentJson = JSON.parse(JSON.stringify(data.mainSolution?.content));
 
     const solution = await prisma.solution.update({
       where: { id: solutionId },
       data: {
-        content: solutionContent as Prisma.InputJsonValue,
+        content: contentJson
       }
     })
 
-    revalidatePath(`/admin/resources/*/chapters/*/questions/${data.questionId}`)
+    // Update the revalidation path to match the new structure
+    revalidatePath(`/admin/resources/${existingSolution.question.resourceId}/contents/${existingSolution.question.contentId}`)
+    
     return { solution }
   } catch (error) {
     console.error('Failed to update solution:', error)

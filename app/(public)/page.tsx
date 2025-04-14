@@ -82,9 +82,9 @@ export default function ClientHomePage() {
   // Show loading state
   if (authLoading || dataLoading) {
     return (
-      <div className="max-w-[64rem] mx-auto px-4 py-12">
+      <div className="max-w-[64rem] mx-auto px-4 pt-20 pb-8">
         <Navbar />
-        <div className="text-center my-12">
+        <div className="text-center my-8">
           <p>Loading...</p>
         </div>
       </div>
@@ -94,9 +94,9 @@ export default function ClientHomePage() {
   // Show error state
   if (dataError) {
     return (
-      <div className="max-w-[64rem] mx-auto px-4 py-12">
+      <div className="max-w-[64rem] mx-auto px-4 pt-20 pb-8">
         <Navbar />
-        <div className="text-center my-12">
+        <div className="text-center my-8">
           <p className="text-red-500">{dataError}</p>
         </div>
       </div>
@@ -105,26 +105,25 @@ export default function ClientHomePage() {
 
   // Show public content
   return (
-    <div className="max-w-[64rem] mx-auto px-4 py-12">
+    <div className="max-w-[64rem] mx-auto px-4 pt-20 pb-8">
       <Navbar />
-      <div className="text-center my-12">
-        <h1 className="text-5xl font-bold mb-4">
-          Find textbook solutions you can trust
+      <div className="text-center my-6 md:my-8">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">
+          Step-by-step explanations
         </h1>
-        <p className="text-xl text-muted-foreground mb-8">
-          Access step-by-step solutions for your CAPS and IEB textbooks and past
-          papers
+        <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 max-w-xl mx-auto">
+          Understand South African CAPS and IEB textbooks with expert explanations for your toughest questions
         </p>
 
         {/* Search Bar */}
-        <div className="max-w-2xl mx-auto mb-8">
+        <div className="max-w-sm md:max-w-md lg:max-w-2xl mx-auto mb-6 md:mb-8">
           <SearchBox />
         </div>
       </div>
 
       {/* Browse Section */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Browse by subject</h2>
+      <div className="mb-8 md:mb-12">
+        <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Browse by subject</h2>
         {subjects.length > 0 && Object.keys(resourcesBySubject).length > 0 && (
           <SubjectResources
             subjects={subjects}

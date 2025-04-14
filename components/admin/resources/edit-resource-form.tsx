@@ -81,105 +81,34 @@ export function EditResourceForm({ resource, onClose, onSuccess }: EditResourceF
     const showPastPaperFields = form.watch("type") === "PAST_PAPER"
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Title</FormLabel>
-                            <FormControl>
-                                <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="coverImage"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Cover Image</FormLabel>
-                            <FormControl>
-                                <ImageUpload
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Type</FormLabel>
-                            <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                            >
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="TEXTBOOK">Textbook</SelectItem>
-                                    <SelectItem value="PAST_PAPER">Past Paper</SelectItem>
-                                    <SelectItem value="STUDY_GUIDE">Study Guide</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="subject"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Subject</FormLabel>
-                            <FormControl>
-                                <SubjectSelect
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
+        <div className="max-h-[80vh] overflow-y-auto p-4">
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <FormField
                         control={form.control}
-                        name="grade"
+                        name="title"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Grade</FormLabel>
-                                <Select
-                                    onValueChange={(value) => field.onChange(parseInt(value))}
-                                    defaultValue={field.value?.toString()}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select grade" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {[8, 9, 10, 11, 12].map((grade) => (
-                                            <SelectItem key={grade} value={grade.toString()}>
-                                                Grade {grade}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <FormLabel>Title</FormLabel>
+                                <FormControl>
+                                    <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="coverImage"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Cover Image</FormLabel>
+                                <FormControl>
+                                    <ImageUpload
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -187,85 +116,67 @@ export function EditResourceForm({ resource, onClose, onSuccess }: EditResourceF
 
                     <FormField
                         control={form.control}
-                        name="curriculum"
+                        name="type"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Curriculum</FormLabel>
+                                <FormLabel>Type</FormLabel>
                                 <Select
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
                                 >
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select curriculum" />
+                                            <SelectValue placeholder="Select type" />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="CAPS">CAPS</SelectItem>
-                                        <SelectItem value="IEB">IEB</SelectItem>
+                                        <SelectItem value="TEXTBOOK">Textbook</SelectItem>
+                                        <SelectItem value="PAST_PAPER">Past Paper</SelectItem>
+                                        <SelectItem value="STUDY_GUIDE">Study Guide</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                </div>
 
-                {/* Textbook specific fields */}
-                {showTextbookFields && (
-                    <>
-                        <FormField
-                            control={form.control}
-                            name="publisher"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Publisher</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                    <FormField
+                        control={form.control}
+                        name="subject"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Subject</FormLabel>
+                                <FormControl>
+                                    <SubjectSelect
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                        <FormField
-                            control={form.control}
-                            name="edition"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Edition</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </>
-                )}
-
-                {/* Past Paper specific fields */}
-                {showPastPaperFields && (
                     <div className="grid grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
-                            name="term"
+                            name="grade"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Term</FormLabel>
+                                    <FormLabel>Grade</FormLabel>
                                     <Select
                                         onValueChange={(value) => field.onChange(parseInt(value))}
                                         defaultValue={field.value?.toString()}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select term" />
+                                                <SelectValue placeholder="Select grade" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {[1, 2, 3, 4].map((term) => (
-                                                <SelectItem key={term} value={term.toString()}>
-                                                    Term {term}
+                                            {[8, 9, 10, 11, 12].map((grade) => (
+                                                <SelectItem key={grade} value={grade.toString()}>
+                                                    Grade {grade}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -277,33 +188,124 @@ export function EditResourceForm({ resource, onClose, onSuccess }: EditResourceF
 
                         <FormField
                             control={form.control}
-                            name="year"
+                            name="curriculum"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Year</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            {...field}
-                                            onChange={e => field.onChange(parseInt(e.target.value))}
-                                        />
-                                    </FormControl>
+                                    <FormLabel>Curriculum</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select curriculum" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="CAPS">CAPS</SelectItem>
+                                            <SelectItem value="IEB">IEB</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
                     </div>
-                )}
 
-                <div className="flex justify-end gap-4 pt-4">
-                    <Button variant="outline" type="button" onClick={onClose}>
-                        Cancel
-                    </Button>
-                    <Button type="submit">
-                        Update Resource
-                    </Button>
-                </div>
-            </form>
-        </Form>
+                    {/* Textbook specific fields */}
+                    {showTextbookFields && (
+                        <>
+                            <FormField
+                                control={form.control}
+                                name="publisher"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Publisher</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="edition"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Edition</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </>
+                    )}
+
+                    {/* Past Paper specific fields */}
+                    {showPastPaperFields && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="term"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Term</FormLabel>
+                                        <Select
+                                            onValueChange={(value) => field.onChange(parseInt(value))}
+                                            defaultValue={field.value?.toString()}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select term" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {[1, 2, 3, 4].map((term) => (
+                                                    <SelectItem key={term} value={term.toString()}>
+                                                        Term {term}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="year"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Year</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={e => field.onChange(parseInt(e.target.value))}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-4 pt-4">
+                        <Button variant="outline" type="button" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button type="submit">
+                            Update Resource
+                        </Button>
+                    </div>
+                </form>
+            </Form>
+        </div>
     )
 }

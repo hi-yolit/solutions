@@ -5,32 +5,14 @@ import { SearchBox } from '@/components/search-box'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import type { Resource, Question, Chapter } from '@prisma/client'
+import type { Resource, Question } from '@prisma/client'
 
-interface SearchResults {
-  resources: Array<Resource & { 
-    _count: { 
-      questions: number 
-    } 
-  }>
-  questions: Array<Question & { 
-    resource: Resource
-    chapter: Chapter 
-    solutions: Array<{ id: string }>
-    content: {
-      mainQuestion: string
-    }
-  }>
-  totalResources: number
-  totalPages: number
-  currentPage: number
-}
 
-async function SearchResults({ 
-  query, 
-  type, 
-  page 
-}: Readonly<{ 
+async function SearchResults({
+  query,
+  type,
+  page
+}: Readonly<{
   query: string;
   type: 'ALL' | 'QUESTIONS' | 'TEXTBOOKS' | 'PAST_PAPERS';
   page: number;
@@ -38,7 +20,7 @@ async function SearchResults({
   const searchResult = query ? await searchResources({ query, type, page }) : null
 
   if (!searchResult) return null
-  
+
   if ('error' in searchResult) {
     return (
       <div className="text-center py-8 text-red-500">
@@ -55,7 +37,7 @@ async function SearchResults({
             <h2 className="text-2xl font-bold">Resources</h2>
             <div className="grid gap-4">
               {searchResult.resources.map((resource) => (
-                <Link 
+                <Link
                   key={resource.id}
                   href={`/resources/${resource.id}`}
                   className="p-4 border rounded-lg hover:bg-muted/50"
@@ -70,25 +52,18 @@ async function SearchResults({
           </div>
         )}
 
-        {searchResult.questions.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Questions</h2>
-            <div className="space-y-4">
-              {searchResult.questions.map((question) => (
-                <Link
-                  key={question.id}
-                  href={`/questions/${question.id}`}
-                  className="block p-4 border rounded-lg hover:bg-muted/50"
-                >
-                  <p className="font-medium mb-2">{question.content.mainQuestion}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {question.resource.title} • Chapter {question.chapter.number}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+        {searchResult.questions.map((question) => (
+          <Link
+            key={question.id}
+            href={`/exercises/${question.contentId}/${question.id}`}
+            className="block p-4 border rounded-lg hover:bg-muted/50"
+          >
+            <p className="font-medium mb-2">{question.content.mainQuestion}</p>
+            <p className="text-sm text-muted-foreground">
+              {question.resource.title} • {question.content?.title || 'Question'} {question.questionNumber}
+            </p>
+          </Link>
+        ))}
 
         {searchResult.resources.length === 0 && searchResult.questions.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
@@ -108,7 +83,7 @@ async function SearchResults({
               >
                 <p className="font-medium mb-2">{question.content.mainQuestion}</p>
                 <p className="text-sm text-muted-foreground">
-                  {question.resource.title} • Chapter {question.chapter.number}
+                  {question.resource.title}
                 </p>
               </Link>
             ))}
@@ -188,7 +163,7 @@ export default async function SearchPage({
 }: Readonly<PageProps>) {
   // Apply the same fix that worked for the subject page
   const resolvedSearchParams = await searchParams;
-  
+
   // Extract values from the resolved search params
   const query = resolvedSearchParams.q ?? '';
   const type = resolvedSearchParams.type ?? 'ALL';
@@ -203,10 +178,43 @@ export default async function SearchPage({
       {query && (
         <Tabs defaultValue={type} className="space-y-8">
           <TabsList className="w-full flex-wrap justify-start sm:justify-center gap-2 h-auto p-2">
-            <TabsTrigger value="ALL" className="data-[state=active]:bg-primary">All results</TabsTrigger>
-            <TabsTrigger value="QUESTIONS">Questions</TabsTrigger>
-            <TabsTrigger value="TEXTBOOKS">Textbooks</TabsTrigger>
-            <TabsTrigger value="PAST_PAPERS">Past Papers</TabsTrigger>
+            <TabsTrigger
+              value="ALL"
+              className="px-4 py-2 rounded-md transition-colors duration-200 
+             bg-muted text-muted-foreground 
+             data-[state=active]:bg-primary data-[state=active]:text-white 
+             hover:bg-accent hover:text-accent-foreground"
+            >
+              All results
+            </TabsTrigger>
+            <TabsTrigger
+              value="QUESTIONS"
+              className="px-4 py-2 rounded-md transition-colors duration-200 
+             bg-muted text-muted-foreground 
+             data-[state=active]:bg-primary data-[state=active]:text-white 
+             hover:bg-accent hover:text-accent-foreground"
+            >
+              Questions
+            </TabsTrigger>
+            <TabsTrigger
+              value="TEXTBOOKS"
+              className="px-4 py-2 rounded-md transition-colors duration-200 
+             bg-muted text-muted-foreground 
+             data-[state=active]:bg-primary data-[state=active]:text-white 
+             hover:bg-accent hover:text-accent-foreground"
+            >
+              Textbooks
+            </TabsTrigger>
+            <TabsTrigger
+              value="PAST_PAPERS"
+              className="px-4 py-2 rounded-md transition-colors duration-200 
+             bg-muted text-muted-foreground 
+             data-[state=active]:bg-primary data-[state=active]:text-white 
+             hover:bg-accent hover:text-accent-foreground"
+            >
+              Past Papers
+            </TabsTrigger>
+
           </TabsList>
 
           <Suspense

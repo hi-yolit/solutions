@@ -1,33 +1,61 @@
-// src/types/resource.ts
-import { Chapter, Question, Solution, Topic } from "@prisma/client"
-export type ResourceType = 'TEXTBOOK' | 'PAST_PAPER' | 'STUDY_GUIDE'
-export type CurriculumType = 'CAPS' | 'IEB'
+// types/resource.ts
+import { ContentType, Prisma, ResourceType as PrismaResourceType } from "@prisma/client";
+export type ResourceType = PrismaResourceType;
 
-export interface Resource {
-  id: string
-  title: string
-  type: ResourceType
-  subject: string
-  grade: number
-  curriculum: CurriculumType
-  year: number
-  publisher?: string
-  status: 'active' | 'inactive'
+export interface ContentWithChildren {
+  id: string;
+  title: string | null;
+  type: ContentType;
+  number: string | null;
+  pageNumber: number | null;
+  order: number;
+  children?: ContentWithChildren[];
+  questions?: QuestionWithSolutions[];
+  _count?: {
+    children?: number;
+    questions?: number;
+  };
 }
 
-export interface TopicWithQuestions extends Topic {
+export interface ContentWithQuestions {
+  id: string;
+  title: string | null;
+  type: ContentType;
+  number: string | null;
+  pageNumber: number | null;
+  order: number;
   questions: QuestionWithSolutions[];
+  _count?: {
+    questions: number;
+  };
 }
 
-export interface QuestionWithSolutions extends Question {
-  solutions: Solution[];
+export interface QuestionWithSolutions {
+  id: string;
+  questionNumber: string;
+  exerciseNumber: number | null;
+  type: string;
+  order: number;
+  solutions: SolutionBrief[];
+  questionContent: Prisma.JsonValue;  
+  contentId: string;
+
 }
 
-export interface ChapterWithContent extends Chapter {
-  topics: TopicWithQuestions[];
-  questions: QuestionWithSolutions[];
+interface SolutionBrief {
+  id: string;
 }
 
-export interface ResourceWithContent extends Resource {
-  chapters: ChapterWithContent[];
+export interface ResourceWithContent {
+  id: string;
+  title: string;
+  type: ResourceType;
+  subject: string;
+  grade: number;
+  coverImage: string | null;
+  edition: string | null;
+  publisher: string | null;
+  term: number | null;
+  year: number | null;
+  contents: ContentWithChildren[];
 }

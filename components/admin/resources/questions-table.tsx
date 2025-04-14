@@ -6,10 +6,10 @@ import { AddQuestionDialog } from "./add-question-dialog"
 import { QuestionDisplay } from "./questions-display"
 import { useState } from "react"
 import { deleteQuestion } from "@/actions/questions"
-import { AlertDialogHeader, AlertDialogFooter, AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogAction, AlertDialogCancel, AlertDialogTitle } from "@/components/ui/alert-dialog"
-import { toast } from "@/hooks/use-toast"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast"
 import { ResourceType } from "@/types/resource"
-
+import { FAB } from "@/components/ui/fab"
 
 interface QuestionsTableProps {
   questions: (Question & {
@@ -21,32 +21,30 @@ interface QuestionsTableProps {
     };
   })[];
   resourceId: string;
-  chapterId: string;
-  topicId?: string;
+  contentId: string;
 }
 
 export function QuestionsTable({
   questions,
   resourceId,
-  chapterId,
-  topicId
+  contentId
 }: Readonly<QuestionsTableProps>) {
   const router = useRouter()
+  const { toast } = useToast()
+  
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null)
 
   const handleManageSolutions = (questionId: string) => {
-    const basePath = `/admin/resources/${resourceId}/chapters/${chapterId}`;
-    const solutionPath = topicId
-      ? `${basePath}/topics/${topicId}/questions/${questionId}/solution`
-      : `${basePath}/questions/${questionId}/solution`;
-
+    const solutionPath = `/admin/resources/${resourceId}/contents/${contentId}/questions/${questionId}/solution`;
     router.push(solutionPath);
   }
 
   const handleEdit = (question: Question) => {
     setEditingQuestion(question)
+    setAddDialogOpen(true)
   }
 
   const handleDelete = async () => {
@@ -65,7 +63,7 @@ export function QuestionsTable({
 
       toast({
         title: "Success",
-        description: "Topic deleted successfully"
+        description: "Question deleted successfully"
       })
       router.refresh()
     } catch (error) {
@@ -79,14 +77,24 @@ export function QuestionsTable({
       setQuestionToDelete(null)
     }
   }
+
+  // Sort questions first by order, then by questionNumber if same order
+  const sortedQuestions = [...questions].sort((a, b) => {
+    const orderA = a.order ?? 0;
+    const orderB = b.order ?? 0;
+    
+    if (orderA !== orderB) return orderA - orderB;
+    return a.questionNumber.localeCompare(b.questionNumber);
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative pb-16">
       {questions.length === 0 ? (
         <div className="text-center text-muted-foreground py-8">
           No questions added yet
         </div>
       ) : (
-        questions.map((question) => (
+        sortedQuestions.map((question) => (
           <QuestionDisplay
             key={question.id}
             question={question}
@@ -102,15 +110,15 @@ export function QuestionsTable({
 
       <AddQuestionDialog
         resourceId={resourceId}
-        chapterId={chapterId}
-        topicId={topicId}
+        contentId={contentId}
         questionToEdit={editingQuestion}
-        open={!!editingQuestion}
+        open={addDialogOpen}
         onOpenChange={(open) => {
+          setAddDialogOpen(open)
           if (!open) setEditingQuestion(null)
         }}
+        totalQuestions={questions.length}
       />
-
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
@@ -126,6 +134,14 @@ export function QuestionsTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FAB 
+        onClick={() => {
+          setEditingQuestion(null)
+          setAddDialogOpen(true)
+        }}
+        text="Add Question"
+      />
     </div>
   )
 }

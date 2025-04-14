@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 import 'katex/dist/katex.min.css'
 import NextTopLoader from "nextjs-toploader";
+import { Navbar } from "@/components/layout/navbar";
 
 export const metadata: Metadata = {
   title: "YAAS Explainer",

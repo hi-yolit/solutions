@@ -1,8 +1,8 @@
 "use client";
 
-import { ChapterWithContent, TopicWithQuestions } from "@/types/resource";
+import { ContentWithChildren } from "@/types/resource";
 import { ResourceType } from "@prisma/client";
-import { Book, FileQuestion } from "lucide-react";
+import { Book, FileQuestion, List } from "lucide-react";
 import {
   Accordion,
   Text,
@@ -14,189 +14,107 @@ import {
 import Link from "next/link";
 
 // Types
-interface ChapterAccordionProps {
-  chapter: ChapterWithContent;
+interface ContentAccordionProps {
+  content: ContentWithChildren;
+  resourceId: string;
   resourceType: ResourceType;
+  level: "CHAPTER" | "SECTION" | "PAGE";
 }
 
 // Utils
-function getQuestionCount(
-  chapter: ChapterWithContent,
-  resourceType: ResourceType
-): number {
-  return resourceType === ResourceType.TEXTBOOK
-    ? chapter.topics.reduce((acc, topic) => acc + topic.questions.length, 0)
-    : chapter.questions?.length ?? 0;
-}
-
-interface QuestionWithTopic {
-  id: string;
-  exerciseNumber: string;
-  questionNumber: string;
-  topicId: string;
-  topicTitle: string;
-  topicNumber: number;
-}
-
-interface ExerciseGroup {
-  exerciseNumber: string;
-  questions: QuestionWithTopic[];
-  questionCount: number;
-}
-
-interface QuestionButtonProps {
-  readonly question: {
-    readonly id: string;
-    readonly questionNumber: string;
-  };
-}
-
-function groupByExercise(topics: TopicWithQuestions[]): ExerciseGroup[] {
-  const exerciseMap = new Map<string, QuestionWithTopic[]>();
-
-  topics.forEach((topic) => {
-
-    topic.questions.forEach((question) => {
-      const exerciseNumber = String(question.exerciseNumber || "default");
-      if (!exerciseMap.has(exerciseNumber)) {
-        exerciseMap.set(exerciseNumber, []);
-      }
-
-      exerciseMap.get(exerciseNumber)!.push({
-        ...question,
-        topicId: topic.id,
-        topicTitle: topic.title ?? "",
-        topicNumber: topic.number ? parseInt(topic.number, 10) : 0,
-        exerciseNumber: question.exerciseNumber?.toString() ?? "",
-      });
-    });
-  });
-
-  return Array.from(exerciseMap.entries())
-    .map(([exerciseNumber, questions]) => ({
-      exerciseNumber,
-      questions,
-      questionCount: questions.length,
-    }))
-    .sort((a, b) => {
-      const numA = parseInt(a.exerciseNumber) || 0;
-      const numB = parseInt(b.exerciseNumber) || 0;
-      return numA - numB;
-    });
+function getQuestionCount(content: ContentWithChildren): number {
+  return content._count?.questions || 0;
 }
 
 // Components
-function ChapterIcon({ resourceType }: { resourceType: ResourceType }) {
-  return resourceType === ResourceType.TEXTBOOK ? (
-    <Book size={20} />
-  ) : (
-    <FileQuestion size={20} />
-  );
+function ContentIcon({ level }: { level: "CHAPTER" | "SECTION" | "PAGE" }) {
+  if (level === "CHAPTER") return <Book size={20} />;
+  if (level === "SECTION") return <List size={20} />;
+  return <FileQuestion size={20} />;
 }
 
-function TextbookContent({
-  chapter,
-}: Readonly<{ chapter: ChapterWithContent }>) {
-  const exercises = groupByExercise(chapter.topics);
-
-  if (exercises.length === 0) {
-    return (
-      <Text ta="center" c="dimmed" py="md">
-        No exercises found
-      </Text>
-    );
-  }
-
-  return (
-    <Grid className="ml-8">
-      {exercises.map((exercise) => (
-        <Grid.Col key={exercise.exerciseNumber} span={4}>
-          <ExerciseButton chapter={chapter} exercise={exercise} />
-        </Grid.Col>
-      ))}
-    </Grid>
-  );
-}
-
-function PastPaperContent({
-  chapter,
-}: Readonly<{ chapter: ChapterWithContent }>) {
-  if (!chapter.questions?.length) {
-    return (
-      <Text ta="center" c="dimmed" py="md">
-        No questions found
-      </Text>
-    );
-  }
-
-  return (
-    <Grid>
-      {chapter.questions.map((question) => (
-        <Grid.Col key={question.id} span={6}>
-          <QuestionButton question={question} />
-        </Grid.Col>
-      ))}
-    </Grid>
-  );
-}
-
-function ExerciseButton({
-  chapter,
-  exercise,
-}: Readonly<{
-  chapter: ChapterWithContent;
-  exercise: ExerciseGroup;
-}>) {
-  return (
-    <Link href={`/exercises/${chapter.id}/${exercise.exerciseNumber}`}>
-      <UnstyledButton className="w-full p-3 rounded hover:bg-gray-50 transition-colors">
-        <Group justify="space-between">
-          <Text size="sm" fw={500}>
-            Exercise {exercise.exerciseNumber}
-          </Text>
-        </Group>
-      </UnstyledButton>
-    </Link>
-  );
-}
-
-function QuestionButton({ question }: Readonly<QuestionButtonProps>) {
-  return (
-    <Link href={`/questions/${question.id}`}>
-      <UnstyledButton className="w-full p-3 rounded hover:bg-gray-50 transition-colors">
-        <Text size="sm">Question {question.questionNumber}</Text>
-      </UnstyledButton>
-    </Link>
-  );
-}
-
-export function ChapterAccordion({
-  chapter,
+function ContentItems({
+  content,
+  resourceId,
   resourceType,
-}: Readonly<ChapterAccordionProps>) {
-  const chapterType =
-    resourceType === ResourceType.TEXTBOOK ? "Ch" : "Question";
+  level,
+}: Readonly<ContentAccordionProps>) {
+  // Show child content items
+  if (content.children && content.children.length > 0) {
+    return (
+      <Grid className="ml-8">
+        {content.children.map((child) => (
+          <Grid.Col key={child.id} span={12}>
+            <Link href={`/admin/resources/${resourceId}/contents/${child.id}`}>
+              <UnstyledButton className="w-full p-3 rounded hover:bg-gray-50 transition-colors">
+                <Group justify="space-between">
+                  <Text size="sm" fw={500}>
+                    {child.number && `${child.number}: `}{child.title}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {child._count?.questions || 0} questions
+                  </Text>
+                </Group>
+              </UnstyledButton>
+            </Link>
+          </Grid.Col>
+        ))}
+      </Grid>
+    );
+  }
+
+  // Show questions when there are no child content items
+  if (content._count?.questions && content._count.questions > 0) {
+    return (
+      <Link href={`/admin/resources/${resourceId}/contents/${content.id}`} className="block">
+        <UnstyledButton className="w-full p-3 rounded hover:bg-gray-50 transition-colors">
+          <Text size="sm" fw={500}>
+            View {content._count.questions} Questions
+          </Text>
+        </UnstyledButton>
+      </Link>
+    );
+  }
 
   return (
-    <Accordion.Item value={chapter.id} className="py-2">
+    <Text ta="center" c="dimmed" py="md">
+      No content or questions found
+    </Text>
+  );
+}
+
+export function ContentAccordion({
+  content,
+  resourceId,
+  resourceType,
+  level,
+}: Readonly<ContentAccordionProps>) {
+  const contentType = level === "CHAPTER" 
+    ? "Chapter" 
+    : level === "SECTION" 
+      ? "Section" 
+      : "Page";
+
+  return (
+    <Accordion.Item value={content.id} className="py-2">
       <Accordion.Control
         icon={
           <Avatar radius="xl" size="sm" color="blue">
-            <ChapterIcon resourceType={resourceType} />
+            <ContentIcon level={level} />
           </Avatar>
         }
       >
         <Text size="md" fw={400}>
-          {chapterType}
-          {chapter.number} : {chapter.title}
+          {contentType} {content.number && `${content.number}:`} {content.title}
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
-        {resourceType === ResourceType.TEXTBOOK ? (
-          <TextbookContent chapter={chapter} />
-        ) : (
-          <PastPaperContent chapter={chapter} />
-        )}
+        <ContentItems 
+          content={content} 
+          resourceId={resourceId} 
+          resourceType={resourceType} 
+          level={level} 
+        />
       </Accordion.Panel>
     </Accordion.Item>
   );

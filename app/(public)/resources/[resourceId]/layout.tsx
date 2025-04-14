@@ -1,20 +1,16 @@
+'use client'
+
 import React from "react";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Navbar } from "@/components/layout/navbar";
 
 const ResourceLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <section>
-      <nav aria-label="Back navigation" className="w-full py-4">
-        <Link
-          href="/home"
-          className="inline-flex items-center gap-2 hover:text-primary"
-          aria-label="Back to home"
-        >
-          <ArrowLeft aria-hidden="true" />
-        </Link>
-      </nav>
-      {children}
+      <Navbar />
+      {/* Adding padding-top to compensate for the fixed navbar */}
+      <div className="pt-16">
+        {children}
+      </div>
     </section>
   );
 };

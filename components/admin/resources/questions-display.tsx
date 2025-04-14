@@ -13,6 +13,7 @@ import Latex from "react-latex-next";
 import { updateQuestionStatus } from "@/actions/questions";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { Pencil, Trash } from "lucide-react";
 
 interface QuestionDisplayProps {
   question: Question & {
@@ -33,27 +34,11 @@ interface QuestionContent {
   mainQuestion: string;
   blocks?: Array<{
     type: string;
-    imageData: {
+    imageData?: {
       url: string;
       caption?: string;
     };
   }>;
-  subQuestions?: Array<SubQuestion>;
-}
-
-interface SubQuestion {
-  part: string;
-  text: string;
-  marks: number;
-  blocks?: Array<ImageBlock>;
-}
-
-interface ImageBlock {
-  type: string;
-  imageData: {
-    url: string;
-    caption?: string;
-  };
 }
 
 export function QuestionDisplay({
@@ -63,7 +48,7 @@ export function QuestionDisplay({
   onDelete,
 }: Readonly<QuestionDisplayProps>) {
   const { toast } = useToast();
-  const content = question.content as unknown as QuestionContent;
+  const content = question.questionContent as unknown as QuestionContent;
 
   const displayType =
     question?.resource?.type === "TEXTBOOK" ? "Exercise" : "Question";
@@ -89,7 +74,7 @@ export function QuestionDisplay({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h3 className="font-semibold text-lg">
-            {displayType} {question.exerciseNumber}
+            {displayType} {question.exerciseNumber && `${question.exerciseNumber}.`}{question.questionNumber}
           </h3>
           <Badge variant="outline">{question.type}</Badge>
           <Select value={question.status} onValueChange={handleStatusChange}>
@@ -108,16 +93,16 @@ export function QuestionDisplay({
       </div>
 
       <div className="space-y-4">
-        {/* Main Question */}
+        {/* Question Content */}
         <div className="prose max-w-none">
           <Latex>{content.mainQuestion}</Latex>
         </div>
 
         {/* Images from blocks */}
         {content.blocks?.map(
-          (block: ImageBlock) =>
-            block.type === "image" && (
-              <div key={block.imageData.url} className="my-2">
+          (block, index) =>
+            block.type === "image" && block.imageData && (
+              <div key={index} className="my-2">
                 <Image
                   src={block.imageData.url}
                   alt={block.imageData.caption ?? "Question image"}
@@ -136,49 +121,6 @@ export function QuestionDisplay({
               </div>
             )
         )}
-
-        {/* Sub Questions */}
-        {content.subQuestions?.length && content.subQuestions.length > 0 && (
-          <div className="pl-6 space-y-4 mt-4 border-l-2">
-            {content.subQuestions.map((subQ: SubQuestion, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{subQ.part})</span>
-                  <div className="flex-1">
-                    <Latex>{subQ.text}</Latex>
-                  </div>
-                  {subQ.marks != null && (
-                    <Badge variant="outline">{subQ.marks} marks</Badge>
-                  )}
-                </div>
-
-                {/* Sub Question Images */}
-                {subQ.blocks?.map(
-                  (block: ImageBlock, blockIndex: number) =>
-                    block.type === "image" && (
-                      <div key={blockIndex} className="my-2">
-                        <Image
-                          src={block.imageData.url}
-                          alt={block.imageData.caption || "Question image"}
-                          width={500} // Adjust as needed
-                          height={300} // Adjust as needed
-                          style={{
-                            maxWidth: "100%",
-                            height: "auto",
-                          }}
-                        />
-                        {block.imageData.caption && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {block.imageData.caption}
-                          </p>
-                        )}
-                      </div>
-                    )
-                )}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="flex justify-between items-center pt-4">
@@ -187,12 +129,21 @@ export function QuestionDisplay({
             {question.solutions.length > 0 ? "View Solutions" : "Add Solution"}
           </Button>
 
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            Edit {displayType}
+          <Button
+            variant="outline"
+            aria-label="Edit"
+            size="icon"
+            onClick={onEdit}
+          >
+            <Pencil className="h-4 w-4" />
           </Button>
-
-          <Button variant="destructive" size="sm" onClick={onDelete}>
-            Delete
+          <Button
+            variant="destructive"
+            size="icon"
+            aria-label="Delete"
+            onClick={onDelete}
+          >
+            <Trash className="h-4 w-4" />
           </Button>
         </div>
         <div className="text-sm text-muted-foreground">

@@ -1,4 +1,4 @@
-import { getResourceWithChapters } from '@/actions/chapters'
+import { getResourceWithContents } from '@/actions/contents'
 import { ChaptersSection } from '@/components/admin/resources/chapters-section'
 import { Button } from "@/components/ui/button"
 import {
@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { ContentType } from '@prisma/client'
 
 export default async function ResourceDetailsPage({
   params
@@ -18,11 +19,16 @@ export default async function ResourceDetailsPage({
   params: Promise<{ resourceId: string }>
 }>) {
   const resolvedParams = await params;
-  const { resource, error } = await getResourceWithChapters(resolvedParams.resourceId)
+  const { resource, error } = await getResourceWithContents(resolvedParams.resourceId)
 
   if (error || !resource) {
     return <div>Failed to load resource</div>
   }
+
+  // Get top-level contents (no parent)
+  const topLevelContents = resource.contents.filter(
+    content => !content.parentId
+  ).sort((a, b) => a.order - b.order);
 
   const getPageTitle = () => {
     switch (resource.type) {
@@ -67,18 +73,18 @@ export default async function ResourceDetailsPage({
           <dl className="grid grid-cols-2 gap-4">
             <div>
               <dt className="text-sm font-medium text-gray-500">Publisher</dt>
-              <dd>{resource.publisher}</dd>
+              <dd>{resource.publisher || 'N/A'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Year</dt>
-              <dd>{resource.year}</dd>
+              <dd>{resource.year || 'N/A'}</dd>
             </div>
           </dl>
         </CardContent>
       </Card>
 
-      <ChaptersSection 
-        chapters={resource.chapters}
+      <ChaptersSection
+        chapters={topLevelContents}
         resourceId={resolvedParams.resourceId}
         resourceType={resource.type}
       />

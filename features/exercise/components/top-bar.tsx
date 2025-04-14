@@ -1,19 +1,42 @@
+'use client';
+
 import React from "react";
 import { ArrowLeft } from "lucide-react";
-import { ActionIcon, Text } from "@mantine/core";
-import Link from "next/link";
+import { ActionIcon, Group, Text } from "@mantine/core";
+import { useRouter } from "next/navigation";
 
-const ExerciseTopBar = ({ exerciseNumber }: { exerciseNumber: number }) => {
+interface TopBarProps {
+  questionNumber?: string;
+}
+
+const TopBar = ({ questionNumber }: TopBarProps) => {
+  const router = useRouter();
+  
+  const handleGoBack = () => {
+    // Use browser history to go back to the previous page
+    router.back();
+  };
+
   return (
-    <section className="flex items-center gap-4 justify-start py-3">
-      <Link href="/home" passHref>
-        <ActionIcon variant="transparent" color="black" aria-label="Back">
+    <section className="sticky top-0 bg-white z-10 border-b py-3 px-2">
+      <Group gap="xs">
+        <ActionIcon 
+          variant="transparent" 
+          color="black" 
+          aria-label="Go back"
+          onClick={handleGoBack}
+        >
           <ArrowLeft />
         </ActionIcon>
-      </Link>
-      {exerciseNumber && <Text>Exercise {exerciseNumber}</Text>}
+        
+        {questionNumber && (
+          <Text fw={500}>
+            Question {questionNumber}
+          </Text>
+        )}
+      </Group>
     </section>
   );
 };
 
-export default ExerciseTopBar;
+export default TopBar;

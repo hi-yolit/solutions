@@ -7,7 +7,7 @@ interface AuthLayoutProps {
   children: React.ReactNode
 }
 
-export default function AuthLayout({ children }: AuthLayoutProps) {
+export default function AuthLayout({ children }: Readonly<AuthLayoutProps>) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {

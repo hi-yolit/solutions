@@ -1,24 +1,48 @@
 'use client'
 
 import { useState } from "react"
-import { AddChapterDialog } from "./add-chapter-dialog"
 import { ChaptersTable } from "./chapters-table"
-import type { Chapter, ResourceType } from "@prisma/client"
+import { AddChapterDialog } from "./add-chapter-dialog"
+import { ResourceType, ContentType } from "@prisma/client"
 import { FAB } from "@/components/ui/fab"
 
+// Define Content type that matches your Prisma schema
+interface Content {
+  id: string
+  type: ContentType
+  title: string
+  number?: string | null
+  resourceId: string
+  parentId?: string | null
+  order: number
+  _count?: {
+    questions: number;
+    children: number;
+  };
+}
+
 interface ChaptersSectionProps {
-  chapters: Chapter[]
+  chapters: Content[] // Now using Content[] instead of Chapter[]
   resourceId: string
   resourceType: ResourceType
 }
 
-export function ChaptersSection({ chapters, resourceId, resourceType }: Readonly<ChaptersSectionProps>) {
+export function ChaptersSection({ 
+  chapters, 
+  resourceId, 
+  resourceType
+}: Readonly<ChaptersSectionProps>) {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedChapter, setSelectedChapter] = useState<Chapter | undefined>()
+  const [selectedChapter, setSelectedChapter] = useState<Content | undefined>()
 
-  const handleEdit = (chapter: Chapter) => {
+  const handleEdit = (chapter: Content) => {
     setSelectedChapter(chapter)
     setDialogOpen(true)
+  }
+
+  // Get appropriate button text based on resource type
+  const getAddButtonText = () => {
+    return resourceType === 'PAST_PAPER' ? 'Add Question' : 'Add Chapter'
   }
 
   return (
@@ -42,16 +66,15 @@ export function ChaptersSection({ chapters, resourceId, resourceType }: Readonly
         onOpenChange={setDialogOpen}
         resourceType={resourceType}
         chapter={selectedChapter}
-        totalChapters={chapters.length +1}
+        totalChapters={chapters.length}
       />
-
 
       <FAB
         onClick={() => {
           setSelectedChapter(undefined)
           setDialogOpen(true)
         }}
-        text={resourceType === 'PAST_PAPER' ? 'Add Question' : 'Add Chapter'}
+        text={getAddButtonText()}
       />
     </div>
   )

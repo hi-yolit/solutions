@@ -1,9 +1,10 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { User } from '@supabase/supabase-js'
+import Image from "next/image"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,13 +14,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '@/contexts/auth-context'
-import { Loader2, School, GraduationCap } from 'lucide-react'
+import { Loader2, School, GraduationCap, ArrowLeft } from 'lucide-react'
 import { ProfileWithMetadata } from '@/types/user'
 import { useMemo } from "react";
 
 export function Navbar() {
   const { user, profile, signOut, isLoading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
+  
+  // Check if current path is home or landing page
+  const isHomePage = pathname === '/' || pathname === '/home'
 
   const handleSignOut = async () => {
     await signOut()
@@ -30,16 +35,46 @@ export function Navbar() {
   const handleUpgrade = () => {
     router.push('/account')
   }
+  
+  const handleBack = () => {
+    router.back()
+  }
 
   return (
     <nav className="border-b bg-background fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-xl font-bold">
-              SA Solutions
-            </Link>
-          </div>
+          {isHomePage ? (
+            // Logo section for home/landing pages
+            <div className="flex-shrink-0 flex items-center space-x-2">
+              <Link href="https://yolit.co.za/" className="flex-shrink-0">
+                {/* Full logo for medium screens and up */}
+                <div className="hidden md:block">
+                  <Image src="/YAAS_logo.svg" alt="YAAS Logo" width={100} height={24} priority />
+                </div>
+                {/* Symbol-only logo for mobile */}
+                <div className="block md:hidden">
+                  <Image src="/YAAS_logo_symbol.svg" alt="YAAS Logo" width={32} height={32} priority />
+                </div>
+              </Link>
+              <span className="md:inline">/</span>
+              <Link href="/" className="md:inline font-medium">
+                Explanations
+              </Link>
+            </div>
+          ) : (
+            // Back button for other pages
+            <div className="flex-shrink-0">
+              <button 
+                onClick={handleBack}
+                className="inline-flex items-center gap-2 hover:text-primary"
+                aria-label={user ? "Back to home" : "Back to landing page"}
+              >
+                <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+                <span className="hidden sm:inline">Back</span>
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center gap-4">
             {isLoading ? (

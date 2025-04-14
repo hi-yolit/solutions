@@ -9,6 +9,7 @@ import Latex from 'react-latex-next'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Maximize2, Minimize2 } from "lucide-react"
+import 'katex/dist/katex.min.css'
 import {
   Dialog,
   DialogContent,
@@ -88,6 +89,13 @@ export function ContentEditor({
     }
   }, [value, onChange]);
 
+  // Helper function to prepare LaTeX text
+  const prepareLatexText = (text: string) => {
+    // Replace all LaTeX commands with their properly escaped versions
+    // This ensures commands like \textit, \textbf etc. work correctly
+    return text.replace(/\\([a-zA-Z]+)(\{[^}]*\})/g, '\\$1$2');
+  };
+
   const renderContent = useCallback(() => {
     const segments = [];
     let lastIndex = 0;
@@ -100,7 +108,7 @@ export function ContentEditor({
         const text = value.slice(lastIndex, match.index);
         segments.push(
           <span key={`text-${lastIndex}`}>
-            <Latex>{text.replace(/\$([^$]+)\$/g, (match, p1) => `$${p1}$`)}</Latex>
+            <Latex>{prepareLatexText(text)}</Latex>
           </span>
         );
       }
@@ -124,7 +132,7 @@ export function ContentEditor({
       const text = value.slice(lastIndex);
       segments.push(
         <span key={`text-${lastIndex}`}>
-          <Latex>{text.replace(/\$([^$]+)\$/g, (match, p1) => `$${p1}$`)}</Latex>
+          <Latex>{prepareLatexText(text)}</Latex>
         </span>
       );
     }
@@ -132,32 +140,58 @@ export function ContentEditor({
     return segments;
   }, [value]);
 
+  // Quick LaTeX buttons
+  const latexButtons = [
+    { label: 'Italic', command: '\\textit{text}' },
+    { label: 'Bold', command: '\\textbf{text}' },
+    { label: 'Underline', command: '\\underline{text}' },
+    { label: 'Fraction', command: '\\frac{a}{b}' },
+    { label: 'Square root', command: '\\sqrt{x}' },
+    { label: 'Subscript', command: 'x_{i}' },
+    { label: 'Superscript', command: 'x^{n}' }
+  ];
+
   const EditorToolbar = (
-    <div className="flex justify-between items-center">
-      <div className="flex gap-2">
-        <MathInput onInsert={handleLatexInsert} />
-        <ImageUploadDialog onImageAdd={handleImageAdd} />
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2">
+          <MathInput onInsert={handleLatexInsert} />
+          <ImageUploadDialog onImageAdd={handleImageAdd} />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPreview(!showPreview)}
+          >
+            {showPreview ? 'Hide Preview' : 'Show Preview'}
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsFullScreen(!isFullScreen)}
+            aria-label={isFullScreen ? 'Exit full screen' : 'Enter full screen'}
+          >
+            {isFullScreen ? (
+              <Minimize2 className="h-4 w-4" />
+            ) : (
+              <Maximize2 className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowPreview(!showPreview)}
-        >
-          {showPreview ? 'Hide Preview' : 'Show Preview'}
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setIsFullScreen(!isFullScreen)}
-          aria-label={isFullScreen ? 'Exit full screen' : 'Enter full screen'}
-        >
-          {isFullScreen ? (
-            <Minimize2 className="h-4 w-4" />
-          ) : (
-            <Maximize2 className="h-4 w-4" />
-          )}
-        </Button>
+      
+      <div className="flex flex-wrap gap-2">
+        {latexButtons.map((btn) => (
+          <Button 
+            key={btn.label}
+            variant="outline" 
+            size="sm"
+            onClick={() => handleLatexInsert(`$${btn.command}$`)}
+          >
+            {btn.label}
+          </Button>
+        ))}
       </div>
     </div>
   );
@@ -177,7 +211,7 @@ export function ContentEditor({
             onChange={(e) => onChange(e.target.value)}
             placeholder="Enter your content with LaTeX equations between $ symbols... You can also add images"
             className={cn(
-              "min-h-[100px] font-mono resize-none",
+              "min-h-[300px] font-mono resize-none",
               error && "border-red-500",
               isFullScreen && "min-h-[60vh]"
             )}

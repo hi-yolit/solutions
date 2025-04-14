@@ -50,6 +50,14 @@ enum SubscriptionStatus {
   TRIAL
 }
 
+// Simplified content types
+enum ContentType {
+  CHAPTER
+  SECTION
+  PAGE
+  EXERCISE
+}
+
 model Profile {
   id        String     @id @db.Uuid
   role      UserRole   @default(STUDENT)
@@ -85,46 +93,61 @@ model Resource {
   coverImage String?
   curriculum CurriculumType
   status     ResourceStatus @default(DRAFT)
-  chapters   Chapter[]
+  
+  // Content hierarchy
+  contents   Content[]
+  
   questions  Question[]
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
 }
 
-model Chapter {
-  id         String     @id @default(uuid()) @db.Uuid
-  resource   Resource   @relation(fields: [resourceId], references: [id])
-  resourceId String     @db.Uuid
-  number     Int?
-  title      String?
-  topics     Topic[]
-  questions  Question[]
-}
-
-model Topic {
-  id        String     @id @default(uuid()) @db.Uuid
-  chapter   Chapter    @relation(fields: [chapterId], references: [id])
-  chapterId String     @db.Uuid
-  number    String?
-  title     String?
-  questions Question[]
+// Simplified hierarchical content model
+model Content {
+  id            String      @id @default(uuid()) @db.Uuid
+  resource      Resource    @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  resourceId    String      @db.Uuid
+  
+  // Content type and metadata
+  type          ContentType
+  title         String      // For Page type, this could be "Quick Check", "Review Exercises", etc.
+  number        String?     // Could be "1", "1.1", "4a", etc.
+  description   String?     // Additional context if needed
+  pageNumber    Int?        // For physical page reference
+  
+  // Hierarchical relationships
+  parentId      String?     @db.Uuid
+  parent        Content?    @relation("ContentHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children      Content[]   @relation("ContentHierarchy")
+  
+  // Order within parent
+  order         Int         @default(0)
+  
+  // Associated questions
+  questions     Question[]
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@index([resourceId, type])
+  @@index([parentId])
 }
 
 model Question {
   id             String         @id @default(uuid()) @db.Uuid
   resource       Resource       @relation(fields: [resourceId], references: [id])
   resourceId     String         @db.Uuid
-  chapter        Chapter?       @relation(fields: [chapterId], references: [id])
-  chapterId      String?        @db.Uuid
-  topic          Topic?         @relation(fields: [topicId], references: [id])
-  topicId        String?        @db.Uuid
-  pageNumber     Int?
+  content        Content?       @relation(fields: [contentId], references: [id])
+  contentId      String?        @db.Uuid
   questionNumber String
   exerciseNumber Int?
   type           SolutionType
-  content        Json
+  questionContent Json
   status         QuestionStatus @default(DRAFT)
+  order          Int            @default(0)  // Added order field
   solutions      Solution[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model Solution {

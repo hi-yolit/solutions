@@ -21,17 +21,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Chapter, ResourceType } from "@prisma/client"
+import { ContentType, ResourceType } from "@prisma/client"
 import { useState } from "react"
-import { deleteChapter } from "@/actions/chapters"
+import { deleteContent } from "@/actions/contents"
 import { useToast } from "@/hooks/use-toast"
 import { Pencil, Trash } from "lucide-react"
 
+// Define Content type that matches your Prisma schema
+interface Content {
+  id: string
+  type: ContentType
+  title: string
+  number?: string | null
+  resourceId: string
+  parentId?: string | null
+  order: number
+  _count?: {
+    questions: number;
+    children: number;
+  };
+}
+
 interface ChaptersTableProps {
-  chapters: Chapter[]
+  chapters: Content[] // Now using Content[] instead of Chapter[]
   resourceId: string
   resourceType: ResourceType
-  onEdit: (chapter: Chapter) => void
+  onEdit: (chapter: Content) => void
 }
 
 export function ChaptersTable({ 
@@ -43,22 +58,18 @@ export function ChaptersTable({
   const router = useRouter()
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [chapterToDelete, setChapterToDelete] = useState<Chapter | null>(null)
+  const [chapterToDelete, setChapterToDelete] = useState<Content | null>(null)
   const isPastPaper = resourceType === 'PAST_PAPER'
 
   const handleManageClick = (chapterId: string) => {
-    if (resourceType === 'PAST_PAPER') {
-      router.push(`/admin/resources/${resourceId}/chapters/${chapterId}/questions`)
-    } else {
-      router.push(`/admin/resources/${resourceId}/chapters/${chapterId}`)
-    }
+    router.push(`/admin/resources/${resourceId}/contents/${chapterId}`)
   }
 
   const handleDelete = async () => {
     if (!chapterToDelete) return
 
     try {
-      const result = await deleteChapter(chapterToDelete.id)
+      const result = await deleteContent(chapterToDelete.id)
       if (result.error) {
         toast({
           title: "Error",
@@ -116,31 +127,38 @@ export function ChaptersTable({
                     >
                       {resourceType === "PAST_PAPER"
                         ? "Manage Questions"
-                        : "Manage Topics"}
+                        : "Manage Sections"}
                     </Button>
                     <Button
                       variant="outline"
-                      aria-label="Edit Chapter"
+                      aria-label="Edit"
                       size="icon"
                       onClick={() => onEdit(chapter)}
                     >
-                      <Pencil />
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="destructive"
                       size="icon"
-                      aria-label="Delete Chapter"
+                      aria-label="Delete"
                       onClick={() => {
                         setChapterToDelete(chapter);
                         setDeleteDialogOpen(true);
                       }}
                     >
-                      <Trash />
+                      <Trash className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>
               </TableRow>
             ))}
+            {chapters.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={!isPastPaper ? 3 : 2} className="text-center text-muted-foreground p-4">
+                  No {resourceType === "PAST_PAPER" ? "questions" : "chapters"} found
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
@@ -152,7 +170,7 @@ export function ChaptersTable({
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
               {resourceType === "PAST_PAPER" ? " question" : " chapter"}
-              {resourceType !== "PAST_PAPER" && " and all its topics"}.
+              {resourceType !== "PAST_PAPER" && " and all its sections"}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

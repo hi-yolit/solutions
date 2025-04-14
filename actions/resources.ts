@@ -3,12 +3,14 @@
 import prisma from "@/lib/prisma";
 import { ResourceFormValues } from "@/lib/validations/resource";
 import {
+  ContentType,
   CurriculumType,
   ResourceStatus,
   ResourceType,
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { verifyAdmin } from "./user";
+import { ResourceWithContent } from "@/types/resource";
 
 type SubjectsResponse = {
   subjects: string[];
@@ -86,7 +88,68 @@ export async function getResources({
   }
 }
 
-export async function getResourceWithContent(resourceId: string) {
+export async function getResourceWithContent(resourceId: string): Promise<{ resource?: ResourceWithContent, error?: string }> {
+  try {
+    const resource = await prisma.resource.findUnique({
+      where: { id: resourceId },
+      include: {
+        contents: {
+          where: {
+            type: ContentType.CHAPTER
+          },
+          orderBy: {
+            order: 'asc'
+          },
+          include: {
+            children: {
+              orderBy: {
+                order: 'asc'
+              },
+              include: {
+                children: {
+                  orderBy: {
+                    order: 'asc'
+                  },
+                  include: {
+                    _count: {
+                      select: {
+                        questions: true,
+                        children: true
+                      }
+                    }
+                  }
+                },
+                _count: {
+                  select: {
+                    questions: true,
+                    children: true
+                  }
+                }
+              }
+            },
+            _count: {
+              select: {
+                questions: true,
+                children: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!resource) {
+      return { error: "Resource not found" }
+    }
+
+    return { resource: resource as ResourceWithContent }
+  } catch (error) {
+    console.error("Failed to fetch resource:", error)
+    return { error: "Failed to fetch resource data" }
+  }
+}
+
+/* export async function getResourceWithContent(resourceId: string) {
   try {
     const resource = await prisma.resource.findUnique({
       where: {
@@ -134,7 +197,7 @@ export async function getResourceWithContent(resourceId: string) {
     console.error("Failed to fetch resource:", error);
     return { error: "Failed to fetch resource" };
   }
-}
+} */
 
 export async function updateResourceStatus(
   resourceId: string,

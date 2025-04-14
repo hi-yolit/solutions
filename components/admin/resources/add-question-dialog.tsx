@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,28 +23,25 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ContentEditor } from '@/components/admin/solutions/content-editor'
-import { Card } from "@/components/ui/card"
-import { Plus, Trash2 } from "lucide-react"
 import { Question, QuestionStatus, SolutionType } from "@prisma/client"
 import { addQuestion, updateQuestion } from "@/actions/questions"
 import { useToast } from "@/hooks/use-toast"
-import { Content } from "@radix-ui/react-tabs"
 
 interface AddQuestionDialogProps {
   resourceId: string
-  chapterId: string
-  topicId?: string
+  contentId: string
   questionToEdit?: Question | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  totalQuestions: number // For default ordering
 }
 
 const questionFormSchema = z.object({
   questionNumber: z.string().min(1, "Question number is required"),
   type: z.nativeEnum(SolutionType),
   status: z.nativeEnum(QuestionStatus).default('DRAFT'),
-  pageNumber: z.number().nullable().optional(),
   exerciseNumber: z.number().nullable().optional(),
+  order: z.number().default(0),
   content: z.object({
     mainQuestion: z.string().min(1, "Question content is required"),
     blocks: z.array(z.object({
@@ -57,21 +54,6 @@ const questionFormSchema = z.object({
       }).optional()
     })).default([]),
     marks: z.number().nullable().optional(),
-    subQuestions: z.array(z.object({
-      part: z.string(),
-      text: z.string(),
-      type: z.nativeEnum(SolutionType),
-      marks: z.number().nullable().default(null),
-      blocks: z.array(z.object({
-        type: z.enum(['text', 'image']),
-        content: z.string(),
-        imageData: z.object({
-          url: z.string(),
-          caption: z.string().optional(),
-          position: z.enum(['above', 'below', 'inline'])
-        }).optional()
-      })).default([])
-    })).optional().default([])
   })
 });
 
@@ -79,13 +61,14 @@ type QuestionFormValues = z.infer<typeof questionFormSchema>;
 
 export function AddQuestionDialog({
   resourceId,
-  chapterId,
-  topicId,
+  contentId,
   questionToEdit,
   open,
   onOpenChange,
+  totalQuestions,
 }: Readonly<AddQuestionDialogProps>) {
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<QuestionFormValues>({
     resolver: zodResolver(questionFormSchema),
@@ -93,13 +76,12 @@ export function AddQuestionDialog({
       questionNumber: "",
       type: "STRUCTURED",
       status: "DRAFT",
-      pageNumber: null,
       exerciseNumber: null,
+      order: totalQuestions + 1,
       content: {
         mainQuestion: "",
         blocks: [],
-        marks: null,
-        subQuestions: []
+        marks: null
       }
     },
   });
@@ -111,48 +93,44 @@ export function AddQuestionDialog({
         exerciseNumber: questionToEdit.exerciseNumber,
         type: questionToEdit.type,
         status: questionToEdit.status,
-        pageNumber: questionToEdit.pageNumber,
-        content: questionToEdit.content as any
+        order: questionToEdit.order || totalQuestions + 1,
+        content: questionToEdit.questionContent as any
+      });
+    } else if (open) {
+      form.reset({
+        questionNumber: "",
+        type: "STRUCTURED",
+        status: "DRAFT",
+        exerciseNumber: null,
+        order: totalQuestions + 1,
+        content: {
+          mainQuestion: "",
+          blocks: [],
+          marks: null
+        }
       });
     }
-  }, [questionToEdit, form]);
-
-  const { fields: subQuestionFields, append: appendSubQuestion, remove: removeSubQuestion } =
-    useFieldArray({
-      control: form.control,
-      name: "content.subQuestions"
-    });
-
-  const handleAddSubQuestion = () => {
-    appendSubQuestion({
-      part: String.fromCharCode(97 + subQuestionFields.length), // a, b, c...
-      text: "",
-      type: form.getValues('type'),
-      marks: null,
-      blocks: []
-    });
-  };
+  }, [questionToEdit, form, open, totalQuestions]);
 
   async function onSubmit(data: QuestionFormValues) {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
     try {
       const questionData = {
         questionNumber: data.questionNumber,
         type: data.type,
         status: data.status,
-        pageNumber: data.pageNumber,
         exerciseNumber: data.exerciseNumber,
-        content: {
-          ...data.content,
-          marks: data.content?.marks
-
-        }
+        order: data.order,
+        content: data.content
       };
 
       let result;
       if (questionToEdit) {
         result = await updateQuestion(questionToEdit.id, questionData);
       } else {
-        result = await addQuestion(resourceId, chapterId, topicId, questionData);
+        result = await addQuestion(resourceId, contentId, questionData);
       }
 
       if (result.error) {
@@ -177,6 +155,8 @@ export function AddQuestionDialog({
         description: questionToEdit ? "Failed to update question" : "Failed to add question",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -223,7 +203,7 @@ export function AddQuestionDialog({
                     <FormItem>
                       <FormLabel>Question Number</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="e.g., 1.1" />
+                        <Input {...field} placeholder="e.g., 1.1, 4a" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -233,21 +213,15 @@ export function AddQuestionDialog({
 
               <FormField
                 control={form.control}
-                name="pageNumber"
+                name="order"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Page Number (Optional)</FormLabel>
+                    <FormLabel>Display Order</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="Enter Page 2"
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value
-                            ? parseInt(e.target.value)
-                            : null;
-                          field.onChange(value);
-                        }}
+                        value={field.value}
+                        onChange={(e) => field.onChange(parseInt(e.target.value))}
                       />
                     </FormControl>
                     <FormMessage />
@@ -312,7 +286,7 @@ export function AddQuestionDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="font-bold text-md">
-                    Main Question
+                    Question Content
                   </FormLabel>
                   <FormControl>
                     <ContentEditor
@@ -330,7 +304,7 @@ export function AddQuestionDialog({
               name="content.marks"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Main Question Marks</FormLabel>
+                  <FormLabel>Marks</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -348,128 +322,6 @@ export function AddQuestionDialog({
               )}
             />
 
-            <div className="space-y-4 ">
-              <div className="flex justify-between items-center">
-                <FormLabel className="font-bold text-md">
-                  Sub Questions
-                </FormLabel>
-              </div>
-
-              {subQuestionFields.map((field, index) => (
-                <Card key={field.id} className="p-4 bg-slate-100">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1 space-y-4">
-                      <div className="grid grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`content.subQuestions.${index}.part`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Number</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="e.g., a" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`content.subQuestions.${index}.type`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Type</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="MCQ">
-                                    Multiple Choice
-                                  </SelectItem>
-                                  <SelectItem value="STRUCTURED">
-                                    Structured
-                                  </SelectItem>
-                                  <SelectItem value="ESSAY">Essay</SelectItem>
-                                  <SelectItem value="PROOF">Proof</SelectItem>
-                                  <SelectItem value="DRAWING">
-                                    Drawing
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`content.subQuestions.${index}.marks`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Marks</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  value={field.value ?? ""}
-                                  onChange={(e) => {
-                                    const value = e.target.value
-                                      ? parseInt(e.target.value)
-                                      : null;
-                                    field.onChange(value);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name={`content.subQuestions.${index}.text`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <ContentEditor
-                                value={field.value}
-                                onChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeSubQuestion(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddSubQuestion}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Part
-              </Button>
-            </div>
-
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
@@ -478,7 +330,8 @@ export function AddQuestionDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />}
                 {questionToEdit ? "Update Question" : "Add Question"}
               </Button>
             </div>

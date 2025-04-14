@@ -106,7 +106,7 @@ export function StructuredSolutionEditor({
                 )}
               />
 
-              <FormField
+{/*               <FormField
                 control={form.control}
                 name={`steps.${index}.explanation`}
                 render={({ field }) => (
@@ -157,7 +157,7 @@ export function StructuredSolutionEditor({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
             </div>
           </Card>
         ))}

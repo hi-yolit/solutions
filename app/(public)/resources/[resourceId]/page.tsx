@@ -1,29 +1,66 @@
 // app/resources/[resourceId]/page.tsx
+"use client";
+
+import { use, useEffect, useState } from "react";
 import { getResourceWithContent } from "@/actions/resources";
-import { ChapterAccordion } from "@/components/resources/chapter-accordion";
-import { Accordion } from "@mantine/core";
-import { ResourceType } from "@prisma/client";
+import { MobileContentNavigation } from "@/components/resources/mobile-content-navigation";
+import {ResourceType } from "@/types/resource";
+import { ContentType } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
 
 
 interface PageProps {
-  params: Promise<{
-    resourceId: string;
-  }>;
+  params: Promise<{ resourceId: string }>;
 }
 
-export default async function ResourcePage({ params }: Readonly<PageProps>) {
-  const resolvedParams = await params;
-  const { resource, error } = await getResourceWithContent(resolvedParams.resourceId);
+export default function ResourcePage({ params }: Readonly<PageProps>) {
+  const resolvedParams = use(params);
+  const resourceId = resolvedParams.resourceId;
+  const [resource, setResource] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (error || !resource) {
-    return <div>Failed to load resource</div>;
+  useEffect(() => {
+    const fetchResource = async () => {
+      try {
+        setLoading(true);
+        const result = await getResourceWithContent(resourceId);
+        
+        if (result.error) {
+          setError(result.error);
+        } else if (result.resource) {
+          setResource(result.resource);
+        }
+      } catch (err) {
+        setError("Failed to load resource");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResource();
+  }, [resourceId]);
+
+  if (loading) {
+    return <div className="p-6 text-center">Loading...</div>;
   }
 
+  if (error || !resource) {
+    return <div className="p-6 text-center">Failed to load resource: {error}</div>;
+  }
+
+  // Get the top-level content (chapters)
+  console.log(resource)
+  const topLevelContents = resource.contents.filter(
+    (content: any) => content.type === ContentType.CHAPTER
+  );
+
+  console.log(topLevelContents)
+
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
-      <section className="px-3 py-3">
+    <div className="max-w-4xl mx-auto space-y-4 p-4">
+      <section className="px-0 py-3">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
           <Link
@@ -34,7 +71,7 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
           </Link>
           <span>/</span>
           <span>
-            {resource.type === ResourceType.TEXTBOOK
+            {resource.type === "TEXTBOOK"
               ? "Textbook solutions"
               : "Past Paper"}
           </span>
@@ -53,7 +90,7 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
                 {resource.title}
               </h1>
 
-              {resource.type === ResourceType.TEXTBOOK ? (
+              {resource.type === "TEXTBOOK" ? (
                 <div className="text-muted-foreground space-y-1">
                   {resource.edition && <p>{resource.edition} Edition</p>}
                   {resource.publisher && <p>ISBN: {resource.publisher}</p>}
@@ -67,14 +104,12 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
             </div>
 
             <div className="relative w-[66px] h-[90px]">
-              {" "}
-              {/* 2:3 Aspect Ratio Container */}
               {resource.coverImage && (
                 <Image
                   src={resource.coverImage}
                   alt="Book Cover"
-                  fill // Automatically scales inside the div
-                  className="object-cover rounded-sm" // Ensures it covers and has rounded corners
+                  fill
+                  className="object-cover rounded-sm"
                   priority
                 />
               )}
@@ -83,22 +118,13 @@ export default async function ResourcePage({ params }: Readonly<PageProps>) {
         </section>
       </section>
 
-      {/* Chapters List */}
-      <Accordion
-        variant="contained"
-        chevronPosition="right"
-        classNames={{
-          control: "hover:bg-gray-50",
-        }}
-      >
-        {resource.chapters.map((chapter) => (
-          <ChapterAccordion
-            key={chapter.id}
-            chapter={chapter}
-            resourceType={resource.type}
-          />
-        ))}
-      </Accordion>
+      {/* Content Navigation */}
+      <MobileContentNavigation
+        contents={topLevelContents}
+        resourceId={resource.id}
+        resourceType={resource.type as ResourceType}
+        resourceTitle={resource.title}
+      />
     </div>
   );
 }

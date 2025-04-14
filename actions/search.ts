@@ -66,7 +66,7 @@ export async function searchResources({
                 where: {
                     OR: [
                         {
-                            content: {
+                            questionContent: {
                                 path: ['mainQuestion'],
                                 string_contains: query,
                             }
@@ -75,7 +75,7 @@ export async function searchResources({
                 },
                 include: {
                     resource: true,
-                    chapter: true,
+                    content: true,
                     solutions: {
                         select: {
                             id: true

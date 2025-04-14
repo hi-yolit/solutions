@@ -19,48 +19,40 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { addChapter, updateChapter } from "@/actions/chapters";
-import {
-  chapterFormSchema,
-  type ChapterFormValues,
-} from "@/lib/validations/chapter";
+import { addContent, updateContent } from "@/actions/contents";
+import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { Chapter, ResourceType } from "@prisma/client";
+import { ContentType, ResourceType } from "@prisma/client";
 import { Loader2 } from "lucide-react";
+
+// Define Content type that matches your Prisma schema
+interface Content {
+  id: string
+  type: ContentType
+  title: string
+  number?: string | null
+  resourceId: string
+  parentId?: string | null
+  order: number
+}
+
+// Create a chapter form schema
+const chapterFormSchema = z.object({
+  number: z.string().optional(),
+  title: z.string().min(1, "Title is required"),
+  order: z.number().int().optional(),
+});
+
+type ChapterFormValues = z.infer<typeof chapterFormSchema>;
 
 interface AddChapterDialogProps {
   resourceId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   resourceType: ResourceType;
-  chapter?: Chapter;
+  chapter?: Content;
   totalChapters: number;
 }
-
-const getSuccessMessage = (isEdit: boolean, isPastPaper: boolean) => {
-  if (isEdit) {
-    return isPastPaper
-      ? "Question updated successfully"
-      : "Chapter updated successfully";
-  }
-  return isPastPaper
-    ? "Question added successfully"
-    : "Chapter added successfully";
-};
-
-const getDialogTitle = (isEdit: boolean, isPastPaper: boolean) => {
-  if (isEdit) {
-    return isPastPaper ? "Edit Question" : "Edit Chapter";
-  }
-  return isPastPaper ? "Add Question" : "Add Chapter";
-};
-
-const getButtonText = (isEdit: boolean, isPastPaper: boolean) => {
-  if (isEdit) {
-    return isPastPaper ? "Update Question" : "Update Chapter";
-  }
-  return isPastPaper ? "Add Question" : "Add Chapter";
-};
 
 export function AddChapterDialog({
   resourceId,
@@ -72,44 +64,73 @@ export function AddChapterDialog({
 }: Readonly<AddChapterDialogProps>) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isPastPaper = resourceType === "PAST_PAPER";
+  const isPastPaper = resourceType === 'PAST_PAPER';
   const isEdit = !!chapter;
+
+  // Get dialog title based on resource type and edit status
+  const getDialogTitle = () => {
+    if (isEdit) {
+      return isPastPaper ? "Edit Question" : "Edit Chapter";
+    }
+    return isPastPaper ? "Add Question" : "Add Chapter";
+  }
+
+  // Get button text based on resource type and edit status
+  const getButtonText = () => {
+    if (isEdit) {
+      return isPastPaper ? "Update Question" : "Update Chapter";
+    }
+    return isPastPaper ? "Add Question" : "Add Chapter";
+  }
 
   const form = useForm<ChapterFormValues>({
     resolver: zodResolver(chapterFormSchema),
     defaultValues: {
-      number: totalChapters,
+      number: "",
       title: "",
+      order: totalChapters + 1,
     },
   });
 
   useEffect(() => {
     if (!open) {
       form.reset({
-        number: totalChapters,
+        number: "",
         title: "",
+        order: totalChapters + 1,
       });
     } else if (chapter) {
       form.reset({
-        number: chapter.number ?? 1,
-        title: chapter.title ?? "",
+        number: chapter.number || "",
+        title: chapter.title,
+        order: chapter.order,
       });
     }
     return () => {
       form.reset();
     };
   }, [open, chapter, form, totalChapters]);
+
   async function onSubmit(data: ChapterFormValues) {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       let result;
 
+      // Determine content type based on resource type
+      const contentType = ContentType.CHAPTER;
+
+      // Create content data
+      const contentData = {
+        ...data,
+        type: contentType,
+        parentId: null // Top-level content
+      };
+
       if (isEdit && chapter) {
-        result = await updateChapter(chapter.id, data);
-        form.reset();
+        result = await updateContent(chapter.id, contentData);
       } else {
-        result = await addChapter(resourceId, data);
+        result = await addContent(resourceId, contentData);
       }
 
       if (result.error) {
@@ -124,12 +145,14 @@ export function AddChapterDialog({
       toast({
         title: "Success",
         variant: "success",
-        description: getSuccessMessage(isEdit, isPastPaper),
+        description: isPastPaper
+          ? `Question ${isEdit ? 'updated' : 'added'} successfully`
+          : `Chapter ${isEdit ? 'updated' : 'added'} successfully`,
       });
       onOpenChange(false);
       form.reset();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast({
         title: "Error",
         description: "Something went wrong",
@@ -144,7 +167,7 @@ export function AddChapterDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{getDialogTitle(isEdit, isPastPaper)}</DialogTitle>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -158,6 +181,37 @@ export function AddChapterDialog({
                   </FormLabel>
                   <FormControl>
                     <Input
+                      placeholder={isPastPaper ? "e.g., 1, 2, A" : "e.g., 1, 2, 3"}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{isPastPaper ? "Title (Optional)" : "Title"}</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="order"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Display Order</FormLabel>
+                  <FormControl>
+                    <Input
                       type="number"
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
@@ -168,21 +222,6 @@ export function AddChapterDialog({
               )}
             />
 
-            {!isPastPaper && (
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title (Optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
@@ -192,8 +231,8 @@ export function AddChapterDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="animate-spin" />}
-                {getButtonText(isEdit, isPastPaper)}
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {getButtonText()}
               </Button>
             </div>
           </form>
