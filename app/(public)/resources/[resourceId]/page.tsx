@@ -3,7 +3,7 @@
 
 import { use, useEffect, useState } from "react";
 import { getResourceWithContent } from "@/actions/resources";
-import { MobileContentNavigation } from "@/components/resources/mobile-content-navigation";
+import { MobileContentNavigation } from "@/components/resources/content-navigation";
 import {ResourceType } from "@/types/resource";
 import { ContentType } from "@prisma/client";
 import Link from "next/link";

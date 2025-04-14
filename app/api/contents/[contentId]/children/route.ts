@@ -5,11 +5,11 @@ import { verifyAdmin } from '@/actions/user';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { contentId: string } }
+  { params }: { params: Promise<{ contentId: string }> }
 ) {
   try {
     // Verify admin status
-    const { isAdmin, error } = await verifyAdmin();
+    const { isAdmin } = await verifyAdmin();
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

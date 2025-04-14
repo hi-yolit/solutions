@@ -1,4 +1,4 @@
-// components/search-box.tsx
+/* // components/search-box.tsx
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -8,7 +8,7 @@ import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@
 import { Loader2, Search, Book, FileText, HelpCircle, X } from 'lucide-react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { searchResources } from '@/actions/search'
-import type { Resource, Question, Chapter, ResourceType } from '@prisma/client'
+import type { Resource, Question, ResourceType } from '@prisma/client'
 
 interface SearchResults {
   resources: Array<Resource & {
@@ -18,7 +18,7 @@ interface SearchResults {
   }>
   questions: Array<Question & {
     resource: Resource
-    chapter: Chapter
+    content: Content
     solutions: Array<{ id: string }>
     content: {
       mainQuestion: string
@@ -291,4 +291,4 @@ export function SearchBox() {
       )}
     </div>
   )
-}
+} */

@@ -3,16 +3,18 @@ import { getQuestionWithSolutions } from '@/actions/solutions'
 import { SolutionWrapper } from '@/components/admin/solutions/solution-wrapper'
 import { SolutionData, SolutionContent } from '@/types/solution'
 
-export default async function QuestionSolutionPage({
-  params
-}: Readonly<{
-  params: { 
+interface PageProps {
+  params: Promise<{
     resourceId: string; 
     contentId: string; 
     questionId: string;
-  }
-}>) {
-  const { question, error } = await getQuestionWithSolutions(params.questionId)
+  }>;
+}
+
+export default async function QuestionSolutionPage({ params }: Readonly<PageProps>) {
+  const resolvedParams = await params;
+  const { resourceId, contentId, questionId } = resolvedParams;
+  const { question, error } = await getQuestionWithSolutions(questionId)
 
   if (error || !question) {
     return <div>Failed to load question</div>
@@ -42,8 +44,8 @@ export default async function QuestionSolutionPage({
   return (
     <SolutionWrapper
       questionId={question.id}
-      resourceId={params.resourceId}
-      contentId={params.contentId}
+      resourceId={resourceId}
+      contentId={contentId}
       questionType={question.type}
       questionContent={questionContent.mainQuestion}
       marks={questionContent.marks}

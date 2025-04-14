@@ -11,20 +11,26 @@ import {
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
+interface PageProps {
+  params: Promise<{
+    resourceId: string; 
+    contentId: string;
+  }>;
+  searchParams: Promise<{ parentId?: string }>
+}
 
-export default async function QuestionDetailsPage({
-  params,
-  searchParams
-}: Readonly<{
-  params: { resourceId: string; contentId: string },
-  searchParams: { parentId?: string }
-}>) {
-  const { content, resource, error } = await getContentWithChildren(params.contentId)
-  const parentId = searchParams.parentId
+export default async function QuestionDetailsPage({ params, searchParams }: Readonly<PageProps>) {
+  const resolvedParams = await params;
+  const resolvedSearchParams= await searchParams;
+
+  const { resourceId, contentId } = resolvedParams;
+  const { parentId } = resolvedSearchParams;
+
+  const { content, resource, error } = await getContentWithChildren(contentId)
 
   
   // Fetch questions for this content
-  const { questions } = await getQuestionsForContent(params.contentId)
+  const { questions } = await getQuestionsForContent(contentId)
 
   if (error || !content || !resource) {
     return <div>Failed to load content</div>
@@ -52,7 +58,7 @@ export default async function QuestionDetailsPage({
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/admin/resources/${params.resourceId}/contents/${parentId}`}>
+        <Link href={`/admin/resources/${resourceId}/contents/${parentId}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -83,8 +89,8 @@ export default async function QuestionDetailsPage({
         <h3 className="text-xl font-semibold mb-4">Questions</h3>
         <QuestionsTable
           questions={questions}
-          resourceId={params.resourceId}
-          contentId={params.contentId}
+          resourceId={resourceId}
+          contentId={contentId}
         />
       </div>
     </div>

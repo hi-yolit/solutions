@@ -11,12 +11,17 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { ContentType } from '@prisma/client'
 
-export default async function ContentDetailsPage({
-  params
-}: Readonly<{
-  params: { resourceId: string; contentId: string }
-}>) {
-  const { content, children, resource, error } = await getContentWithChildren(params.contentId)
+interface PageProps {
+  params: Promise<{
+    resourceId: string;
+    contentId: string;
+  }>;
+}
+
+export default async function ContentDetailsPage({ params }: Readonly<PageProps>) {
+  const resolvedParams = await params;
+  const { resourceId, contentId } = resolvedParams;
+  const { content, children, resource, error } = await getContentWithChildren(contentId)
 
   if (error || !content || !resource) {
     return <div>Failed to load content</div>
@@ -94,7 +99,7 @@ export default async function ContentDetailsPage({
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/admin/resources/${params.resourceId}`}>
+        <Link href={`/admin/resources/${resourceId}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -132,7 +137,7 @@ export default async function ContentDetailsPage({
 
       <ContentSection 
         contents={getChildContent()}
-        resourceId={params.resourceId}
+        resourceId={resourceId}
         resourceType={resource.type}
         contentTypeOptions={getContentTypeOptions()}
         parentId={content.id}

@@ -4,12 +4,15 @@ import prisma from '@/lib/prisma';
 
 export async function GET(
   request: Request,
-  { params }: { params: { contentId: string } }
+  { params }: { params: Promise<{ contentId: string }> }
 ) {
+
+  const { contentId } = await params;
+
   try {
     const questions = await prisma.question.findMany({
       where: {
-        contentId: params.contentId
+        contentId: contentId
       },
       orderBy: [
         { order: 'asc' },

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Navbar } from '@/components/layout/navbar'
-import { SearchBox } from '@/components/search-box'
+import { Navbar } from '@/components/layout/navbar'/* 
+import { SearchBox } from '@/components/search-box' */
 import { SubjectResources } from '@/components/subject-resources'
 import { ResourceStatus, Resource } from '@prisma/client'
 import { useAuth } from '@/contexts/auth-context' 
@@ -117,8 +117,8 @@ export default function ClientHomePage() {
 
         {/* Search Bar */}
         <div className="max-w-sm md:max-w-md lg:max-w-2xl mx-auto mb-6 md:mb-8">
-          <SearchBox />
-        </div>
+{/*           <SearchBox />
+ */}        </div>
       </div>
 
       {/* Browse Section */}

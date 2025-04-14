@@ -1,7 +1,7 @@
 // app/(public)/(main-navigation)/search/page.tsx
 import { Suspense } from 'react'
-import { searchResources } from '@/actions/search'
-import { SearchBox } from '@/components/search-box'
+import { searchResources } from '@/actions/search'/* 
+import { SearchBox } from '@/components/search-box' */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -172,7 +172,7 @@ export default async function SearchPage({
   return (
     <div className="py-12">
       <div className="max-w-2xl mx-auto mb-8">
-        <SearchBox />
+      {/*   <SearchBox /> */}
       </div>
 
       {query && (
