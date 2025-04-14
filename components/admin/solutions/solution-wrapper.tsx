@@ -107,7 +107,7 @@ export function SolutionWrapper({
 
   const renderEditor = () => {
     // Get the existing solution content if available
-    let content = existingSolution?.mainSolution?.content;
+    const content = existingSolution?.mainSolution?.content;
 
     switch (solutionType) {
       case 'MCQ':

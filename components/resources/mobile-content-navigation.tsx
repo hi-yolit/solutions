@@ -78,7 +78,7 @@ function QuestionList({ contentId }: { contentId: string }) {
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <FileQuestion size={48} className="text-gray-300 mb-4" />
         <Text fw={500} size="lg" c="dimmed" ta="center">No questions found</Text>
-        <Text size="sm" c="dimmed" ta="center" mt={2}>This page doesn't have any questions yet.</Text>
+        <Text size="sm" c="dimmed" ta="center" mt={2}>This page doesn&apos;t have any questions yet.</Text>
       </div>
     );
   }
@@ -144,7 +144,7 @@ function PastPaperQuestions({ chapter }: { chapter: ContentWithChildren }) {
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <FileQuestion size={48} className="text-gray-300 mb-4" />
         <Text fw={500} size="lg" c="dimmed" ta="center">No questions found</Text>
-        <Text size="sm" c="dimmed" ta="center" mt={2}>This chapter doesn't have any questions yet.</Text>
+        <Text size="sm" c="dimmed" ta="center" mt={2}>This chapter doesn&apos;t have any questions yet.</Text>
       </div>
     );
   }
