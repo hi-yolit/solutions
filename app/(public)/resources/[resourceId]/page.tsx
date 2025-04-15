@@ -8,6 +8,8 @@ import {ResourceType } from "@/types/resource";
 import { ContentType } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
+import { Loader } from "@mantine/core";
+import { Loader2 } from "lucide-react";
 
 
 interface PageProps {
@@ -43,7 +45,7 @@ export default function ResourcePage({ params }: Readonly<PageProps>) {
   }, [resourceId]);
 
   if (loading) {
-    return <div className="p-6 text-center">Loading...</div>;
+    return <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
   if (error || !resource) {
@@ -51,12 +53,9 @@ export default function ResourcePage({ params }: Readonly<PageProps>) {
   }
 
   // Get the top-level content (chapters)
-  console.log(resource)
   const topLevelContents = resource.contents.filter(
     (content: any) => content.type === ContentType.CHAPTER
   );
-
-  console.log(topLevelContents)
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 p-4">

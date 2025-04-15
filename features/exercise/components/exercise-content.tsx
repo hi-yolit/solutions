@@ -3,16 +3,19 @@
 import React, { useState, useCallback, useMemo, memo, MouseEvent, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ArrowDown, Lightbulb, Lock, LogIn } from "lucide-react";
+import { 
+  AlertCircle, ArrowDown, Lightbulb, Loader2, Lock, 
+  LogIn, Coins, ChevronRight
+} from "lucide-react";
 import Latex from "react-latex-next";
 import "katex/dist/katex.min.css";
-import { Drawer } from "@mantine/core";
+import { Drawer, Alert, Group, Text } from "@mantine/core";
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import QuestionNavigation from "./question-navigation";
 import { StepContent } from "@/types/question";
-
-// --- Improved Content Rendering ---
+import { useSolutionCredit } from '@/actions/user';
+import { useRouter } from 'next/navigation';
 
 // Process content with mixed text and images
 const ProcessedContent = ({ content }: { content: string }) => {
@@ -213,19 +216,99 @@ const SolutionStep = ({
   );
 };
 
-// --- Solution Component ---
-const SolutionSteps = ({
+// --- Limited Solution Steps Component (only first step) ---
+const LimitedSolutionSteps = ({
   steps,
+  onUnlockAllSteps
 }: {
   steps: StepContent[];
+  onUnlockAllSteps: () => void;
 }) => {
+  const { profile } = useAuth();
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(0);
+  
+  // Only show the first step
+  const firstStep = steps[0];
+  
+  const handleSubscribe = () => {
+    router.push('/pricing');
+  };
+  
+  // Determine if user has credits
+  const hasCredits = profile && profile.solutionCredits > 0;
+  
+  return (
+    <Card>
+      <CardContent className="p-4">
+        {/* Always show the first step */}
+        <SolutionStep
+          stepNumber={1}
+          totalSteps={steps.length}
+          step={firstStep}
+          isActive={true}
+          onNextStep={() => {}}
+          isLastStep={false}
+          onToggleActive={() => {}}
+          index={0}
+        />
+        
+        {/* Credit alert or subscription CTA */}
+        <div className="mt-4 border-t pt-4">
+          {hasCredits ? (
+            <Alert 
+              icon={<Coins size={16} />}
+              title="Unlock All Steps"
+              color="orange"
+              variant="light"
+              className="mb-4"
+            >
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Text size="sm" lineClamp={2}>
+                  See all {steps.length} steps (uses 1 credit)
+                </Text>
+                <Button 
+                  variant="outline" 
+                  color="orange" 
+                  onClick={onUnlockAllSteps}
+                  size="sm"
+                >
+                  Use Credit
+                </Button>
+              </Group>
+            </Alert>
+          ) : (
+            <Alert 
+              icon={<Lock size={16} />}
+              title="Subscribe for Full Access"
+              color="blue"
+              variant="light"
+            >
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Text size="sm" lineClamp={2}>
+                  Get unlimited access to all solutions
+                </Text>
+                <Button 
+                  variant="outline" 
+                  color="blue" 
+                  onClick={handleSubscribe}
+                  size="sm"
+                >
+                  Subscribe
+                </Button>
+              </Group>
+            </Alert>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// --- Solution Steps Component (all steps) ---
+const FullSolutionSteps = ({ steps }: { steps: StepContent[] }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = steps.length;
-
-  useEffect(() => {
-    // Reset current step when steps change
-    setCurrentStep(0);
-  }, [steps]);
 
   const handleNextStep = useCallback(() => {
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
@@ -234,18 +317,6 @@ const SolutionSteps = ({
   const handleToggleActive = useCallback((index: number) => {
     setCurrentStep((prev) => (prev === index ? -1 : index));
   }, []);
-
-  // If we have no steps, show an empty message
-  if (!totalSteps) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-500">No solution steps found</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card>
@@ -263,30 +334,6 @@ const SolutionSteps = ({
             index={index}
           />
         ))}
-      </CardContent>
-    </Card>
-  );
-};
-
-// --- Debug Solution Panel ---
-const DebugSolutionPanel = ({ 
-  solution, 
-  onClose 
-}: { 
-  solution: any; 
-  onClose: () => void;
-}) => {
-  return (
-    <Card className="mt-4 border-red-300">
-      <CardContent className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-red-600">Debug: Solution Data</h3>
-          <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
-        </div>
-        
-        <div className="text-xs font-mono overflow-auto max-h-96 bg-gray-50 p-3 rounded">
-          <pre>{JSON.stringify(solution, null, 2)}</pre>
-        </div>
       </CardContent>
     </Card>
   );
@@ -319,29 +366,53 @@ const LoginRequired = () => (
 
 // --- Main Component ---
 const ExerciseContent = ({ question }: { question: any }) => {
-  const { user, isLoading } = useAuth();
-  const [showDebug, setShowDebug] = useState(false);
+  const { user, profile, isLoading } = useAuth();
+  const [showAllSteps, setShowAllSteps] = useState(false);
+  const [isProcessingCredit, setIsProcessingCredit] = useState(false);
+  const [creditError, setCreditError] = useState<string | null>(null);
+  const router = useRouter();
   
-  // For development: Double-click anywhere to see debug panel
-  useEffect(() => {
-    const handleDoubleClick = () => {
-      setShowDebug(prev => !prev);
-    };
-    
-    document.addEventListener('dblclick', handleDoubleClick);
-    return () => document.removeEventListener('dblclick', handleDoubleClick);
-  }, []);
+  // Check if user is admin or has subscription - they see all steps by default
+  const hasFullAccess = useMemo(() => {
+    return profile?.role === 'ADMIN' || profile?.subscriptionStatus === 'ACTIVE';
+  }, [profile]);
   
-  // Log the question data for debugging
+  // Set showAllSteps to true if the user has full access
   useEffect(() => {
-    console.log("Question data:", question);
-  }, [question]);
+    if (hasFullAccess) {
+      setShowAllSteps(true);
+    }
+  }, [hasFullAccess]);
+  
+  // Handle using a credit to unlock all steps
+  const handleUnlockAllSteps = async () => {
+    try {
+      setIsProcessingCredit(true);
+      setCreditError(null);
+      
+      const result = await useSolutionCredit();
+      
+      if (result.error) {
+        setCreditError(result.error);
+        return;
+      }
+      
+      if (result.canViewSolution) {
+        setShowAllSteps(true);
+      }
+    } catch (err) {
+      setCreditError('Failed to process credit');
+      console.error(err);
+    } finally {
+      setIsProcessingCredit(false);
+    }
+  };
   
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -365,26 +436,31 @@ const ExerciseContent = ({ question }: { question: any }) => {
   // Get the first solution with steps
   const solution = question.solutions[0];
   const hasSteps = solution?.steps && solution.steps.length > 0;
+  
+  if (!hasSteps) {
+    return <EmptyState message="No solution steps available for this question" />;
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-2 space-y-6">
-      {/* Display solution steps if available */}
-      {hasSteps ? (
-        <SolutionSteps steps={solution.steps} />
-      ) : (
-        <EmptyState message="No solution steps available for this question" />
+      {/* Credit error display if any */}
+      {creditError && (
+        <Alert color="red" title="Error" className="mb-4">
+          {creditError}
+        </Alert>
       )}
       
-      {/* Debug panel for development */}
-      {showDebug && (
-        <DebugSolutionPanel 
-          solution={question} 
-          onClose={() => setShowDebug(false)} 
+      {/* Display full solution or limited solution based on access */}
+      {(showAllSteps || hasFullAccess) ? (
+        <FullSolutionSteps steps={solution.steps} />
+      ) : (
+        <LimitedSolutionSteps 
+          steps={solution.steps} 
+          onUnlockAllSteps={handleUnlockAllSteps} 
         />
       )}
       
       {/* Navigation between questions */}
-      {console.log(question.contentId)}
       {question.contentId && (
         <div className="mt-8 border-t pt-4">
           <QuestionNavigation 

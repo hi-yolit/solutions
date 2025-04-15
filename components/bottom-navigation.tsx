@@ -4,16 +4,22 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, Gem, Menu } from "lucide-react";
-
-const navItems = [
-  { href: "/home", icon: Home, label: "Home" },
-  { href: "/search", icon: Search, label: "Search" },
-  { href: "/pricing", icon: Gem, label: "Premium" },
-  { href: "/more", icon: Menu, label: "More" },
-];
+import { useAuth } from "@/contexts/auth-context";
 
 const BottomNavigation = () => {
   const pathname = usePathname();
+  const { profile } = useAuth();
+  
+  // Check if user has an active subscription
+  const isSubscribed = profile?.subscriptionStatus === 'ACTIVE';
+  
+  // Filter out Premium tab for subscribed users
+  const navItems = [
+    { href: "/home", icon: Home, label: "Home" },
+    { href: "/search", icon: Search, label: "Search" },
+    ...(!isSubscribed ? [{ href: "/premium", icon: Gem, label: "Premium" }] : []),
+    { href: "/more", icon: Menu, label: "More" },
+  ];
 
   return (
     <nav

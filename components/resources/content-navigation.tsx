@@ -2,7 +2,7 @@
 
 import { ContentWithChildren, ResourceType, QuestionWithSolutions } from "@/types/resource";
 import { useState, useEffect } from "react";
-import { Book, FileQuestion, ArrowLeft, X, List } from "lucide-react";
+import { Book, FileQuestion, ArrowLeft, X, List, Loader2 } from "lucide-react";
 import { Text, Group, UnstyledButton, Avatar, Drawer, Button, Loader } from "@mantine/core";
 import Link from "next/link";
 import { ContentType } from "@prisma/client";
@@ -70,7 +70,7 @@ function QuestionList({ contentId }: { contentId: string }) {
   }, [contentId]);
 
   if (loading) {
-    return <div className="flex justify-center py-8"><Loader size="sm" /></div>;
+    return <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
   if (questions.length === 0) {
@@ -194,7 +194,7 @@ function DrawerContent({
         ) : (
           <>
             {content.children?.map((child) => (
-              <div key={child.id} className="border rounded overflow-hidden mb-2">
+              <div key={child.id} className="rounded overflow-hidden mb-2">
                 <UnstyledButton
                   className="w-full px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                   onClick={() => onSelectChild(child)}
@@ -241,8 +241,10 @@ export function MobileContentNavigation({
   const handleSelectChild = (child: ContentWithChildren) => {
     setActiveContent(child);
     setNavigationStack([...navigationStack, child]);
-    setDrawerTitle(`${getContentLabel(child.type, resourceType)} ${child.number}${child.title ? `: ${child.title}` : ''}`);
-  };
+    setDrawerTitle(
+      `${getContentLabel(child.type, resourceType)}${child.number ? ` ${child.number}` : ''}${child.pageNumber ? ` ${child.pageNumber}` : ''}${child.title ? ` : ${child.title}` : ''}`
+    );
+      };
 
   const handleGoBack = () => {
     if (navigationStack.length <= 1) {

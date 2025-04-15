@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Navbar } from '@/components/layout/navbar'/* 
-import { SearchBox } from '@/components/search-box' */
+import { Navbar } from '@/components/layout/navbar'
+import { SearchBox } from '@/components/search-box'
 import { SubjectResources } from '@/components/subject-resources'
 import { ResourceStatus, Resource } from '@prisma/client'
 import { useAuth } from '@/contexts/auth-context' 
 import { getResources, getSuggestedSubjects } from '@/actions/resources' // Import server actions
+import { Loader2 } from 'lucide-react'
 
 export default function ClientHomePage() {
   const [subjects, setSubjects] = useState<string[]>([])
@@ -84,9 +85,7 @@ export default function ClientHomePage() {
     return (
       <div className="max-w-[64rem] mx-auto px-4 pt-20 pb-8">
         <Navbar />
-        <div className="text-center my-8">
-          <p>Loading...</p>
-        </div>
+        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
       </div>
     )
   }
@@ -117,8 +116,8 @@ export default function ClientHomePage() {
 
         {/* Search Bar */}
         <div className="max-w-sm md:max-w-md lg:max-w-2xl mx-auto mb-6 md:mb-8">
-{/*           <SearchBox />
- */}        </div>
+          <SearchBox />
+        </div>
       </div>
 
       {/* Browse Section */}

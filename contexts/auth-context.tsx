@@ -12,6 +12,7 @@ interface AuthContextType {
   isLoading: boolean
   isProfileLoading: boolean
   signOut: () => Promise<void>
+  refreshAuth: () => Promise<void> 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -23,6 +24,30 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   const [isProfileLoading, setIsProfileLoading] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
   const supabase = createClient()
+
+  const refreshAuth = useCallback(async () => {
+    try {
+      setIsProfileLoading(true)
+      // Refresh user session
+      const { data: { user: newUser }, error } = await supabase.auth.getUser()
+      
+      if (error) throw error
+      setUser(newUser)
+
+      // Refresh profile if user exists
+      if (newUser) {
+        const result = await getProfile(newUser.id)
+        if (result.error) throw result.error
+        setProfile(result.profile ?? null)
+      } else {
+        setProfile(null)
+      }
+    } catch (error) {
+      console.error('Error refreshing auth:', error)
+    } finally {
+      setIsProfileLoading(false)
+    }
+  }, [supabase.auth])
 
   // Memoize signOut function
   const signOut = useCallback(async () => {
@@ -126,14 +151,16 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     profile,
     isLoading: isLoading || !isInitialized,
     isProfileLoading,
-    signOut
+    signOut,
+    refreshAuth
   }), [
     user,
     profile,
     isLoading,
     isProfileLoading,
     isInitialized,
-    signOut
+    signOut,
+    refreshAuth
   ])
 
   return (

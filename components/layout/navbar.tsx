@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '@/contexts/auth-context'
-import { Loader2, School, GraduationCap, ArrowLeft } from 'lucide-react'
+import { Loader2, School, GraduationCap, ArrowLeft, Coins } from 'lucide-react'
 import { ProfileWithMetadata } from '@/types/user'
 import { useMemo } from "react";
+import { Badge } from '@/components/ui/badge'
 
 export function Navbar() {
   const { user, profile, signOut, isLoading } = useAuth()
@@ -39,6 +40,26 @@ export function Navbar() {
   const handleBack = () => {
     router.back()
   }
+
+  // Credits indicator
+  const renderCreditsIndicator = () => {
+    if (!profile || isLoading || profile.subscriptionStatus === 'ACTIVE') {
+      return null;
+    }
+
+    return (
+      <Link href="/account" className="hover:opacity-80 transition-opacity">
+        <Badge 
+          className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-800 hover:bg-orange-200 transition-colors"
+        >
+          <Coins className="h-3 w-3" />
+          <span className="text-xs font-medium">
+            {profile.solutionCredits}
+          </span>
+        </Badge>
+      </Link>
+    );
+  };
 
   return (
     <nav className="border-b bg-background fixed top-0 left-0 right-0 z-50">
@@ -76,7 +97,10 @@ export function Navbar() {
             </div>
           )}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Credits indicator */}
+            {renderCreditsIndicator()}
+            
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : user ? (
@@ -106,6 +130,24 @@ interface UserMenuProps {
 }
 
 function UserMenu({ user, profile, onSignOut, onUpgrade }: UserMenuProps) {
+  // Credits display for dropdown
+  const creditsDisplay = useMemo(() => {
+    if (!profile || profile.subscriptionStatus === 'ACTIVE') {
+      return null;
+    }
+    
+    return (
+      <Badge 
+        className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-800"
+      >
+        <Coins className="h-3 w-3" />
+        <span className="text-xs">
+          {profile.solutionCredits}
+        </span>
+      </Badge>
+    );
+  }, [profile]);
+
   return useMemo(
     () => (
       <DropdownMenu>
@@ -125,23 +167,25 @@ function UserMenu({ user, profile, onSignOut, onUpgrade }: UserMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-64" align="end">
-          <div className="flex items-center gap-4 p-4">
-            <Avatar className="h-10 w-10">
-              <AvatarImage
-                src={user.user_metadata?.avatar_url}
-                alt={user.user_metadata?.full_name ?? user.email ?? ""}
-              />
-              <AvatarFallback>
-                {user.user_metadata?.full_name?.[0] ||
-                  user.email?.[0]?.toUpperCase() ||
-                  "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <p className="text-sm font-medium">
-                {user.user_metadata?.full_name}
-              </p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3 flex-1">
+              <Avatar className="h-10 w-10 flex-shrink-0">
+                <AvatarImage
+                  src={user.user_metadata?.avatar_url}
+                  alt={user.user_metadata?.full_name ?? user.email ?? ""}
+                />
+                <AvatarFallback>
+                  {user.user_metadata?.full_name?.[0] ||
+                    user.email?.[0]?.toUpperCase() ||
+                    "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {user.user_metadata?.full_name}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              </div>
             </div>
           </div>
 
@@ -151,13 +195,25 @@ function UserMenu({ user, profile, onSignOut, onUpgrade }: UserMenuProps) {
             <>
               <div className="space-y-2 px-4 py-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <School className="h-4 w-4" />
-                  <span>{profile.school || "No school set"}</span>
+                  <School className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{profile.school || "No school set"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <GraduationCap className="h-4 w-4" />
+                  <GraduationCap className="h-4 w-4 flex-shrink-0" />
                   <span>Grade {profile.grade || "not set"}</span>
                 </div>
+                
+                {/* Show subscription status when not active */}
+                {profile.subscriptionStatus !== 'ACTIVE' && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                    <Coins className="h-4 w-4 flex-shrink-0" />
+                    <span>
+                      {profile.solutionCredits > 0 
+                        ? `${profile.solutionCredits} credit${profile.solutionCredits !== 1 ? 's' : ''} left` 
+                        : 'No credits left'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <DropdownMenuSeparator />

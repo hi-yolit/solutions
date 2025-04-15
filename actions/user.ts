@@ -141,6 +141,78 @@ export async function verifyAdmin(): Promise<{ isAdmin: boolean; error?: string;
   }
 }
 
+export async function useSolutionCredit() {
+  try {
+    const supabase =  createServiceClient()
+
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session?.user?.id) {
+      return { error: 'User not authenticated' };
+    }
+    
+    const userId = session.user.id;
+    
+    const { isAdmin } = await verifyAdmin();
+    
+    if (isAdmin) {
+      return { 
+        canViewSolution: true,
+        creditsUsed: false
+      };
+    }
+    
+    const { profile, error: profileError } = await getProfile(userId);
+    
+    if (profileError || !profile) {
+      return { error: 'User profile not found' };
+    }
+
+    // Users with active subscriptions don't use credits
+    if (profile.subscriptionStatus === 'ACTIVE') {
+      return { 
+        canViewSolution: true,
+        creditsUsed: false,
+        creditsRemaining: profile.solutionCredits
+      };
+    }
+
+    // Check if user has any credits left
+    if (profile.solutionCredits <= 0) {
+      return { 
+        canViewSolution: false,
+        creditsUsed: false,
+        creditsRemaining: 0,
+        error: 'No credits remaining'
+      };
+    }
+
+    // User has credits and needs to use one
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('profile')
+      .update({ solutionCredits: profile.solutionCredits - 1 })
+      .eq('id', userId)
+      .select('solutionCredits')
+      .single();
+
+    if (updateError) {
+      return { error: 'Failed to update credits', canViewSolution: false };
+    }
+
+    return {
+      canViewSolution: true,
+      creditsUsed: true,
+      creditsRemaining: updatedProfile.solutionCredits
+    };
+  } catch (error) {
+    console.error('Error using solution credit:', error);
+    return { 
+      error: 'Failed to process credit',
+      canViewSolution: false
+    };
+  }
+}
+
 /* export async function updateProfile(data: {
   userId: string;
   status?: string | null;
@@ -211,3 +283,44 @@ export async function verifyAdmin(): Promise<{ isAdmin: boolean; error?: string;
     throw error;
   }
 } */
+
+  export async function updateUserProfile({
+    school,
+    grade,
+    subjects
+  }: {
+    school: string | null
+    grade: number | null
+    subjects: string[]
+  }) {
+    try {
+      const supabase = await createClient()
+      
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError || !session?.user?.id) {
+        return { error: 'User not authenticated' };
+      }
+      
+      const userId = session.user.id;
+      
+      // Update the user's profile
+      const { error } = await supabase
+        .from('profile')
+        .update({ 
+          school,
+          grade,
+          subjects
+        })
+        .eq('id', userId)
+      
+      if (error) {
+        return { error: 'Failed to update profile' }
+      }
+      
+      return { success: true }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      return { error: 'An unexpected error occurred' }
+    }
+  }

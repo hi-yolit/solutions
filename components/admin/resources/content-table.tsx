@@ -26,7 +26,7 @@ import { ContentType, ResourceType } from "@prisma/client"
 import { useState, useEffect } from "react"
 import { deleteContent } from "@/actions/contents"
 import { useToast } from "@/hooks/use-toast"
-import { Book, ChevronDown, ChevronRight, Pencil, Plus, Trash } from "lucide-react"
+import { Book, ChevronDown, ChevronRight, Loader2, Pencil, Plus, Trash } from "lucide-react"
 import React from "react"
 
 // Define a Content type that matches your Prisma schema
@@ -330,8 +330,8 @@ const fetchSectionPages = async (sectionId: string) => {
                   <TableRow>
                     <TableCell colSpan={4} className="py-2 text-center">
                       <div className="inline-flex items-center">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                        <span className="ml-2">Loading pages...</span>
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                      <span className="ml-2">Loading pages...</span>
                       </div>
                     </TableCell>
                   </TableRow>

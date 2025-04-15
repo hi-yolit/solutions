@@ -1,9 +1,10 @@
 'use client';
 
 import React from "react";
-import { ArrowLeft } from "lucide-react";
-import { ActionIcon, Group, Text } from "@mantine/core";
+import { ArrowLeft, Coins } from "lucide-react";
+import { ActionIcon, Group, Text, Badge } from "@mantine/core";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context"; // Adjust the import path if needed
 
 interface TopBarProps {
   questionNumber?: string;
@@ -11,29 +12,59 @@ interface TopBarProps {
 
 const TopBar = ({ questionNumber }: TopBarProps) => {
   const router = useRouter();
+  const { profile, isProfileLoading } = useAuth();
   
   const handleGoBack = () => {
-    // Use browser history to go back to the previous page
     router.back();
   };
 
+  // Credits display logic
+  const renderCreditsInfo = () => {
+    // If profile is loading or no profile, don't show
+    if (isProfileLoading || !profile) {
+      return null;
+    }
+
+    // If user is subscribed, don't show credits
+    if (profile.subscriptionStatus === 'ACTIVE') {
+      return null;
+    }
+
+    // Show compact credits badge
+    return (
+      <Badge 
+        color="orange" 
+        variant="light" 
+        size="sm"
+        className="px-2 py-1"
+        leftSection={<Coins size={12} />}
+      >
+        {profile.solutionCredits}
+      </Badge>
+    );
+  };
+
   return (
-    <section className="sticky top-0 bg-white z-10 border-b py-3 px-2">
-      <Group gap="xs">
-        <ActionIcon 
-          variant="transparent" 
-          color="black" 
-          aria-label="Go back"
-          onClick={handleGoBack}
-        >
-          <ArrowLeft />
-        </ActionIcon>
+    <section className="sticky top-0 bg-white z-10 border-b py-3 px-4">
+      <Group justify="space-between" align="center" wrap="nowrap">
+        <Group gap="xs" wrap="nowrap">
+          <ActionIcon 
+            variant="transparent" 
+            color="black" 
+            aria-label="Go back"
+            onClick={handleGoBack}
+          >
+            <ArrowLeft />
+          </ActionIcon>
+          
+          {questionNumber && (
+            <Text fw={500} lineClamp={1}>
+              Question {questionNumber}
+            </Text>
+          )}
+        </Group>
         
-        {questionNumber && (
-          <Text fw={500}>
-            Question {questionNumber}
-          </Text>
-        )}
+        {renderCreditsInfo()}
       </Group>
     </section>
   );

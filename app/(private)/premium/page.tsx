@@ -3,6 +3,7 @@
 import { Suspense } from 'react'
 import { PricingTable } from '@/components/pricing/pricing-table'
 import { getPlans, initializeSubscription, getCurrentSubscription  } from '@/actions/subscription'
+import { Loader2 } from 'lucide-react'
 
 export default async function PricingPage() {
   const plans = await getPlans()
@@ -28,7 +29,8 @@ export default async function PricingPage() {
         Invest in your education and get unlimited access to all solutions
         </p>
       </div>
-      <Suspense fallback={<div>Loading plans...</div>}>
+      <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
+}>
         <PricingTable 
           initialPlans={plans} 
           initializeSubscription={initializeSubscription}
