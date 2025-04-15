@@ -6,11 +6,10 @@ import { GRADES } from "@/lib/constants";
 
 const HomePage = async () => {
   const defaultGrade = GRADES[0].key;
-  const grade = defaultGrade;
+  //const grade = defaultGrade;
 
   const { resources } = (await getResources({
     status: ResourceStatus.LIVE,
-    grade: grade ? Number(grade) : undefined,
     limit: 15,
   })) || { resources: [], total: 0, pages: 0 };
 
