@@ -23,7 +23,7 @@ export function Navbar() {
   const { user, profile, signOut, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
-  
+
   // Check if current path is home or landing page
   const isHomePage = pathname === '/' || pathname === '/home'
 
@@ -36,7 +36,7 @@ export function Navbar() {
   const handleUpgrade = () => {
     router.push('/account')
   }
-  
+
   const handleBack = () => {
     router.back()
   }
@@ -49,7 +49,7 @@ export function Navbar() {
 
     return (
       <Link href="/account" className="hover:opacity-80 transition-opacity">
-        <Badge 
+        <Badge
           className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-800 hover:bg-orange-200 transition-colors"
         >
           <Coins className="h-3 w-3" />
@@ -68,7 +68,12 @@ export function Navbar() {
           {isHomePage ? (
             // Logo section for home/landing pages
             <div className="flex-shrink-0 flex items-center space-x-2">
-              <Link href="https://yolit.co.za/" className="flex-shrink-0">
+              <Link
+                href="https://yolit.co.za/"
+                className="flex-shrink-0"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {/* Full logo for medium screens and up */}
                 <div className="hidden md:block">
                   <Image src="/YAAS_logo.svg" alt="YAAS Logo" width={100} height={24} priority />
@@ -86,7 +91,7 @@ export function Navbar() {
           ) : (
             // Back button for other pages
             <div className="flex-shrink-0">
-              <button 
+              <button
                 onClick={handleBack}
                 className="inline-flex items-center gap-2 hover:text-primary"
                 aria-label={user ? "Back to home" : "Back to landing page"}
@@ -100,7 +105,7 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             {/* Credits indicator */}
             {renderCreditsIndicator()}
-            
+
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : user ? (
@@ -135,9 +140,9 @@ function UserMenu({ user, profile, onSignOut, onUpgrade }: UserMenuProps) {
     if (!profile || profile.subscriptionStatus === 'ACTIVE') {
       return null;
     }
-    
+
     return (
-      <Badge 
+      <Badge
         className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-800"
       >
         <Coins className="h-3 w-3" />
@@ -202,14 +207,14 @@ function UserMenu({ user, profile, onSignOut, onUpgrade }: UserMenuProps) {
                   <GraduationCap className="h-4 w-4 flex-shrink-0" />
                   <span>Grade {profile.grade || "not set"}</span>
                 </div>
-                
+
                 {/* Show subscription status when not active */}
                 {profile.subscriptionStatus !== 'ACTIVE' && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                     <Coins className="h-4 w-4 flex-shrink-0" />
                     <span>
-                      {profile.solutionCredits > 0 
-                        ? `${profile.solutionCredits} credit${profile.solutionCredits !== 1 ? 's' : ''} left` 
+                      {profile.solutionCredits > 0
+                        ? `${profile.solutionCredits} credit${profile.solutionCredits !== 1 ? 's' : ''} left`
                         : 'No credits left'}
                     </span>
                   </div>

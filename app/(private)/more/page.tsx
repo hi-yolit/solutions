@@ -29,7 +29,9 @@ const More = () => {
                 <p className="text-gray-600">Get step-by-step help with your assignments</p>
               </div>
             </div>
-            <Link href="/admin/resources">
+            <Link href="https://yolit.co.za/assistant" 
+                target="_blank"
+                rel="noopener noreferrer">
               <Button className="w-full">
                 Start Asking
               </Button>
@@ -47,7 +49,9 @@ const More = () => {
                 <p className="text-gray-600">Calculate and track your admission points</p>
               </div>
             </div>
-            <Link href="">
+            <Link href="https://yolit.co.za/aps-calculator" 
+                target="_blank"
+                rel="noopener noreferrer">
               <Button className="w-full">
                 Calculate Now
               </Button>
