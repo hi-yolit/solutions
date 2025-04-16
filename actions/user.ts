@@ -143,7 +143,7 @@ export async function verifyAdmin(): Promise<{ isAdmin: boolean; error?: string;
 
 export async function solutionCredit() {
   try {
-    const supabase =  createServiceClient()
+    const supabase =  await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
     console.log(user)
