@@ -86,8 +86,8 @@ function QuestionList({ contentId }: Readonly<{ contentId: string }>) {
   return (
     <div className="space-y-2">
       {questions.map((question) => (
-        <Link 
-          key={question.id} 
+        <Link
+          key={question.id}
           href={`/exercises/${contentId}/${question.id}`}
           legacyBehavior
         >
@@ -115,7 +115,7 @@ function PastPaperQuestions({ chapter }: Readonly<{ chapter: ContentWithChildren
       try {
         setLoading(true);
         const pages = chapter.children?.filter(c => c.type === ContentType.PAGE) || [];
-        
+
         const questionsPromises = pages.map(async (page) => {
           const response = await fetch(`/api/contents/${page.id}/questions`);
           if (!response.ok) throw new Error('Failed to fetch questions');
@@ -152,8 +152,8 @@ function PastPaperQuestions({ chapter }: Readonly<{ chapter: ContentWithChildren
   return (
     <div className="space-y-2">
       {questions.map((question) => (
-        <Link 
-          key={question.id} 
+        <Link
+          key={question.id}
           href={`/exercises/${question.contentId}/${question.id}`}
           legacyBehavior
         >
@@ -204,9 +204,9 @@ function DrawerContent({
                       {getContentIcon(child.type)}
                     </Avatar>
                     <Text fw={500} size="sm">
-                        {getContentLabel(child.type, resourceType)} {child.number &&` ${child.number}`}
-                        {child.pageNumber &&` ${child.pageNumber}`}
-                        {child.title &&`  : ${child.title}`}
+                      {getContentLabel(child.type, resourceType)} {child.number && ` ${child.number}`}
+                      {child.pageNumber && ` ${child.pageNumber}`}
+                      {child.title && `  : ${child.title}`}
                     </Text>
                   </Group>
                 </UnstyledButton>
@@ -244,22 +244,22 @@ export function MobileContentNavigation({
     setDrawerTitle(
       `${getContentLabel(child.type, resourceType)}${child.number ? ` ${child.number}` : ''}${child.pageNumber ? ` ${child.pageNumber}` : ''}${child.title ? ` : ${child.title}` : ''}`
     );
-      };
+  };
 
   const handleGoBack = () => {
     if (navigationStack.length <= 1) {
       setDrawerOpen(false);
       return;
     }
-    
+
     const newStack = [...navigationStack];
     newStack.pop();
     const previousContent = newStack[newStack.length - 1];
-    
+
     setNavigationStack(newStack);
     setActiveContent(previousContent);
-    setDrawerTitle(previousContent ? 
-      `${getContentLabel(previousContent.type, resourceType)} ${previousContent.number}${previousContent.title ? `: ${previousContent.title}` : ''}` 
+    setDrawerTitle(previousContent ?
+      `${getContentLabel(previousContent.type, resourceType)} ${previousContent.number}${previousContent.title ? `: ${previousContent.title}` : ''}`
       : resourceTitle
     );
   };
@@ -292,8 +292,8 @@ export function MobileContentNavigation({
         padding={0}
         size="100%"
         classNames={{
-          body: "max-w-4xl p-0 flex flex-col h-[calc(100vh-60px)]",
-          header: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between bg-white sticky top-0 z-10 border-b",
+          body: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col h-[calc(100vh-60px)]",
+          header: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex items-center justify-between bg-white sticky top-0 z-10 border-b",
           inner: "bg-white"
         }}
         title={
@@ -319,16 +319,18 @@ export function MobileContentNavigation({
         zIndex={1000}
       >
         {activeContent && (
-          <DrawerContent
-            content={activeContent}
-            resourceId={resourceId}
-            resourceType={resourceType}
-            onSelectChild={handleSelectChild}
-            onBack={handleGoBack}
-            onClose={() => setDrawerOpen(false)}
-            title={drawerTitle}
-            level="CHAPTER"
-          />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <DrawerContent
+              content={activeContent}
+              resourceId={resourceId}
+              resourceType={resourceType}
+              onSelectChild={handleSelectChild}
+              onBack={handleGoBack}
+              onClose={() => setDrawerOpen(false)}
+              title={drawerTitle}
+              level="CHAPTER"
+            />
+          </div>
         )}
       </Drawer>
     </>
