@@ -132,23 +132,6 @@ interface UserMenuProps {
 }
 
 function UserMenu({ user, profile, onSignOut, onUpgrade }: UserMenuProps) {
-  // Credits display for dropdown
-  const creditsDisplay = useMemo(() => {
-    if (!profile || profile.subscriptionStatus === 'ACTIVE') {
-      return null;
-    }
-
-    return (
-      <Badge
-        className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-800"
-      >
-        <Coins className="h-3 w-3" />
-        <span className="text-xs">
-          {profile.solutionCredits}
-        </span>
-      </Badge>
-    );
-  }, [profile]);
 
   return useMemo(
     () => (
