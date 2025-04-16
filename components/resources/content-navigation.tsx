@@ -47,7 +47,7 @@ function getContentLabel(type: ContentType, resourceType: ResourceType) {
 }
 
 // Question List Component
-function QuestionList({ contentId }: { contentId: string }) {
+function QuestionList({ contentId }: Readonly<{ contentId: string }>) {
   const [questions, setQuestions] = useState<QuestionWithSolutions[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -106,7 +106,7 @@ function QuestionList({ contentId }: { contentId: string }) {
 }
 
 // Past Paper Questions Component
-function PastPaperQuestions({ chapter }: { chapter: ContentWithChildren }) {
+function PastPaperQuestions({ chapter }: Readonly<{ chapter: ContentWithChildren }>) {
   const [questions, setQuestions] = useState<QuestionWithSolutions[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -185,7 +185,7 @@ function DrawerContent({
   const isPage = content.type === ContentType.PAGE;
 
   return (
-    <div className="max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col h-full bg-white">
+    <div className="max-w-4xl px-4 sm:px-6 lg:px-8 flex flex-col h-full bg-white">
       <div className="flex-1 overflow-y-auto p-4">
         {isPastPaperChapter ? (
           <PastPaperQuestions chapter={content} />
