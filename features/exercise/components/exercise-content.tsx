@@ -371,6 +371,7 @@ const ExerciseContent = ({ question }: { question: any }) => {
   const [isProcessingCredit, setIsProcessingCredit] = useState(false);
   const [creditError, setCreditError] = useState<string | null>(null);
   const router = useRouter();
+  const { refreshAuth } = useAuth()
   
   // Check if user is admin or has subscription - they see all steps by default
   const hasFullAccess = useMemo(() => {
@@ -398,6 +399,7 @@ const ExerciseContent = ({ question }: { question: any }) => {
       }
       
       if (result.canViewSolution) {
+        await refreshAuth()
         setShowAllSteps(true);
       }
     } catch (err) {
