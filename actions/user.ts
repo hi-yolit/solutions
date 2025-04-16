@@ -146,7 +146,6 @@ export async function solutionCredit() {
     const supabase =  await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
-    console.log(user)
     
     if (!user?.id) {
       return { error: 'User not authenticated' };

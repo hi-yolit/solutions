@@ -397,9 +397,6 @@ export function SearchBox() {
                             {question.resourceTitle || 'Unknown Resource'} 
                             {` • Question ${question.questionNumber || ''}`}
                           </div>
-                          <div className="font-medium truncate">
-                            <Latex>{prepareLatexText(getMainQuestion(question))}</Latex>
-                          </div>
                         </div>
                       </CommandItem>
                     ))}

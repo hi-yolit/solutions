@@ -134,7 +134,7 @@ async function SearchResults({
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
               <Link 
                 key={pageNum}
-                href={`/search?q=${encodeURIComponent(query)}&page=${pageNum}`}
+                href={`/explore?q=${encodeURIComponent(query)}&page=${pageNum}`}
                 passHref
               >
                 <Button 
