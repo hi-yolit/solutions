@@ -71,7 +71,7 @@ export function SearchBox() {
   const searchParams = useSearchParams()
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const isSearchPage = pathname === '/search'
+  const isSearchPage = pathname === '/search' || pathname === '/explore'
 
   // Initialize query from URL on search page
   useEffect(() => {
@@ -169,9 +169,10 @@ export function SearchBox() {
     if (e) e.preventDefault()
     if (!query.trim()) return
 
+    const basePath = pathname === '/explore' ? '/explore' : '/search'
     const params = new URLSearchParams()
     params.set('q', query.trim())
-    router.push(`/search?${params.toString()}`)
+    router.push(`${basePath}?${params.toString()}`)
 
     if (!isSearchPage) {
       setOpen(false)
@@ -417,7 +418,10 @@ export function SearchBox() {
                       variant="ghost"
                       className="w-full justify-start"
                       onClick={() => {
-                        handleSearch()
+                        const basePath = pathname === '/explore' ? '/explore' : '/search'
+                        const params = new URLSearchParams()
+                        params.set('q', query.trim())
+                        router.push(`${basePath}?${params.toString()}`)
                         setOpen(false)
                       }}
                     >

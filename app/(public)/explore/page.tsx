@@ -1,4 +1,4 @@
-// app/(private)/search/page.tsx
+// app/(public)/search/page.tsx
 import { Suspense } from 'react'
 import { searchResources } from '@/actions/search'
 import { SearchBox } from '@/components/search-box'
@@ -165,7 +165,7 @@ interface PageProps {
 }
 
 // Use the named interface approach like in your subject page
-export default async function SearchPage({
+export default async function PublicSearchPage({
   searchParams,
 }: Readonly<PageProps>) {
   // Apply the same fix that worked for the subject page

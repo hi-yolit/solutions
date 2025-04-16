@@ -145,13 +145,13 @@ export async function useSolutionCredit() {
   try {
     const supabase =  createServiceClient()
 
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user } } = await supabase.auth.getUser()
     
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return { error: 'User not authenticated' };
     }
     
-    const userId = session.user.id;
+    const userId = user.id;
     
     const { isAdmin } = await verifyAdmin();
     
@@ -296,13 +296,13 @@ export async function useSolutionCredit() {
     try {
       const supabase = await createClient()
       
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      const { data: { user } } = await supabase.auth.getUser()
       
-      if (sessionError || !session?.user?.id) {
+      if (!user?.id) {
         return { error: 'User not authenticated' };
       }
       
-      const userId = session.user.id;
+      const userId = user.id;
       
       // Update the user's profile
       const { error } = await supabase
