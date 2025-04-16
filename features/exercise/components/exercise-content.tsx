@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import QuestionNavigation from "./question-navigation";
 import { StepContent } from "@/types/question";
-import { useSolutionCredit } from '@/actions/user';
+import { solutionCredit } from '@/actions/user';
 import { useRouter } from 'next/navigation';
 
 // Process content with mixed text and images
@@ -390,7 +390,7 @@ const ExerciseContent = ({ question }: { question: any }) => {
       setIsProcessingCredit(true);
       setCreditError(null);
       
-      const result = await useSolutionCredit();
+      const result = await solutionCredit();
       
       if (result.error) {
         setCreditError(result.error);
