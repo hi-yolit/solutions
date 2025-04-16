@@ -93,11 +93,6 @@ export default function LoginPage() {
           Continue with Facebook
         </Button>
 
-        <p className="text-center text-sm text-muted-foreground">
-          Using a social provider will automatically create an account
-          <br />if you don&apos;t have one yet
-        </p>
-
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />

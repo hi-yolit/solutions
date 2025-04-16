@@ -79,7 +79,7 @@ export function SearchBox() {
   
   // Determine search route based on authentication
   const getSearchRoute = useCallback(() => {
-    return user ? '/explore' : '/search'
+    return user ? '/search' : '/explore'
   }, [user])
 
   // Initialize query from URL on search page
