@@ -185,7 +185,7 @@ function DrawerContent({
   const isPage = content.type === ContentType.PAGE;
 
   return (
-    <div className="max-w-4xl px-4 sm:px-6 lg:px-8 flex flex-col h-full bg-white">
+    <div className="max-w-4xl flex flex-col h-full bg-white">
       <div className="flex-1 overflow-y-auto p-4">
         {isPastPaperChapter ? (
           <PastPaperQuestions chapter={content} />
