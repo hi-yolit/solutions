@@ -2,15 +2,20 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { getProfile } from '@/actions/user'
 
-// Helper functions to determine path types
+// Public paths (accessible to all)
 function isPublicPath(pathname: string): boolean {
   return (
-    pathname === '/api/auth/callback' ||
+    pathname === '/' ||
+    pathname === '/exercises' ||
+    pathname === '/explore' ||
+    pathname === '/pricing' ||
+    pathname === '/resources' ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/auth')
   )
 }
 
+// Protected user routes (require authentication)
 function isProtectedPath(pathname: string): boolean {
   return (
     pathname.startsWith('/account') ||
@@ -21,6 +26,7 @@ function isProtectedPath(pathname: string): boolean {
   )
 }
 
+// Admin routes (require admin role)
 function isAdminPath(pathname: string): boolean {
   return pathname.startsWith('/admin')
 }
@@ -28,23 +34,24 @@ function isAdminPath(pathname: string): boolean {
 export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
   
-  // Allow public paths to bypass authentication
+  // Check public paths first
   if (isPublicPath(pathname)) {
+    // Allow access to public paths for all users
     return NextResponse.next()
   }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   // Handle authenticated users
   if (user) {
-    // Redirect away from auth pages
-    if (pathname.startsWith('/auth')) {
+    // Redirect root path to home dashboard
+    if (pathname === '/') {
       return NextResponse.redirect(new URL('/home', request.url))
     }
 
-    // Redirect root to home
-    if (pathname === '/') {
+    // Redirect away from auth pages
+    if (pathname.startsWith('/auth')) {
       return NextResponse.redirect(new URL('/home', request.url))
     }
 
@@ -60,16 +67,13 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(new URL('/home', request.url))
       }
     }
-  } 
+  }
   // Handle unauthenticated users
-  else {
-    if (isProtectedPath(pathname) || isAdminPath(pathname)) {
+  else if (isProtectedPath(pathname) || isAdminPath(pathname)) {
       const loginUrl = new URL('/auth/login', request.url)
       loginUrl.searchParams.set('returnUrl', pathname)
       return NextResponse.redirect(loginUrl)
     }
-  }
 
-  // Allow the request to proceed if no redirects needed
   return NextResponse.next({ request })
 }
