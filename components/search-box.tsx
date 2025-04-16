@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { MathInput } from '@/components/admin/solutions/math-input' // Make sure this path is correct
+import { useAuth } from '@/contexts/auth-context' // Import the auth hook from your context
 
 // Define the JSON structure for questionContent based on your schema
 interface QuestionContent {
@@ -72,6 +73,14 @@ export function SearchBox() {
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const isSearchPage = pathname === '/search' || pathname === '/explore'
+  
+  // Get auth state using the auth hook
+  const { user, isLoading: authLoading } = useAuth()
+  
+  // Determine search route based on authentication
+  const getSearchRoute = useCallback(() => {
+    return user ? '/explore' : '/search'
+  }, [user])
 
   // Initialize query from URL on search page
   useEffect(() => {
@@ -159,7 +168,8 @@ export function SearchBox() {
         params.delete('q')
       }
       params.delete('page') // Reset page when query changes
-      router.push(`/search?${params.toString()}`)
+      const searchRoute = getSearchRoute()
+      router.push(`${searchRoute}?${params.toString()}`)
     } else {
       setOpen(true)
     }
@@ -169,10 +179,10 @@ export function SearchBox() {
     if (e) e.preventDefault()
     if (!query.trim()) return
 
-    const basePath = pathname === '/explore' ? '/explore' : '/search'
+    const searchRoute = getSearchRoute()
     const params = new URLSearchParams()
     params.set('q', query.trim())
-    router.push(`${basePath}?${params.toString()}`)
+    router.push(`${searchRoute}?${params.toString()}`)
 
     if (!isSearchPage) {
       setOpen(false)
@@ -187,7 +197,8 @@ export function SearchBox() {
     setShowLatexPreview(false)
     setResults(initialSearchState)
     if (isSearchPage) {
-      router.push('/search')
+      const searchRoute = getSearchRoute()
+      router.push(searchRoute)
     } else {
       setOpen(false)
     }
@@ -283,6 +294,9 @@ export function SearchBox() {
     { label: '∫', command: '\\int' },
     { label: '∑', command: '\\sum' }
   ];
+
+  // If still loading auth status, we could show a loading indicator (optional)
+  // For this implementation, we'll just proceed with the default route until auth is loaded
 
   return (
     <div ref={searchContainerRef} className="relative w-full">
@@ -415,10 +429,10 @@ export function SearchBox() {
                       variant="ghost"
                       className="w-full justify-start"
                       onClick={() => {
-                        const basePath = pathname === '/explore' ? '/explore' : '/search'
+                        const searchRoute = getSearchRoute()
                         const params = new URLSearchParams()
                         params.set('q', query.trim())
-                        router.push(`${basePath}?${params.toString()}`)
+                        router.push(`${searchRoute}?${params.toString()}`)
                         setOpen(false)
                       }}
                     >
