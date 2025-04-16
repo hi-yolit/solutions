@@ -113,10 +113,7 @@ export function Navbar() {
             ) : (
               <div className="flex gap-2">
                 <Link href="/auth/login">
-                  <Button variant="ghost">Login</Button>
-                </Link>
-                <Link href="/auth/register">
-                  <Button>Sign up</Button>
+                  <Button>Get started</Button>
                 </Link>
               </div>
             )}
