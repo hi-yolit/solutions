@@ -292,7 +292,7 @@ export function MobileContentNavigation({
         padding={0}
         size="100%"
         classNames={{
-          body: "p-0 flex flex-col h-[calc(100vh-60px)]",
+          body: "max-w-4xl p-0 flex flex-col h-[calc(100vh-60px)]",
           header: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between bg-white sticky top-0 z-10 border-b",
           inner: "bg-white"
         }}
