@@ -8,64 +8,68 @@ function isPublicPath(pathname: string): boolean {
     pathname === '/api/auth/callback' ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/auth')
-  );
+  )
 }
 
 function isProtectedPath(pathname: string): boolean {
   return (
     pathname.startsWith('/account') ||
-    pathname.startsWith('/settings') ||
-    pathname === '/home'
-  );
+    pathname.startsWith('/home') ||
+    pathname.startsWith('/more') ||
+    pathname.startsWith('/premium') ||
+    pathname.startsWith('/search')
+  )
+}
+
+function isAdminPath(pathname: string): boolean {
+  return pathname.startsWith('/admin')
 }
 
 export async function updateSession(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl
   
-  // Allow API routes to bypass authentication checks
-  if (pathname === '/api/auth/callback' || pathname.startsWith('/api')) {
-    return NextResponse.next();
+  // Allow public paths to bypass authentication
+  if (isPublicPath(pathname)) {
+    return NextResponse.next()
   }
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   
-  // Handle authentication-based redirects
+  // Handle authenticated users
   if (user) {
-    // For authenticated users
+    // Redirect away from auth pages
     if (pathname.startsWith('/auth')) {
-      return NextResponse.redirect(new URL('/home', request.url));
+      return NextResponse.redirect(new URL('/home', request.url))
     }
-    
+
+    // Redirect root to home
     if (pathname === '/') {
-      return NextResponse.redirect(new URL('/home', request.url));
+      return NextResponse.redirect(new URL('/home', request.url))
     }
-    
-    // Check admin access
-    if (pathname.startsWith('/admin')) {
+
+    // Admin route protection
+    if (isAdminPath(pathname)) {
       try {
-        const { profile } = await getProfile(user.id);
+        const { profile } = await getProfile(user.id)
         if (profile?.role !== 'ADMIN') {
-          return NextResponse.redirect(new URL('/home', request.url));
+          return NextResponse.redirect(new URL('/home', request.url))
         }
       } catch (err) {
-        console.error('Error fetching user profile:', err);
+        console.error('Error fetching user profile:', err)
+        return NextResponse.redirect(new URL('/home', request.url))
       }
     }
-  } else {
-    // For unauthenticated users
-    if (pathname === '/home' || 
-        pathname.startsWith('/account') || 
-        pathname.startsWith('/settings')) {
-      
-      const loginUrl = new URL('/auth/login', request.url);
-      if (pathname !== '/home') {
-        loginUrl.searchParams.set('returnUrl', pathname);
-      }
-      return NextResponse.redirect(loginUrl);
+  } 
+  // Handle unauthenticated users
+  else {
+    if (isProtectedPath(pathname) || isAdminPath(pathname)) {
+      const loginUrl = new URL('/auth/login', request.url)
+      loginUrl.searchParams.set('returnUrl', pathname)
+      return NextResponse.redirect(loginUrl)
     }
   }
 
-  // Default: allow the request to proceed
-  return NextResponse.next({ request });
+  // Allow the request to proceed if no redirects needed
+  return NextResponse.next({ request })
 }
