@@ -95,7 +95,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-muted-foreground">
           Using a social provider will automatically create an account
-          <br />if you don't have one yet
+          <br />if you don&apos;t have one yet
         </p>
 
         {error && (
