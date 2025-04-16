@@ -293,7 +293,7 @@ export function MobileContentNavigation({
         size="100%"
         classNames={{
           body: "p-0 flex flex-col h-[calc(100vh-60px)]",
-          header: "py-3 px-4 flex items-center justify-between bg-white sticky top-0 z-10 border-b",
+          header: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between bg-white sticky top-0 z-10 border-b",
           inner: "bg-white"
         }}
         title={
