@@ -48,9 +48,9 @@ const ResourceCardComponent = ({ resource }: { resource: Resource }) => {
 
 const ResourceCoverImage = ({ resource }: { resource: Resource }) => {
   const getPlaceholderIcon = () => {
-    if (resource.type === "TEXTBOOK") {
+    if (resource.type === ResourceType.TEXTBOOK) {
       return <Book className="h-8 w-8 text-muted-foreground" />;
-    } else if (resource.type === "PAST_PAPER") {
+    } else if (resource.type === ResourceType.PAST_PAPER) {
       return <FileText className="h-8 w-8 text-muted-foreground" />;
     } else {
       return <BookOpen className="h-8 w-8 text-muted-foreground" />;
@@ -100,13 +100,13 @@ const SubjectResourceList: React.FC<SubjectResourceListProps> = ({
       <div className="flex items-center justify-between">
         <h4 className="font-semibold text-lg flex items-center">
           {subjectEmoji} {subject}
-        </h4>
+        </h4>{/* 
         <Link
           href={`/subjects/${subject}`}
           className="text-sm text-blue-500 hover:underline"
         >
           View All
-        </Link>
+        </Link> */}
       </div>
       <div
         className="flex gap-3 py-4 overflow-x-auto"
@@ -130,6 +130,15 @@ export async function ResourceList({
   resources = [],
 }: Readonly<ResourceListProps>) {
   const resourceByType = groupResourceByType(resources);
+  
+  // Check if there are actually past papers in the data
+  const hasPastPapers = (resourceByType[ResourceType.PAST_PAPER]?.length || 0) > 0;
+  
+  // Set default tab - use Past Paper tab if there are past papers but no textbooks
+  let defaultTab = resourceTypeLabels.TEXTBOOK;
+  if ((resourceByType[ResourceType.TEXTBOOK]?.length || 0) === 0 && hasPastPapers) {
+    defaultTab = resourceTypeLabels.PAST_PAPER;
+  }
 
   if (!resources.length) {
     return (
@@ -141,18 +150,30 @@ export async function ResourceList({
 
   return (
     <div className="py-3">
-      <Tabs defaultValue={resourceTypeLabels.TEXTBOOK} className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList variant="underline" width="full" className="overflow-auto">
-          {Object.entries(resourceTypeLabels).map(([key, label]) => (
-            <TabsTrigger key={key} value={label} variant="underline">
-              {label}s
-            </TabsTrigger>
-          ))}
+          {Object.entries(resourceTypeLabels).map(([key, label]) => {
+            // Only show tab if there are resources of this type
+            const resourceType = key as ResourceType;
+            const hasResources = (resourceByType[resourceType]?.length || 0) > 0;
+            
+            if (!hasResources) return null;
+            
+            return (
+              <TabsTrigger key={key} value={label} variant="underline">
+                {label}s
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         {Object.entries(resourceTypeLabels).map(([key, label]) => {
           const resourceType = key as ResourceType;
           const resourcesForType = resourceByType[resourceType] || [];
+          
+          // Skip rendering tab content if there are no resources of this type
+          if (resourcesForType.length === 0) return null;
+          
           const resourcesBySubject = groupResourcesBySubject(resourcesForType);
 
           return (
