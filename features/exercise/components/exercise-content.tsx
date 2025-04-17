@@ -165,11 +165,11 @@ const SolutionStep = ({
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-center mb-3">
-                  <span className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 rounded-md text-xs font-medium mr-2">
+                  <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-medium mr-2">
                     {stepNumber} of {totalSteps}
                   </span>
-                  <h5 className="text-md font-semibold text-indigo-600 dark:text-indigo-300">
-                    <Latex>{step.title || 'Solution Step'}</Latex>
+                  <h5 className="text-md font-semibold text-blue-600">
+                    <Latex>{step.title ?? 'Solution Step'}</Latex>
                   </h5>
                 </div>
               </div>
