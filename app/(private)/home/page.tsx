@@ -13,6 +13,13 @@ const HomePage = async () => {
     limit: 15,
   })) || { resources: [], total: 0, pages: 0 };
 
+  // Add this in your HomePage component after fetching resources
+  console.log("Resources loaded:", resources.map(r => ({
+    id: r.id,
+    title: r.title,
+    type: r.type
+  })));
+
   if (!resources) {
     return (
       <div className="p-4 text-red-600 bg-red-50 rounded-md">
