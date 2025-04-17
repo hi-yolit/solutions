@@ -210,7 +210,7 @@ export function ContentEditor({
             placeholder={compact ? "Enter text..." : "Enter your content with LaTeX..."}
             className={cn(
               "font-mono resize-none",
-              compact ? "min-h-[40px] text-sm" : "min-h-[150px]",
+              compact ? "min-h-[40px] text-sm" : "min-h-[300px]",
               error && "border-red-500",
               isFullScreen && "min-h-[60vh]"
             )}
