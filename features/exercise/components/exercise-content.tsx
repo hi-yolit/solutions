@@ -168,7 +168,7 @@ const SolutionStep = ({
                   <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-md text-xs font-medium mr-2">
                     {stepNumber} of {totalSteps}
                   </span>
-                  <h5 className="text-lg font-semibold text-blue-800 dark:text-blue-300">
+                  <h5 className="text-md font-semibold text-blue-800 dark:text-blue-300">
                     <Latex>{step.title || 'Solution Step'}</Latex>
                   </h5>
                 </div>
@@ -178,7 +178,7 @@ const SolutionStep = ({
             </div>
 
             {isActive && (
-              <div className="pl-4 mt-2 border-t pt-2">
+              <div className="pl-4">
                 {/* Main content with images in correct position */}
                 <ProcessedContent content={step.content || ''} />
 
