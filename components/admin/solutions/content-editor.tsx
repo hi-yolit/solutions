@@ -23,11 +23,13 @@ interface ContentEditorProps {
   onChange: (value: string) => void;
   className?: string;
   error?: string;
+  compact?: boolean;
+  disableImages?: boolean;
 }
 
 const renderImage = (imageData: ImageData) => {
   const alignment = cn(
-    "my-4 max-w-full",
+    "my-2 max-w-full",
     imageData.alignment === 'left' && "float-left mr-4",
     imageData.alignment === 'center' && "mx-auto block",
     imageData.alignment === 'right' && "float-right ml-4"
@@ -43,7 +45,7 @@ const renderImage = (imageData: ImageData) => {
         className="rounded-lg w-full h-auto object-contain"
       />
       {imageData.caption && (
-        <p className="text-sm text-muted-foreground mt-1 text-center">
+        <p className="text-xs text-muted-foreground mt-1 text-center">
           {imageData.caption}
         </p>
       )}
@@ -55,10 +57,12 @@ export function ContentEditor({
   value, 
   onChange,
   className,
-  error 
-}: Readonly<ContentEditorProps>) {
+  error,
+  compact = false,
+  disableImages = false
+}: ContentEditorProps) {
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [showPreview, setShowPreview] = useState(true);
+  const [showFullToolbar, setShowFullToolbar] = useState(false);
 
   const handleLatexInsert = useCallback((latex: string) => {
     const textarea = document.getElementById('content-input') as HTMLTextAreaElement;
@@ -89,10 +93,7 @@ export function ContentEditor({
     }
   }, [value, onChange]);
 
-  // Helper function to prepare LaTeX text
   const prepareLatexText = (text: string) => {
-    // Replace all LaTeX commands with their properly escaped versions
-    // This ensures commands like \textit, \textbf etc. work correctly
     return text.replace(/\\([a-zA-Z]+)(\{[^}]*\})/g, '\\$1$2');
   };
 
@@ -103,7 +104,6 @@ export function ContentEditor({
     let match;
 
     while ((match = pattern.exec(value)) !== null) {
-      // Add text before the image
       if (match.index > lastIndex) {
         const text = value.slice(lastIndex, match.index);
         segments.push(
@@ -127,7 +127,6 @@ export function ContentEditor({
       lastIndex = pattern.lastIndex;
     }
 
-    // Add remaining text after last image
     if (lastIndex < value.length) {
       const text = value.slice(lastIndex);
       segments.push(
@@ -140,7 +139,6 @@ export function ContentEditor({
     return segments;
   }, [value]);
 
-  // Quick LaTeX buttons
   const latexButtons = [
     { label: 'Italic', command: '\\textit{text}' },
     { label: 'Bold', command: '\\textbf{text}' },
@@ -155,63 +153,64 @@ export function ContentEditor({
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-center">
         <div className="flex gap-2">
-          <MathInput onInsert={handleLatexInsert} />
-          <ImageUploadDialog onImageAdd={handleImageAdd} />
+          <MathInput onInsert={handleLatexInsert}/>
+          {!disableImages && <ImageUploadDialog onImageAdd={handleImageAdd}/>}
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPreview(!showPreview)}
-          >
-            {showPreview ? 'Hide Preview' : 'Show Preview'}
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsFullScreen(!isFullScreen)}
-            aria-label={isFullScreen ? 'Exit full screen' : 'Enter full screen'}
-          >
-            {isFullScreen ? (
-              <Minimize2 className="h-4 w-4" />
-            ) : (
-              <Maximize2 className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+        {!compact && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFullToolbar(!showFullToolbar)}
+            >
+              {showFullToolbar ? 'Simplify' : 'More Tools'}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsFullScreen(!isFullScreen)}
+            >
+              {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+          </div>
+        )}
       </div>
       
-      <div className="flex flex-wrap gap-2">
-        {latexButtons.map((btn) => (
-          <Button 
-            key={btn.label}
-            variant="outline" 
-            size="sm"
-            onClick={() => handleLatexInsert(`$${btn.command}$`)}
-          >
-            {btn.label}
-          </Button>
-        ))}
-      </div>
+      {(!compact || showFullToolbar) && (
+        <div className="flex flex-wrap gap-2">
+          {latexButtons.map((btn) => (
+            <Button 
+              key={btn.label}
+              variant="outline" 
+              size="sm"
+              onClick={() => handleLatexInsert(`$${btn.command}$`)}
+              className={compact ? "h-8 px-2 text-xs" : ""}
+            >
+              {btn.label}
+            </Button>
+          ))}
+        </div>
+      )}
     </div>
   );
 
   const EditorContent = (
     <div className={cn("space-y-4", className)}>
-      {EditorToolbar}
+      {(!compact || showFullToolbar) && EditorToolbar}
 
       <div className={cn(
         "grid gap-4",
-        showPreview && "grid-cols-2"
+        compact ? "grid-cols-2 items-center" : "grid-cols-2"
       )}>
         <div className="flex-1">
           <Textarea
             id="content-input"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Enter your content with LaTeX equations between $ symbols... You can also add images"
+            placeholder={compact ? "Enter text..." : "Enter your content with LaTeX..."}
             className={cn(
-              "min-h-[300px] font-mono resize-none",
+              "font-mono resize-none",
+              compact ? "min-h-[40px] text-sm" : "min-h-[150px]",
               error && "border-red-500",
               isFullScreen && "min-h-[60vh]"
             )}
@@ -223,20 +222,29 @@ export function ContentEditor({
           )}
         </div>
 
-        {showPreview && (
-          <div className="flex-1 relative">
-            <div className="absolute inset-0 border rounded-lg bg-slate-50 overflow-hidden flex flex-col">
+        <div className="flex-1 relative">
+          <div className={cn(
+            "bg-slate-50 overflow-hidden flex flex-col",
+            compact ? "border-none" : "border rounded-lg"
+          )}>
+            {!compact && (
               <div className="p-2 border-b bg-white">
                 <p className="text-sm text-muted-foreground">Preview</p>
               </div>
-              <div className="p-4 overflow-y-auto flex-1">
-                <div className="prose prose-sm max-w-none dark:prose-invert clearfix">
-                  {renderContent()}
-                </div>
+            )}
+            <div className={cn(
+              "overflow-y-auto flex-1",
+              compact ? "p-1 text-sm" : "p-4"
+            )}>
+              <div className={cn(
+                "prose max-w-none dark:prose-invert clearfix",
+                compact ? "prose-sm" : "prose-base"
+              )}>
+                {renderContent()}
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -248,7 +256,7 @@ export function ContentEditor({
           <DialogHeader>
             <DialogTitle>Content Editor</DialogTitle>
             <DialogDescription>
-              Edit your content in full-screen mode. Press ESC to exit.
+              Edit your content in full-screen mode
             </DialogDescription>
           </DialogHeader>
           {EditorContent}

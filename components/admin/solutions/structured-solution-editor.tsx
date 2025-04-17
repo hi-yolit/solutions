@@ -33,9 +33,9 @@ interface StructuredSolutionEditorProps {
   onSave: (data: StructuredStep[]) => Promise<void>;
 }
 
-export function StructuredSolutionEditor({ 
-  initialData, 
-  onSave 
+export function StructuredSolutionEditor({
+  initialData,
+  onSave
 }: StructuredSolutionEditorProps) {
   const form = useForm<{ steps: StructuredStep[] }>({
     resolver: zodResolver(z.object({ steps: structuredSolutionSchema })),
@@ -82,10 +82,13 @@ export function StructuredSolutionEditor({
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                        <ContentEditor
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
+                      <ContentEditor
+                        value={field.value}
+                        onChange={field.onChange}
+                        compact
+                        disableImages
+                        className="min-h-[40px]"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -109,7 +112,7 @@ export function StructuredSolutionEditor({
                 )}
               />
 
-{/*               <FormField
+              {/*               <FormField
                 control={form.control}
                 name={`steps.${index}.explanation`}
                 render={({ field }) => (
@@ -169,8 +172,8 @@ export function StructuredSolutionEditor({
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ 
-              title: "", 
+            onClick={() => append({
+              title: "",
               content: "",
               explanation: "",
               hint: "",
