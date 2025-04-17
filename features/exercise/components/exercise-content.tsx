@@ -3,8 +3,8 @@
 import React, { useState, useCallback, useMemo, memo, MouseEvent, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  AlertCircle, ArrowDown, Lightbulb, Loader2, Lock, 
+import {
+  AlertCircle, ArrowDown, Lightbulb, Loader2, Lock,
   LogIn, Coins, ChevronRight
 } from "lucide-react";
 import Latex from "react-latex-next";
@@ -21,13 +21,13 @@ import { useRouter } from 'next/navigation';
 const ProcessedContent = ({ content }: { content: string }) => {
   const segments = useMemo(() => {
     if (!content) return [];
-    
+
     // Split content into text and image segments
     const imgRegex = /\[image\|(.*?)\]/g;
     const parts = [];
     let lastIndex = 0;
     let match;
-    
+
     // Find all image placeholders and split content
     while ((match = imgRegex.exec(content)) !== null) {
       // Add text before image if any
@@ -37,7 +37,7 @@ const ProcessedContent = ({ content }: { content: string }) => {
           content: content.substring(lastIndex, match.index)
         });
       }
-      
+
       // Add image
       try {
         const imgData = JSON.parse(match[1]);
@@ -48,10 +48,10 @@ const ProcessedContent = ({ content }: { content: string }) => {
       } catch (e) {
         console.error("Failed to parse image JSON:", e);
       }
-      
+
       lastIndex = match.index + match[0].length;
     }
-    
+
     // Add remaining text after last image if any
     if (lastIndex < content.length) {
       parts.push({
@@ -59,7 +59,7 @@ const ProcessedContent = ({ content }: { content: string }) => {
         content: content.substring(lastIndex)
       });
     }
-    
+
     return parts;
   }, [content]);
 
@@ -74,9 +74,9 @@ const ProcessedContent = ({ content }: { content: string }) => {
           ) : (
             <div className={`flex ${segment.data.alignment === 'center' ? 'justify-center' : segment.data.alignment === 'right' ? 'justify-end' : ''}`}>
               <figure className="relative">
-                <img 
-                  src={segment.data.url} 
-                  alt={segment.data.caption || "Solution image"} 
+                <img
+                  src={segment.data.url}
+                  alt={segment.data.caption || "Solution image"}
                   style={{ width: segment.data.width ? `${segment.data.width}%` : 'auto' }}
                   className="rounded border border-gray-200"
                 />
@@ -94,7 +94,7 @@ const ProcessedContent = ({ content }: { content: string }) => {
   );
 };
 
-const StepProgress = memo(function StepProgressComponent({
+/* const StepProgress = memo(function StepProgressComponent({
   current,
   total,
 }: {
@@ -108,7 +108,7 @@ const StepProgress = memo(function StepProgressComponent({
   );
 });
 
-StepProgress.displayName = "StepProgress";
+StepProgress.displayName = "StepProgress"; */
 
 // --- Solution Step Component ---
 
@@ -158,15 +158,17 @@ const SolutionStep = ({
     <div className="py-2 border-b last:border-b-0 relative">
       <div className="flex items-center justify-between gap-4">
         <div
-          className="flex-1 cursor-pointer" 
+          className="flex-1 cursor-pointer"
           onClick={() => onToggleActive(index)}
         >
           <div className="space-y-3 w-full">
             <div className="flex justify-between items-start">
               <div className="flex-col">
-                <StepProgress current={stepNumber} total={totalSteps} />
-                <h6 className="">
-                  Step {stepNumber}: {step.title || 'Solution Step'}
+                <h6 className="flex items-center">
+                  <span className="text-xs text-muted-foreground mr-2">
+                    {stepNumber} of {totalSteps}
+                  </span>
+                  <Latex>{step.title || 'Solution Step'}</Latex>
                 </h6>
               </div>
 
@@ -177,7 +179,7 @@ const SolutionStep = ({
               <div className="pl-4">
                 {/* Main content with images in correct position */}
                 <ProcessedContent content={step.content || ''} />
-                
+
                 {/* Explanation section */}
                 {step.explanation && (
                   <div className="mt-3 p-3 bg-gray-50 border-l-2 border-blue-400 text-sm">
@@ -227,17 +229,17 @@ const LimitedSolutionSteps = ({
   const { profile } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  
+
   // Only show the first step
   const firstStep = steps[0];
-  
+
   const handleSubscribe = () => {
     router.push('/pricing');
   };
-  
+
   // Determine if user has credits
   const hasCredits = profile && profile.solutionCredits > 0;
-  
+
   return (
     <Card>
       <CardContent className="p-4">
@@ -247,16 +249,16 @@ const LimitedSolutionSteps = ({
           totalSteps={steps.length}
           step={firstStep}
           isActive={true}
-          onNextStep={() => {}}
+          onNextStep={() => { }}
           isLastStep={false}
-          onToggleActive={() => {}}
+          onToggleActive={() => { }}
           index={0}
         />
-        
+
         {/* Credit alert or subscription CTA */}
         <div className="mt-4 border-t pt-4">
           {hasCredits ? (
-            <Alert 
+            <Alert
               icon={<Coins size={16} />}
               title="Unlock All Steps"
               color="orange"
@@ -267,9 +269,9 @@ const LimitedSolutionSteps = ({
                 <Text size="sm" lineClamp={2}>
                   See all {steps.length} steps (uses 1 credit)
                 </Text>
-                <Button 
-                  variant="outline" 
-                  color="orange" 
+                <Button
+                  variant="outline"
+                  color="orange"
                   onClick={onUnlockAllSteps}
                   size="sm"
                 >
@@ -278,7 +280,7 @@ const LimitedSolutionSteps = ({
               </Group>
             </Alert>
           ) : (
-            <Alert 
+            <Alert
               icon={<Lock size={16} />}
               title="Subscribe for Full Access"
               color="blue"
@@ -288,9 +290,9 @@ const LimitedSolutionSteps = ({
                 <Text size="sm" lineClamp={2}>
                   Get unlimited access to all solutions
                 </Text>
-                <Button 
-                  variant="outline" 
-                  color="blue" 
+                <Button
+                  variant="outline"
+                  color="blue"
                   onClick={handleSubscribe}
                   size="sm"
                 >
@@ -372,32 +374,32 @@ const ExerciseContent = ({ question }: { question: any }) => {
   const [creditError, setCreditError] = useState<string | null>(null);
   const router = useRouter();
   const { refreshAuth } = useAuth()
-  
+
   // Check if user is admin or has subscription - they see all steps by default
   const hasFullAccess = useMemo(() => {
     return profile?.role === 'ADMIN' || profile?.subscriptionStatus === 'ACTIVE';
   }, [profile]);
-  
+
   // Set showAllSteps to true if the user has full access
   useEffect(() => {
     if (hasFullAccess) {
       setShowAllSteps(true);
     }
   }, [hasFullAccess]);
-  
+
   // Handle using a credit to unlock all steps
   const handleUnlockAllSteps = async () => {
     try {
       setIsProcessingCredit(true);
       setCreditError(null);
-      
+
       const result = await solutionCredit();
-      
+
       if (result.error) {
         setCreditError(result.error);
         return;
       }
-      
+
       if (result.canViewSolution) {
         await refreshAuth()
         setShowAllSteps(true);
@@ -409,7 +411,7 @@ const ExerciseContent = ({ question }: { question: any }) => {
       setIsProcessingCredit(false);
     }
   };
-  
+
   // Show loading state while checking authentication
   if (isLoading) {
     return (
@@ -427,10 +429,10 @@ const ExerciseContent = ({ question }: { question: any }) => {
       </div>
     );
   }
-  
+
   // Check if question has solutions with steps
   const hasSolutions = question?.solutions && question.solutions.length > 0;
-  
+
   if (!hasSolutions) {
     return <EmptyState message="No solution available for this question" />;
   }
@@ -438,7 +440,7 @@ const ExerciseContent = ({ question }: { question: any }) => {
   // Get the first solution with steps
   const solution = question.solutions[0];
   const hasSteps = solution?.steps && solution.steps.length > 0;
-  
+
   if (!hasSteps) {
     return <EmptyState message="No solution steps available for this question" />;
   }
@@ -451,23 +453,23 @@ const ExerciseContent = ({ question }: { question: any }) => {
           {creditError}
         </Alert>
       )}
-      
+
       {/* Display full solution or limited solution based on access */}
       {(showAllSteps || hasFullAccess) ? (
         <FullSolutionSteps steps={solution.steps} />
       ) : (
-        <LimitedSolutionSteps 
-          steps={solution.steps} 
-          onUnlockAllSteps={handleUnlockAllSteps} 
+        <LimitedSolutionSteps
+          steps={solution.steps}
+          onUnlockAllSteps={handleUnlockAllSteps}
         />
       )}
-      
+
       {/* Navigation between questions */}
       {question.contentId && (
         <div className="mt-8 border-t pt-4">
-          <QuestionNavigation 
-            contentId={question.contentId} 
-            currentQuestionId={question.id} 
+          <QuestionNavigation
+            contentId={question.contentId}
+            currentQuestionId={question.id}
           />
         </div>
       )}

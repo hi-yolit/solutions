@@ -82,7 +82,10 @@ export function StructuredSolutionEditor({
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter step title" />
+                        <ContentEditor
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
