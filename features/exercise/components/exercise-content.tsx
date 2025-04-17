@@ -163,20 +163,22 @@ const SolutionStep = ({
         >
           <div className="space-y-3 w-full">
             <div className="flex justify-between items-start">
-              <div className="flex-col">
-                <h6 className="flex items-center">
-                  <span className="text-xs text-muted-foreground mr-2">
+              <div className="flex-1">
+                <div className="flex items-center mb-3">
+                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-md text-xs font-medium mr-2">
                     {stepNumber} of {totalSteps}
                   </span>
-                  <Latex>{step.title || 'Solution Step'}</Latex>
-                </h6>
+                  <h5 className="text-lg font-semibold text-blue-800 dark:text-blue-300">
+                    <Latex>{step.title || 'Solution Step'}</Latex>
+                  </h5>
+                </div>
               </div>
 
               {step.hint && hintButton}
             </div>
 
             {isActive && (
-              <div className="pl-4">
+              <div className="pl-4 mt-2 border-t pt-2">
                 {/* Main content with images in correct position */}
                 <ProcessedContent content={step.content || ''} />
 
