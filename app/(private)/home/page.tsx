@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import React from "react";
 import { ResourceList } from "@/components/subjects/resource-list";
 import { getResources } from "@/actions/resources";
