@@ -278,11 +278,10 @@ const LimitedSolutionSteps = ({
                   color="orange"
                   onClick={onUnlockAllSteps}
                   size="sm"
-                  disabled={isProcessingCredit} // Add disabled state
+                  disabled={isProcessingCredit}
                 >
                   {isProcessingCredit ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
+                    <span className="text-orange-500/80">Processing...</span>) : (
                     'Use Credit'
                   )}
                 </Button>
