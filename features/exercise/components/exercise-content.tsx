@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, memo, MouseEvent, useEffect } from "react";
+import React, { useState, useCallback, useMemo, memo, MouseEvent, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -223,9 +223,11 @@ const SolutionStep = ({
 // --- Limited Solution Steps Component (only first step) ---
 const LimitedSolutionSteps = ({
   steps,
+  isProcessingCredit,
   onUnlockAllSteps
 }: {
   steps: StepContent[];
+  isProcessingCredit: boolean;
   onUnlockAllSteps: () => void;
 }) => {
   const { profile } = useAuth();
@@ -276,8 +278,13 @@ const LimitedSolutionSteps = ({
                   color="orange"
                   onClick={onUnlockAllSteps}
                   size="sm"
+                  disabled={isProcessingCredit} // Add disabled state
                 >
-                  Use Credit
+                  {isProcessingCredit ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    'Use Credit'
+                  )}
                 </Button>
               </Group>
             </Alert>
@@ -375,7 +382,8 @@ const ExerciseContent = ({ question }: { question: any }) => {
   const [isProcessingCredit, setIsProcessingCredit] = useState(false);
   const [creditError, setCreditError] = useState<string | null>(null);
   const router = useRouter();
-  const { refreshAuth } = useAuth()
+  const { refreshAuth } = useAuth();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if user is admin or has subscription - they see all steps by default
   const hasFullAccess = useMemo(() => {
@@ -390,7 +398,7 @@ const ExerciseContent = ({ question }: { question: any }) => {
   }, [hasFullAccess]);
 
   // Handle using a credit to unlock all steps
-  const handleUnlockAllSteps = async () => {
+  const handleUnlockAllSteps = useCallback(async () => {
     try {
       setIsProcessingCredit(true);
       setCreditError(null);
@@ -403,7 +411,7 @@ const ExerciseContent = ({ question }: { question: any }) => {
       }
 
       if (result.canViewSolution) {
-        await refreshAuth()
+        await refreshAuth();
         setShowAllSteps(true);
       }
     } catch (err) {
@@ -412,7 +420,24 @@ const ExerciseContent = ({ question }: { question: any }) => {
     } finally {
       setIsProcessingCredit(false);
     }
-  };
+  }, [refreshAuth]);
+
+  const debouncedUnlock = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      handleUnlockAllSteps();
+    }, 500);
+  }, [handleUnlockAllSteps]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -462,7 +487,8 @@ const ExerciseContent = ({ question }: { question: any }) => {
       ) : (
         <LimitedSolutionSteps
           steps={solution.steps}
-          onUnlockAllSteps={handleUnlockAllSteps}
+          isProcessingCredit={isProcessingCredit}
+          onUnlockAllSteps={debouncedUnlock}
         />
       )}
 
