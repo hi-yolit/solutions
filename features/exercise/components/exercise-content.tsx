@@ -68,9 +68,8 @@ const ProcessedContent = ({ content }: { content: string }) => {
       {segments.map((segment, index) => (
         <React.Fragment key={index}>
           {segment.type === 'text' ? (
-            <div className="prose-sm dark:prose-invert max-w-full overflow-x-auto">
-              {/* The key change is adding proper overflow handling for LaTeX content */}
-              <div className="latex-container overflow-x-auto">
+            <div className="prose-sm dark:prose-invert max-w-full">
+              <div className="overflow-x-auto">
                 <Latex>{segment.content ?? ""}</Latex>
               </div>
             </div>
