@@ -8,9 +8,7 @@ const SharedLayout = ({ children }: { children: React.ReactNode }) => {
       <NextTopLoader />
       <div className="min-h-screen flex flex-col">
         <main className="flex-grow">
-          <div className="">
-            {children}
-          </div>
+          {children}
         </main>
       </div>
     </section>

@@ -45,7 +45,7 @@ const TopBar = ({ questionNumber }: TopBarProps) => {
   };
 
   return (
-    <section className="sticky top-0 bg-white z-10 border-b py-3 px-4">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sticky top-0 bg-white z-10 border-b">
       <Group justify="space-between" align="center" wrap="nowrap">
         <Group gap="xs" wrap="nowrap">
           <ActionIcon 
