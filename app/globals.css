@@ -11,6 +11,17 @@ body {
 }  
 
 @layer base {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    input, textarea, select {
+      font-size: 16px !important;
+      transform: scale(1);
+    }
+  }
+  
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
@@ -72,5 +83,10 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    font-size: 16px;
   }
+}
+
+input, textarea, select {
+  font-size: 16px !important;
 }
