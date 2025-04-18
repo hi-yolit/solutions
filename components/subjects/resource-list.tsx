@@ -149,7 +149,7 @@ export async function ResourceList({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+    <div className="py-3">
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList variant="underline" width="full" className="overflow-auto">
           {Object.entries(resourceTypeLabels).map(([key, label]) => {
