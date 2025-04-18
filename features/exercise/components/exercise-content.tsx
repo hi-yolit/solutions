@@ -69,14 +69,17 @@ const ProcessedContent = ({ content }: { content: string }) => {
         <React.Fragment key={index}>
           {segment.type === 'text' ? (
             <div className="prose-sm dark:prose-invert max-w-full overflow-x-auto">
-              <Latex>{segment.content || ""}</Latex>
+              {/* The key change is adding proper overflow handling for LaTeX content */}
+              <div className="latex-container overflow-x-auto">
+                <Latex>{segment.content ?? ""}</Latex>
+              </div>
             </div>
           ) : (
             <div className={`flex ${segment.data.alignment === 'center' ? 'justify-center' : segment.data.alignment === 'right' ? 'justify-end' : ''}`}>
               <figure className="relative">
                 <img
                   src={segment.data.url}
-                  alt={segment.data.caption || "Solution image"}
+                  alt={segment.data.caption ?? "Solution image"}
                   style={{ width: segment.data.width ? `${segment.data.width}%` : 'auto' }}
                   className="rounded border border-gray-200"
                 />
