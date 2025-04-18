@@ -14,7 +14,7 @@ const HomePage = async () => {
 
   if (!resources) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-red-600 bg-red-50 rounded-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-red-600 bg-red-50 rounded-md">
         <h2 className="font-semibold">Unable to load resources</h2>
         <p>Please try refreshing the page or contact support if the issue persists.</p>
       </div>
