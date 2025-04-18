@@ -14,11 +14,14 @@ export const metadata: Metadata = {
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SharedLayout>
-      <section className="pt-16 pb-16 min-h-screen">
-        <Navbar />
-        {children}
-        <BottomNavigation />
-      </section>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="pt-16 pb-16 min-h-screen">
+          <Navbar />
+          {children}
+          <BottomNavigation />
+        </section>
+
+      </div>
     </SharedLayout>
   );
 };
