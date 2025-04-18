@@ -68,7 +68,7 @@ const ProcessedContent = ({ content }: { content: string }) => {
       {segments.map((segment, index) => (
         <React.Fragment key={index}>
           {segment.type === 'text' ? (
-            <div className="prose-sm dark:prose-invert">
+            <div className="prose-sm dark:prose-invert max-w-full overflow-x-auto">
               <Latex>{segment.content || ""}</Latex>
             </div>
           ) : (
